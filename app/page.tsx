@@ -1,142 +1,355 @@
 "use client"
 
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { QrCode, ShieldCheck, UserCircle } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Shield, Users, QrCode, Camera, ArrowLeft } from "lucide-react"
 
 export default function SignInPage() {
   const router = useRouter()
-
-  const handleFacilitatorSignIn = () => {
-    router.push("/facilitator")
-  }
+  const [selectedRole, setSelectedRole] = useState<"admin" | "facilitator" | "participant" | null>(null)
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [showScanner, setShowScanner] = useState(false)
+  const [scanSuccess, setScanSuccess] = useState(false)
+  const [error, setError] = useState("")
+  const [participantEmail, setParticipantEmail] = useState("")
+  const [showEmailVerify, setShowEmailVerify] = useState(false)
 
   const handleAdminSignIn = () => {
-    router.push("/admin")
+    if (email === "martin@dmsclinicalservices.com" && password === "Archer123") {
+      router.push("/admin")
+    } else {
+      setError("Invalid email or password")
+    }
   }
 
-  const handleParticipantQRScan = () => {
-    router.push("/participant/register")
+  const handleFacilitatorSignIn = () => {
+    if (email && password) {
+      router.push("/facilitator")
+    } else {
+      setError("Please enter email and password")
+    }
+  }
+
+  const handleScanSuccess = () => {
+    setScanSuccess(true)
+    setTimeout(() => {
+      setShowScanner(false)
+      setScanSuccess(false)
+      setShowEmailVerify(true)
+    }, 1500)
+  }
+
+  const handleParticipantEmailSignIn = () => {
+    if (participantEmail && participantEmail.includes("@")) {
+      router.push("/participant")
+    } else {
+      setError("Please enter a valid email address")
+    }
+  }
+
+  const resetForm = () => {
+    setEmail("")
+    setPassword("")
+    setParticipantEmail("")
+    setError("")
+    setSelectedRole(null)
+    setShowEmailVerify(false)
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      {/* Header */}
-      <header className="border-b border-border py-4 px-6">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 bg-primary rounded-lg" />
-            <h1 className="text-xl font-semibold text-foreground">Drug Court Learning Platform</h1>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen flex flex-col">
+      <div className="flex-1 flex items-center justify-center p-4">
+        {/* Role Selection */}
+        {!selectedRole && (
+          <div className="w-full max-w-4xl">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2 drop-shadow-sm">Drug Court Learning Platform</h1>
+              <p className="text-gray-700 drop-shadow-sm">Select your role to sign in</p>
+            </div>
 
-      {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center p-6">
-        <div className="w-full max-w-6xl">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-foreground mb-3 text-balance">Welcome to Your Learning Platform</h2>
-            <p className="text-lg text-muted-foreground text-balance">Choose your role to get started</p>
-          </div>
-
-          {/* Sign In Options Grid */}
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {/* Admin Sign In */}
-            <Card className="border-2 hover:border-primary transition-colors">
-              <CardHeader className="text-center pb-4">
-                <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
-                  <ShieldCheck className="h-8 w-8 text-primary" />
-                </div>
-                <CardTitle className="text-2xl">Admin</CardTitle>
-                <CardDescription>Platform administration access</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="admin-email">Email</Label>
-                  <Input id="admin-email" type="email" placeholder="admin@example.com" className="bg-background" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="admin-password">Password</Label>
-                  <Input id="admin-password" type="password" placeholder="Enter password" className="bg-background" />
-                </div>
-                <Button className="w-full" size="lg" onClick={handleAdminSignIn}>
-                  Sign In as Admin
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Facilitator Sign In */}
-            <Card className="border-2 hover:border-primary transition-colors">
-              <CardHeader className="text-center pb-4">
-                <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
-                  <UserCircle className="h-8 w-8 text-primary" />
-                </div>
-                <CardTitle className="text-2xl">Facilitator</CardTitle>
-                <CardDescription>Access class management tools</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="facilitator-email">Email</Label>
-                  <Input
-                    id="facilitator-email"
-                    type="email"
-                    placeholder="facilitator@example.com"
-                    className="bg-background"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="facilitator-password">Password</Label>
-                  <Input
-                    id="facilitator-password"
-                    type="password"
-                    placeholder="Enter password"
-                    className="bg-background"
-                  />
-                </div>
-                <Button className="w-full" size="lg" onClick={handleFacilitatorSignIn}>
-                  Sign In as Facilitator
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Participant QR Code Access */}
-            <Card className="border-2 hover:border-primary transition-colors">
-              <CardHeader className="text-center pb-4">
-                <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
-                  <QrCode className="h-8 w-8 text-primary" />
-                </div>
-                <CardTitle className="text-2xl">Participant</CardTitle>
-                <CardDescription>Scan QR code to access your dashboard</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div
-                  className="bg-muted rounded-lg p-8 flex items-center justify-center min-h-[140px] cursor-pointer"
-                  onClick={handleParticipantQRScan}
-                >
-                  <div className="text-center">
-                    <QrCode className="h-24 w-24 mx-auto mb-3 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">Tap to scan QR code</p>
+            <div className="grid md:grid-cols-3 gap-6">
+              {/* Admin Entry - added card-transparent class */}
+              <Card
+                className="cursor-pointer hover:border-green-500 transition-colors card-transparent"
+                onClick={() => setSelectedRole("admin")}
+              >
+                <CardHeader className="text-center pb-2">
+                  <div className="mx-auto p-4 bg-green-100/80 rounded-full w-fit mb-2">
+                    <Shield className="h-10 w-10 text-green-600" />
                   </div>
-                </div>
-                <Button className="w-full" size="lg" onClick={handleParticipantQRScan}>
-                  Scan QR Code
-                </Button>
-                <p className="text-xs text-center text-muted-foreground">QR code provided by clinical director</p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </main>
+                  <CardTitle className="text-xl">Admin</CardTitle>
+                  <CardDescription>Clinical Director Access</CardDescription>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <p className="text-sm text-gray-500 mb-4">Manage programs, users, enrollments and reports</p>
+                  <Button className="w-full bg-green-600 hover:bg-green-700">Sign In with Email</Button>
+                </CardContent>
+              </Card>
 
-      {/* Footer */}
-      <footer className="border-t border-border py-6 px-6">
-        <div className="max-w-7xl mx-auto text-center text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} DMS Clinical Services. All rights reserved.</p>
-        </div>
+              {/* Facilitator Entry */}
+              <Card
+                className="cursor-pointer hover:border-green-500 transition-colors card-transparent"
+                onClick={() => setSelectedRole("facilitator")}
+              >
+                <CardHeader className="text-center pb-2">
+                  <div className="mx-auto p-4 bg-green-100/80 rounded-full w-fit mb-2">
+                    <Users className="h-10 w-10 text-green-600" />
+                  </div>
+                  <CardTitle className="text-xl">Facilitator</CardTitle>
+                  <CardDescription>Group Facilitator Access</CardDescription>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <p className="text-sm text-gray-500 mb-4">Lead sessions, review homework, manage participants</p>
+                  <Button className="w-full bg-green-600 hover:bg-green-700">Sign In with Email</Button>
+                </CardContent>
+              </Card>
+
+              {/* Participant Entry */}
+              <Card
+                className="cursor-pointer hover:border-green-500 transition-colors card-transparent"
+                onClick={() => setSelectedRole("participant")}
+              >
+                <CardHeader className="text-center pb-2">
+                  <div className="mx-auto p-4 bg-green-100/80 rounded-full w-fit mb-2">
+                    <QrCode className="h-10 w-10 text-green-600" />
+                  </div>
+                  <CardTitle className="text-xl">Participant</CardTitle>
+                  <CardDescription>Program Participant Access</CardDescription>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <p className="text-sm text-gray-500 mb-4">Access classes, complete homework, write journal entries</p>
+                  <Button onClick={() => setShowScanner(true)} className="w-full bg-green-600 hover:bg-green-700">
+                    <Camera className="h-4 w-4 mr-2" />
+                    Scan QR Code
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
+
+        {/* Admin Sign In Form */}
+        {selectedRole === "admin" && (
+          <Card className="w-full max-w-md card-transparent">
+            <CardHeader>
+              <Button variant="ghost" size="sm" onClick={resetForm} className="w-fit -ml-2 mb-2">
+                <ArrowLeft className="h-4 w-4 mr-1" />
+                Back
+              </Button>
+              <div className="flex justify-center mb-2">
+                <div className="p-3 bg-green-100/80 rounded-full">
+                  <Shield className="h-8 w-8 text-green-600" />
+                </div>
+              </div>
+              <CardTitle className="text-center">Admin Sign In</CardTitle>
+              <CardDescription className="text-center">Clinical Director Access</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {error && <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm text-center">{error}</div>}
+              <div className="space-y-2">
+                <Label htmlFor="admin-email">Email</Label>
+                <Input
+                  id="admin-email"
+                  type="email"
+                  placeholder="admin@dmsclinicalservices.com"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value)
+                    setError("")
+                  }}
+                  className="bg-white/80"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="admin-password">Password</Label>
+                <Input
+                  id="admin-password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value)
+                    setError("")
+                  }}
+                  className="bg-white/80"
+                />
+              </div>
+              <Button onClick={handleAdminSignIn} className="w-full bg-green-600 hover:bg-green-700">
+                Sign In
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Facilitator Sign In Form */}
+        {selectedRole === "facilitator" && (
+          <Card className="w-full max-w-md card-transparent">
+            <CardHeader>
+              <Button variant="ghost" size="sm" onClick={resetForm} className="w-fit -ml-2 mb-2">
+                <ArrowLeft className="h-4 w-4 mr-1" />
+                Back
+              </Button>
+              <div className="flex justify-center mb-2">
+                <div className="p-3 bg-green-100/80 rounded-full">
+                  <Users className="h-8 w-8 text-green-600" />
+                </div>
+              </div>
+              <CardTitle className="text-center">Facilitator Sign In</CardTitle>
+              <CardDescription className="text-center">Group Facilitator Access</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {error && <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm text-center">{error}</div>}
+              <div className="space-y-2">
+                <Label htmlFor="facilitator-email">Email</Label>
+                <Input
+                  id="facilitator-email"
+                  type="email"
+                  placeholder="facilitator@example.com"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value)
+                    setError("")
+                  }}
+                  className="bg-white/80"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="facilitator-password">Password</Label>
+                <Input
+                  id="facilitator-password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value)
+                    setError("")
+                  }}
+                  className="bg-white/80"
+                />
+              </div>
+              <Button onClick={handleFacilitatorSignIn} className="w-full bg-green-600 hover:bg-green-700">
+                Sign In
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Participant QR Scanner */}
+        {selectedRole === "participant" && !showEmailVerify && (
+          <Card className="w-full max-w-md card-transparent">
+            <CardHeader>
+              <Button variant="ghost" size="sm" onClick={resetForm} className="w-fit -ml-2 mb-2">
+                <ArrowLeft className="h-4 w-4 mr-1" />
+                Back
+              </Button>
+              <div className="flex justify-center mb-2">
+                <div className="p-3 bg-green-100/80 rounded-full">
+                  <QrCode className="h-8 w-8 text-green-600" />
+                </div>
+              </div>
+              <CardTitle className="text-center">Participant Access</CardTitle>
+              <CardDescription className="text-center">Scan your registration QR code</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-center text-gray-600 text-sm">
+                Scan the QR code provided by your clinical director to register and access your dashboard.
+              </p>
+              <Button onClick={() => setShowScanner(true)} className="w-full bg-green-600 hover:bg-green-700">
+                <Camera className="h-4 w-4 mr-2" />
+                Open Camera to Scan
+              </Button>
+              <div className="text-center">
+                <Button variant="link" className="text-green-600" onClick={() => router.push("/participant")}>
+                  Already registered? Go to dashboard
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Participant Email Verification after QR scan */}
+        {selectedRole === "participant" && showEmailVerify && (
+          <Card className="w-full max-w-md card-transparent">
+            <CardHeader>
+              <Button variant="ghost" size="sm" onClick={resetForm} className="w-fit -ml-2 mb-2">
+                <ArrowLeft className="h-4 w-4 mr-1" />
+                Back
+              </Button>
+              <div className="flex justify-center mb-2">
+                <div className="p-3 bg-green-100/80 rounded-full">
+                  <QrCode className="h-8 w-8 text-green-600" />
+                </div>
+              </div>
+              <CardTitle className="text-center">Verify Your Identity</CardTitle>
+              <CardDescription className="text-center">Enter your email to sign in</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {error && <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm text-center">{error}</div>}
+              <div className="p-3 bg-green-50/80 text-green-700 rounded-lg text-sm text-center">
+                QR Code verified successfully
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="participant-email">Your Email Address</Label>
+                <Input
+                  id="participant-email"
+                  type="email"
+                  placeholder="yourname@example.com"
+                  value={participantEmail}
+                  onChange={(e) => {
+                    setParticipantEmail(e.target.value)
+                    setError("")
+                  }}
+                  className="bg-white/80"
+                />
+                <p className="text-xs text-gray-500">Enter the email you registered with</p>
+              </div>
+              <Button onClick={handleParticipantEmailSignIn} className="w-full bg-green-600 hover:bg-green-700">
+                Sign In
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
+      <footer className="p-4 text-center text-sm text-gray-600 border-t border-gray-200/50 footer-transparent">
+        © 2025 DMS Clinical Services. All rights reserved.
       </footer>
+
+      {/* QR Scanner Modal */}
+      <Dialog open={showScanner} onOpenChange={setShowScanner}>
+        <DialogContent className="max-w-md card-transparent">
+          <DialogHeader>
+            <DialogTitle>Scan Registration QR Code</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {scanSuccess ? (
+              <div className="flex flex-col items-center justify-center py-8">
+                <div className="w-16 h-16 bg-green-100/80 rounded-full flex items-center justify-center mb-4">
+                  <QrCode className="h-8 w-8 text-green-600" />
+                </div>
+                <p className="text-green-600 font-medium">Registration QR Code Detected!</p>
+                <p className="text-sm text-gray-500">Redirecting to registration...</p>
+              </div>
+            ) : (
+              <>
+                <div className="aspect-square bg-gray-900 rounded-lg flex items-center justify-center relative overflow-hidden">
+                  <div className="absolute inset-4 border-2 border-white/50 rounded-lg"></div>
+                  <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-green-500 animate-pulse"></div>
+                  <Camera className="h-12 w-12 text-white/50" />
+                </div>
+                <p className="text-center text-sm text-gray-500">Position the QR code within the frame</p>
+                <Button onClick={handleScanSuccess} variant="outline" className="w-full bg-white/80">
+                  Simulate QR Scan (Testing)
+                </Button>
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

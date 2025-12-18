@@ -2,109 +2,83 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useStore } from "@/lib/store"
+import { RoleNav } from "@/components/role-nav"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import {
-  Calendar,
-  Clock,
-  BookOpen,
-  LogOut,
-  Bell,
-  User,
-  MapPin,
-  MessageSquare,
-  FileCheck,
-  X,
-  Mail,
-  FileText,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react"
+import { Progress } from "@/components/ui/progress"
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
+import { Calendar, Mail, ClipboardList, Circle, ChevronRight, Send, Trophy, Star, Award, Flame } from "lucide-react"
+import React from "react"
 
 export default function ParticipantDashboard() {
-  const [notificationCount, setNotificationCount] = useState(3)
-  const [showNotificationPanel, setShowNotificationPanel] = useState(false)
-  const [notificationsViewed, setNotificationsViewed] = useState(false)
-
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      from: "Dr. Sarah Johnson",
-      message: "Great progress on Session 1! Keep up the good work.",
-      time: "2 hours ago",
-      read: false,
-    },
-    {
-      id: 2,
-      from: "Dr. Sarah Johnson",
-      message: "Please remember to complete your daily journal entry.",
-      time: "1 day ago",
-      read: false,
-    },
-  ])
-
-  const [homework, setHomework] = useState([
-    {
-      id: 1,
-      title: "My First Action Plan",
-      session: 1,
-      dueDate: "Today",
-      status: "pending",
-      description: "Complete your treatment goals and action steps",
-    },
-  ])
-
-  const [dailyJournals, setDailyJournals] = useState([
-    { id: 1, date: "2024-01-15", day: "Monday", completed: true, late: false },
-    { id: 2, date: "2024-01-16", day: "Tuesday", completed: true, late: false },
-    { id: 3, date: "2024-01-17", day: "Wednesday", completed: false, late: true },
-    { id: 4, date: "2024-01-18", day: "Thursday", completed: false, late: false },
-  ])
-
-  const [selectedHomework, setSelectedHomework] = useState<number | null>(null)
-  const [selectedJournal, setSelectedJournal] = useState<number | null>(null)
-  const [homeworkResponse, setHomeworkResponse] = useState("")
-  const [journalEntry, setJournalEntry] = useState("")
-
-  const [showSessionViewer, setShowSessionViewer] = useState(false)
-  const [currentSessionContent, setCurrentSessionContent] = useState<number>(0)
-
-  const [sessionCompleted, setSessionCompleted] = useState(false)
-  const [inLiveSession, setInLiveSession] = useState(false)
-
   const router = useRouter()
+  const {
+    programs,
+    enrollments,
+    journalEntries,
+    addJournalEntry,
+    currentUser,
+    messages,
+    markMessageRead,
+    addMessage,
+    responses,
+  } = useStore()
 
-  const handleClassClick = (className: string, classTime: string, day: string) => {
-    router.push(
-      `/participant/check-in?class=${encodeURIComponent(className)}&time=${encodeURIComponent(classTime)}&day=${encodeURIComponent(day)}`,
-    )
-  }
+  const [selectedMessage, setSelectedMessage] = useState<{
+    id: string
+    subject: string
+    content: string
+    fromName: string
+    sentAt: string
+    read: boolean
+    fromId: string
+  } | null>(null)
+  const [showMessageModal, setShowMessageModal] = useState(false)
+  const [showComposeModal, setShowComposeModal] = useState(false)
+  const [composeTo, setComposeTo] = useState("")
+  const [composeSubject, setComposeSubject] = useState("")
+  const [composeBody, setComposeBody] = useState("")
+  const [journalText, setJournalText] = useState("")
+  const [selectedClass, setSelectedClass] = useState<{
+    day: string
+    time: string
+    program: string
+    facilitator: string
+    room: string
+    session: number
+    programSlug: string
+  } | null>(null)
+  const [replyTo, setReplyTo] = useState<{
+    id: string
+    subject: string
+    content: string
+    fromName: string
+    sentAt: string
+    read: boolean
+    fromId: string
+  } | null>(null)
 
-  const handleNotificationClick = () => {
-    setShowNotificationPanel(true)
-    if (!notificationsViewed) {
-      setNotificationCount(0)
-      setNotificationsViewed(true)
-    }
-  }
+  // Get data for current participant
+  const myEnrollments = enrollments.filter((e) => e.participantId === currentUser?.id)
+  const activeEnrollments = myEnrollments.filter((e) => e.status === "active")
+  const unreadMessages = messages.filter((m) => !m.read)
+  const pendingHomework = myEnrollments.flatMap((enrollment) => {
+    const program = programs.find((p) => p.id === enrollment.programId)
+    return enrollment.sessions
+      .filter((session) => session.homeworkTemplate && !session.homework)
+      .map((session) => ({
+        programName: program?.name || "Unknown Program",
+        programSlug: program?.slug || "#",
+        sessionNumber: session.sessionNumber,
+        homeworkTemplateTitle: session.homeworkTemplate?.title || "Unknown Homework",
+      }))
+  })
 
-  // Mock data for enrolled classes
-  const enrolledClasses = [
-    {
-      id: 1,
-      title: "Prime Solutions",
-      facilitator: "Dr. Sarah Johnson",
-      currentSession: 1,
-      totalSessions: 16,
-      nextSession: "Today, 2:00 PM",
-      location: "Treatment Building",
-      progress: 6,
-    },
-  ]
-
+  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
   const timeSlots = [
     "9:00 AM",
     "10:00 AM",
@@ -117,768 +91,532 @@ export default function ParticipantDashboard() {
     "5:00 PM",
     "6:00 PM",
     "7:00 PM",
-    "8:00 AM",
   ]
 
-  const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+  // Mock participant's scheduled classes based on enrollments
+  const participantSchedule: Record<
+    string,
+    Record<string, { program: string; facilitator: string; room: string; session: number; programSlug: string }>
+  > = {}
 
-  const assignedMakeupClasses = [
-    { date: "2025-01-18", time: "10:00 AM", class: "Makeup Group", location: "Treatment Building" },
-  ]
+  // Add scheduled classes based on active enrollments
+  activeEnrollments.forEach((enrollment, index) => {
+    const program = programs.find((p) => p.id === enrollment.programId)
+    if (program) {
+      // Assign different time slots for different programs
+      const dayIndex = (index % 5) + 1 // Mon-Fri
+      const timeIndex = index % 3 // Spread across morning times
+      const day = days[dayIndex]
+      const time = timeSlots[timeIndex]
 
-  const scheduledClasses = {
-    Monday: { "8:00 AM": { class: "Prime Solutions", location: "Treatment Building" } },
-    Wednesday: { "2:00 PM": { class: "Prime Solutions", location: "Treatment Building" } },
-    Friday: { "2:00 PM": { class: "Prime Solutions", location: "Treatment Building" } },
-    // Dynamically add makeup classes to Saturday 10 AM slot if assigned
-    ...(assignedMakeupClasses.length > 0 && {
-      Saturday: { "10:00 AM": { class: "Makeup Group", location: "Treatment Building", isMakeup: true } },
-    }),
+      if (!participantSchedule[day]) participantSchedule[day] = {}
+      participantSchedule[day][time] = {
+        program: program.name,
+        facilitator: "Ms. Thompson", // Mock facilitator
+        room: "Room " + (101 + index), // Mock room
+        session: enrollment.currentSession,
+        programSlug: program.slug,
+      }
+    }
+  })
+
+  const getClassForSlot = (day: string, time: string) => {
+    return participantSchedule[day]?.[time]
   }
 
-  const unreadMessages = messages.filter((m) => !m.read).length
-  const pendingHomework = homework.filter((h) => h.status === "pending").length
-  const missedJournals = dailyJournals.filter((j) => j.late && !j.completed).length
+  // Mock awards and progress - replace with actual logic
+  const completedSessions = activeEnrollments.reduce((acc, e) => acc + e.currentSession, 0)
+  const sobrietyDays = 47 // Mock - would come from user profile
+
+  const awards = [
+    { id: 1, name: "First Session", icon: Star, earned: completedSessions >= 1, color: "text-yellow-500" },
+    { id: 2, name: "5 Sessions", icon: Award, earned: completedSessions >= 5, color: "text-blue-500" },
+    { id: 3, name: "10 Sessions", icon: Trophy, earned: completedSessions >= 10, color: "text-purple-500" },
+    { id: 4, name: "7 Days Sober", icon: Flame, earned: sobrietyDays >= 7, color: "text-orange-500" },
+    { id: 5, name: "30 Days Sober", icon: Flame, earned: sobrietyDays >= 30, color: "text-red-500" },
+    {
+      id: 6,
+      name: "Program Complete",
+      icon: Trophy,
+      earned: myEnrollments.some((e) => e.status === "completed"),
+      color: "text-green-500",
+    },
+  ]
+
+  const earnedAwards = awards.filter((a) => a.earned)
+
+  // Calculate next award and progress
+  let nextAward = null
+  if (completedSessions < 5) {
+    nextAward = {
+      name: "5 Sessions",
+      progress: (completedSessions / 5) * 100,
+      remaining: `${5 - completedSessions} more sessions`,
+    }
+  } else if (completedSessions < 10) {
+    nextAward = {
+      name: "10 Sessions",
+      progress: (completedSessions / 10) * 100,
+      remaining: `${10 - completedSessions} more sessions`,
+    }
+  } else if (sobrietyDays < 30) {
+    nextAward = {
+      name: "30 Days Sober",
+      progress: (sobrietyDays / 30) * 100,
+      remaining: `${30 - sobrietyDays} more days`,
+    }
+  }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen">
       {/* Header */}
-      <header className="border-b border-border bg-background sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 bg-primary rounded-lg" />
-              <h1 className="text-xl font-semibold text-foreground">My Learning Dashboard</h1>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="relative" onClick={handleNotificationClick}>
-                <Bell className="h-5 w-5" />
-                {notificationCount > 0 && (
-                  <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center">
-                    {notificationCount}
-                  </span>
-                )}
-              </Button>
-              <Button variant="ghost" size="icon">
-                <User className="h-5 w-5" />
-              </Button>
-              <Button variant="outline" size="sm" className="gap-2 bg-transparent">
-                <LogOut className="h-4 w-4" />
-                Sign Out
-              </Button>
-            </div>
-          </div>
-        </div>
+      <header className="border-b border-gray-200/50 header-transparent sticky top-0 z-40">
+        <RoleNav />
       </header>
 
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-8 space-y-8">
-        {/* Welcome Section */}
-        <div className="space-y-2">
-          <h2 className="text-3xl font-bold text-foreground">Welcome Back!</h2>
-          <p className="text-muted-foreground text-lg">Track your progress and stay on top of your learning journey.</p>
+      <main className="container mx-auto px-4 sm:px-8 py-6 sm:py-10 max-w-6xl">
+        <div className="mb-4 sm:mb-8 text-center">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 drop-shadow-sm">
+            Welcome, {currentUser?.name || "Participant"}
+          </h1>
+          <p className="text-sm sm:text-base text-gray-700 mt-1 drop-shadow-sm">Your Learning Dashboard</p>
         </div>
 
-        <Card className="border-2 border-primary/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-primary" />
-              My Class Schedule
-            </CardTitle>
-            <CardDescription>Your weekly class times (9 AM - 7 PM)</CardDescription>
-          </CardHeader>
-          <CardContent className="overflow-x-auto">
-            <div className="min-w-[800px]">
-              <div className="grid grid-cols-8 gap-px bg-border rounded-t-lg overflow-hidden">
-                <div className="bg-primary text-primary-foreground p-3 font-semibold">Time</div>
-                {daysOfWeek.map((day) => (
-                  <div key={day} className="bg-primary text-primary-foreground p-3 font-semibold text-center">
-                    {day}
-                  </div>
-                ))}
+        {earnedAwards.length > 0 && (
+          <Card className="mb-4 sm:mb-6 overflow-hidden card-transparent">
+            <CardHeader className="pb-2 px-3 sm:px-6 bg-gradient-to-r from-amber-50/80 to-yellow-50/80">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <Trophy className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500" />
+                My Achievements
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-3 sm:p-4 bg-gradient-to-r from-amber-50/80 to-yellow-50/80">
+              <div className="flex flex-wrap gap-3 sm:gap-4 justify-center">
+                {earnedAwards.map((award, index) => {
+                  const Icon = award.icon
+                  return (
+                    <div
+                      key={award.id}
+                      className="flex flex-col items-center gap-1 group"
+                      style={{ animationDelay: `${index * 0.1}s` }}
+                    >
+                      <div
+                        className={`relative w-12 h-12 sm:w-16 sm:h-16 rounded-full ${award.color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}
+                      >
+                        <div className="absolute inset-0 rounded-full animate-pulse opacity-50 bg-white/30"></div>
+                        <Icon className="h-6 w-6 sm:h-8 sm:w-8 text-white animate-bounce-slow drop-shadow-md" />
+                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-300 rounded-full animate-sparkle"></div>
+                        <div
+                          className="absolute inset-0 rounded-full overflow-hidden pointer-events-none group-hover:animate-shine"
+                          style={{
+                            background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)",
+                          }}
+                        ></div>
+                      </div>
+                      <span className="text-xs font-medium text-center text-gray-700 max-w-[80px]">{award.name}</span>
+                    </div>
+                  )
+                })}
               </div>
 
-              <div className="border border-border border-t-0 rounded-b-lg overflow-hidden">
-                {timeSlots.map((time, timeIndex) => (
-                  <div
-                    key={time}
-                    className={`grid grid-cols-8 gap-px bg-border ${
-                      timeIndex === timeSlots.length - 1 ? "" : "border-b border-border"
-                    }`}
-                  >
-                    <div className="bg-muted p-3 font-medium text-sm text-muted-foreground">{time}</div>
-                    {daysOfWeek.map((day) => {
-                      const classInfo = scheduledClasses[day as keyof typeof scheduledClasses]?.[time]
-                      return (
-                        <div key={`${day}-${time}`} className="bg-background p-2">
-                          {classInfo && (
-                            <button
-                              onClick={() => handleClassClick(classInfo.class, time, day)}
-                              className={`${classInfo.isMakeup ? "bg-amber-50 border border-amber-300" : "bg-primary/10 border border-primary/30"} rounded p-2 h-full w-full hover:opacity-80 transition-colors cursor-pointer`}
-                            >
-                              <p className="text-xs font-semibold text-foreground truncate">{classInfo.class}</p>
-                              <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                                <MapPin className="h-3 w-3" />
-                                <span className="truncate">{classInfo.location}</span>
-                              </p>
-                              {classInfo.isMakeup && (
-                                <Badge variant="secondary" className="mt-1 text-[9px] bg-amber-100 text-amber-800">
-                                  Makeup
-                                </Badge>
-                              )}
-                            </button>
-                          )}
-                        </div>
-                      )
-                    })}
+              {nextAward && (
+                <div className="mt-4 p-3 bg-white/60 rounded-lg border border-gray-200">
+                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                    <Star className="h-4 w-4 text-amber-400" />
+                    <span>Next: {nextAward.name}</span>
                   </div>
-                ))}
+                  <Progress value={nextAward.progress} className="h-2" />
+                  <p className="text-xs text-gray-500 mt-1">{nextAward.remaining}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Weekly Schedule */}
+        <Card className="mb-4 sm:mb-6 card-transparent">
+          <CardHeader className="pb-2 px-3 sm:px-6">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
+              My Weekly Schedule
+            </CardTitle>
+            <CardDescription className="text-xs sm:text-sm">Scroll to view • Tap a class for details</CardDescription>
+          </CardHeader>
+          <CardContent className="p-1 sm:p-2">
+            <div className="w-full overflow-x-auto -mx-1 px-1 touch-pan-x">
+              <div className="min-w-[700px] sm:min-w-[900px]">
+                <div className="grid grid-cols-8">
+                  {/* Header Row */}
+                  <div className="p-1 sm:p-2 font-semibold text-center bg-gray-100/80 border border-gray-400 text-xs sm:text-sm">
+                    Time
+                  </div>
+                  {days.map((day) => (
+                    <div
+                      key={day}
+                      className="p-1 sm:p-2 font-semibold text-center bg-gray-100/80 border border-gray-400 text-xs sm:text-sm"
+                    >
+                      <span className="hidden sm:inline">{day}</span>
+                      <span className="sm:hidden">{day.slice(0, 3)}</span>
+                    </div>
+                  ))}
+
+                  {/* Time Slots */}
+                  {timeSlots.map((time) => (
+                    <React.Fragment key={time}>
+                      <div className="p-1 sm:p-2 text-center bg-gray-50/80 border border-gray-400 text-xs sm:text-sm font-medium">
+                        {time}
+                      </div>
+                      {days.map((day) => {
+                        const classInfo = getClassForSlot(day, time)
+                        return (
+                          <div
+                            key={`${day}-${time}`}
+                            className={`p-1 border border-gray-400 min-h-[40px] sm:min-h-[50px] ${
+                              classInfo ? "bg-green-100/90 cursor-pointer hover:bg-green-200/90" : "bg-white/60"
+                            }`}
+                            onClick={() => classInfo && setSelectedClass(classInfo)}
+                          >
+                            {classInfo && (
+                              <div className="text-xs">
+                                <div className="font-semibold text-green-800 truncate">{classInfo.program}</div>
+                                <div className="text-green-600 hidden sm:block">Session {classInfo.session}</div>
+                                <div className="text-gray-600 text-[10px] hidden sm:block">{classInfo.room}</div>
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </React.Fragment>
+                  ))}
+                </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <div className="grid md:grid-cols-3 gap-6">
-          {/* Messages Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5 text-primary" />
-                Messages
+        {/* Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
+          {/* Messages Card */}
+          <Card className="card-transparent">
+            <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6">
+              <CardTitle className="flex items-center justify-between text-base sm:text-lg">
+                <span className="flex items-center gap-2">
+                  <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
+                  Messages
+                </span>
+                <div className="flex items-center gap-2">
+                  {unreadMessages.length > 0 && <Badge className="bg-red-500">{unreadMessages.length} new</Badge>}
+                  <Button
+                    size="sm"
+                    onClick={() => setShowComposeModal(true)}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <Send className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                    <span className="hidden sm:inline">New</span>
+                  </Button>
+                </div>
               </CardTitle>
-              <CardDescription>From your facilitators</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {messages.slice(0, 3).map((msg) => (
-                  <div key={msg.id} className="p-3 border border-border rounded-lg">
-                    <div className="flex items-start justify-between mb-1">
-                      <p className="font-medium text-sm">{msg.from}</p>
-                      {!msg.read && (
-                        <Badge variant="default" className="text-xs">
-                          New
-                        </Badge>
-                      )}
+            <CardContent className="px-3 sm:px-6">
+              {messages.length > 0 ? (
+                <div className="space-y-2">
+                  {messages.slice(0, 3).map((msg) => (
+                    <div
+                      key={msg.id}
+                      className={`p-2 sm:p-3 rounded-lg cursor-pointer transition-colors ${
+                        !msg.read ? "bg-green-50/80 border-l-4 border-green-500" : "bg-gray-50/80 hover:bg-gray-100/80"
+                      }`}
+                      onClick={() => {
+                        setSelectedMessage(msg)
+                        setShowMessageModal(true)
+                        if (!msg.read) markMessageRead(msg.id)
+                      }}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-sm">{msg.fromName}</span>
+                        <span className="text-xs text-gray-500">{new Date(msg.sentAt).toLocaleDateString()}</span>
+                      </div>
+                      <p className="text-xs sm:text-sm text-gray-600 truncate">{msg.subject}</p>
                     </div>
-                    <p className="text-sm text-muted-foreground line-clamp-2">{msg.message}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{msg.time}</p>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500 text-center py-4">No messages yet</p>
+              )}
             </CardContent>
           </Card>
 
-          {/* Homework Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileCheck className="h-5 w-5 text-primary" />
+          {/* Homework Card */}
+          <Card className="card-transparent">
+            <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <ClipboardList className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
                 Homework
               </CardTitle>
-              <CardDescription>Assignments to complete</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {homework.map((hw) => (
-                  <div
-                    key={hw.id}
-                    className="p-3 border border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
-                    onClick={() => setSelectedHomework(hw.id)}
-                  >
-                    <div className="flex items-start justify-between mb-1">
-                      <p className="font-medium text-sm">{hw.title}</p>
-                      <Badge variant={hw.status === "pending" ? "default" : "secondary"} className="text-xs">
-                        {hw.status}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">Session {hw.session}</p>
-                    <p className="text-xs text-muted-foreground mt-1">Due: {hw.dueDate}</p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Daily Journal Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BookOpen className="h-5 w-5 text-primary" />
-                Daily Journal
-              </CardTitle>
-              <CardDescription>Track your daily reflections</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {dailyJournals.map((journal) => (
-                  <div
-                    key={journal.id}
-                    className={`p-3 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors ${
-                      journal.late && !journal.completed ? "border-red-500 bg-red-50" : "border-border"
-                    }`}
-                    onClick={() => setSelectedJournal(journal.id)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p
-                          className={`font-medium text-sm ${journal.late && !journal.completed ? "text-red-600" : ""}`}
-                        >
-                          {journal.day}
-                        </p>
-                        <p className="text-xs text-muted-foreground">{journal.date}</p>
-                      </div>
-                      {journal.completed ? (
-                        <Badge variant="secondary" className="text-xs">
-                          Complete
-                        </Badge>
-                      ) : journal.late ? (
-                        <Badge variant="destructive" className="text-xs">
-                          Late
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline" className="text-xs">
+            <CardContent className="px-3 sm:px-6">
+              {pendingHomework.length > 0 ? (
+                <div className="space-y-2">
+                  {pendingHomework.slice(0, 3).map((hw, idx) => (
+                    <div
+                      key={idx}
+                      className="p-2 sm:p-3 bg-amber-50/80 rounded-lg border border-amber-200 cursor-pointer hover:bg-amber-100/80"
+                      onClick={() =>
+                        router.push(`/participant/programs/${hw.programSlug}/sessions/${hw.sessionNumber}`)
+                      }
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-sm">{hw.programName}</span>
+                        <Badge variant="outline" className="text-amber-600 border-amber-300">
                           Pending
                         </Badge>
-                      )}
+                      </div>
+                      <p className="text-xs text-gray-600">Session {hw.sessionNumber} Homework</p>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <Circle className="h-8 w-8 text-green-500 mx-auto mb-2" />
+                  <p className="text-sm text-gray-600">All caught up!</p>
+                </div>
+              )}
             </CardContent>
           </Card>
-        </div>
 
-        {/* Enrolled Classes */}
-        <div className="space-y-4">
-          <h3 className="text-2xl font-bold text-foreground">My Enrolled Classes</h3>
+          {/* Journal Card */}
+          <Card className="card-transparent">
+            <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6">
+              <CardTitle className="flex items-center justify-between text-base sm:text-lg">
+                <span className="flex items-center gap-2">
+                  <ClipboardList className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
+                  Daily Journal
+                </span>
+                <Button size="sm" variant="outline" onClick={() => router.push("/participant/journal")}>
+                  View All
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-3 sm:px-6">
+              <Textarea
+                placeholder="How are you feeling today? Write a quick reflection..."
+                value={journalText}
+                onChange={(e) => setJournalText(e.target.value)}
+                className="mb-2 text-sm bg-white/80"
+                rows={3}
+              />
+              <Button
+                size="sm"
+                className="w-full bg-green-600 hover:bg-green-700"
+                onClick={() => {
+                  if (journalText.trim()) {
+                    addJournalEntry({
+                      odCd: currentUser?.id || "p1",
+                      odProgram: myEnrollments[0]?.programId || "prime-solutions",
+                      content: journalText,
+                      mood: "neutral",
+                      isPrivate: false,
+                    })
+                    setJournalText("")
+                  }
+                }}
+              >
+                Save Entry
+              </Button>
+            </CardContent>
+          </Card>
 
-          <div className="grid gap-6">
-            {enrolledClasses.map((enrolledClass) => (
-              <Card key={enrolledClass.id} className="border-2 hover:border-primary/50 transition-colors">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <CardTitle className="text-2xl">{enrolledClass.title}</CardTitle>
-                      <CardDescription className="flex items-center gap-2 text-base">
-                        <User className="h-4 w-4" />
-                        Facilitator: {enrolledClass.facilitator}
-                      </CardDescription>
-                    </div>
-                    <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
-                      Session {enrolledClass.currentSession} of {enrolledClass.totalSessions}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Overall Progress</span>
-                      <span className="font-semibold text-foreground">
-                        {Math.round((enrolledClass.progress / enrolledClass.totalSessions) * 100)}%
-                      </span>
-                    </div>
-                    <div className="h-3 bg-muted rounded-full overflow-hidden">
+          {/* My Programs Card */}
+          <Card className="card-transparent">
+            <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
+                My Programs
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-3 sm:px-6">
+              {myEnrollments.length > 0 ? (
+                <div className="space-y-2">
+                  {myEnrollments.map((enrollment) => {
+                    const program = programs.find((p) => p.id === enrollment.programId)
+                    if (!program) return null
+                    const progress = Math.round((enrollment.currentSession / program.totalSessions) * 100)
+                    return (
                       <div
-                        className="h-full bg-primary rounded-full transition-all"
-                        style={{ width: `${(enrolledClass.progress / enrolledClass.totalSessions) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 bg-primary/5 rounded-lg border border-primary/20">
-                    <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">Next Session</p>
-                      <p className="font-semibold text-foreground flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-primary" />
-                        {enrolledClass.nextSession}
-                      </p>
-                      <p className="text-sm text-muted-foreground flex items-center gap-2">
-                        <MapPin className="h-4 w-4" />
-                        {enrolledClass.location}
-                      </p>
-                    </div>
-                    <Button
-                      className="gap-2 bg-green-600 hover:bg-green-700"
-                      onClick={() => setShowSessionViewer(true)}
-                    >
-                      <BookOpen className="h-4 w-4" />
-                      View Sessions
-                    </Button>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="text-center p-3 bg-muted rounded-lg">
-                      <p className="text-2xl font-bold text-primary">{enrolledClass.currentSession}</p>
-                      <p className="text-xs text-muted-foreground">Current Session</p>
-                    </div>
-                    <div className="text-center p-3 bg-muted rounded-lg">
-                      <p className="text-2xl font-bold text-primary">{enrolledClass.progress}</p>
-                      <p className="text-xs text-muted-foreground">Completed</p>
-                    </div>
-                    <div className="text-center p-3 bg-muted rounded-lg">
-                      <p className="text-2xl font-bold text-primary">
-                        {enrolledClass.totalSessions - enrolledClass.progress}
-                      </p>
-                      <p className="text-xs text-muted-foreground">Remaining</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                        key={enrollment.id}
+                        className="p-2 sm:p-3 bg-gray-50/80 rounded-lg cursor-pointer hover:bg-gray-100/80"
+                        onClick={() => router.push(`/participant/programs/${program.slug}`)}
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-medium text-sm">{program.name}</span>
+                          <span className="text-xs text-gray-500">
+                            {enrollment.currentSession}/{program.totalSessions}
+                          </span>
+                        </div>
+                        <Progress value={progress} className="h-2" />
+                      </div>
+                    )
+                  })}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500 text-center py-4">No programs enrolled</p>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </main>
 
-      <footer className="border-t border-border py-6 px-6 mt-auto">
-        <div className="max-w-7xl mx-auto text-center text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} DMS Clinical Services. All rights reserved.</p>
+      {/* Footer */}
+      <footer className="border-t border-gray-200/50 py-3 sm:py-4 footer-transparent">
+        <div className="container mx-auto px-3 sm:px-6 text-center text-xs sm:text-sm text-gray-600">
+          © 2025 DMS Clinical Services. All rights reserved.
         </div>
       </footer>
 
-      {showNotificationPanel && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-background rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] flex flex-col">
-            <div className="p-6 border-b border-border flex items-center justify-between">
-              <h2 className="text-2xl font-bold">Notifications</h2>
-              <Button variant="ghost" size="icon" onClick={() => setShowNotificationPanel(false)}>
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-            <div className="overflow-y-auto flex-1 p-6">
-              {unreadMessages === 0 && pendingHomework === 0 && missedJournals === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <Bell className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                  <p>No new notifications</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {messages
-                    .filter((m) => !m.read)
-                    .map((msg) => (
-                      <div
-                        key={msg.id}
-                        className="p-4 bg-blue-50 border border-blue-200 rounded-lg cursor-pointer hover:bg-blue-100"
-                        onClick={() => {
-                          setShowNotificationPanel(false)
-                        }}
-                      >
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <Mail className="h-4 w-4 text-blue-600" />
-                            <span className="font-semibold">New Message from {msg.from}</span>
-                          </div>
-                          <span className="text-xs text-muted-foreground">{msg.time}</span>
-                        </div>
-                        <p className="text-sm text-muted-foreground">{msg.message}</p>
-                      </div>
-                    ))}
-
-                  {homework
-                    .filter((h) => h.status === "pending")
-                    .map((hw) => (
-                      <div
-                        key={hw.id}
-                        className="p-4 bg-green-50 border border-green-200 rounded-lg cursor-pointer hover:bg-green-100"
-                        onClick={() => {
-                          setSelectedHomework(hw.id)
-                          setShowNotificationPanel(false)
-                        }}
-                      >
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <FileText className="h-4 w-4 text-green-600" />
-                            <span className="font-semibold">Homework Due: {hw.title}</span>
-                          </div>
-                          <span className="text-xs text-muted-foreground">{hw.dueDate}</span>
-                        </div>
-                        <p className="text-sm text-muted-foreground">{hw.description}</p>
-                      </div>
-                    ))}
-
-                  {dailyJournals
-                    .filter((j) => j.late && !j.completed)
-                    .map((journal) => (
-                      <div
-                        key={journal.id}
-                        className="p-4 bg-red-50 border border-red-200 rounded-lg cursor-pointer hover:bg-red-100"
-                        onClick={() => {
-                          setSelectedJournal(journal.id)
-                          setShowNotificationPanel(false)
-                        }}
-                      >
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <BookOpen className="h-4 w-4 text-red-600" />
-                            <span className="font-semibold text-red-600">Late Journal Entry</span>
-                          </div>
-                          <span className="text-xs text-muted-foreground">{journal.date}</span>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {journal.day} - Please complete as soon as possible
-                        </p>
-                      </div>
-                    ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {selectedHomework && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-background rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] flex flex-col">
-            <div className="p-6 border-b border-border flex items-center justify-between">
-              <h2 className="text-2xl font-bold">Complete Homework</h2>
-              <Button variant="ghost" size="icon" onClick={() => setSelectedHomework(null)}>
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-            <div className="overflow-y-auto flex-1 p-6 space-y-4">
-              {homework.find((h) => h.id === selectedHomework) && (
-                <>
-                  <div>
-                    <h3 className="text-lg font-semibold mb-2">
-                      {homework.find((h) => h.id === selectedHomework)?.title}
-                    </h3>
-                    <p className="text-muted-foreground mb-4">
-                      {homework.find((h) => h.id === selectedHomework)?.description}
-                    </p>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-2">
-                        What is your most immediate treatment goal?
-                      </label>
-                      <Input placeholder="Enter your goal..." className="mb-4" />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium mb-2">
-                        Some steps I will take to reach this goal are:
-                      </label>
-                      <Textarea
-                        placeholder="List your action steps..."
-                        className="min-h-[150px]"
-                        value={homeworkResponse}
-                        onChange={(e) => setHomeworkResponse(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-            <div className="p-6 border-t border-border flex justify-end gap-3">
-              <Button variant="outline" onClick={() => setSelectedHomework(null)}>
-                Cancel
-              </Button>
-              <Button
-                className="bg-green-600 hover:bg-green-700"
-                onClick={() => {
-                  setHomework(homework.map((h) => (h.id === selectedHomework ? { ...h, status: "submitted" } : h)))
-                  setSelectedHomework(null)
-                  setHomeworkResponse("")
-                }}
-              >
-                Submit Homework
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {selectedJournal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-background rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] flex flex-col">
-            <div className="p-6 border-b border-border flex items-center justify-between">
-              <h2 className="text-2xl font-bold">Daily Journal Entry</h2>
-              <Button variant="ghost" size="icon" onClick={() => setSelectedJournal(null)}>
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-            <div className="overflow-y-auto flex-1 p-6 space-y-4">
-              {dailyJournals.find((j) => j.id === selectedJournal) && (
-                <>
-                  <div>
-                    <h3 className="text-lg font-semibold mb-2">
-                      {dailyJournals.find((j) => j.id === selectedJournal)?.day} -{" "}
-                      {dailyJournals.find((j) => j.id === selectedJournal)?.date}
-                    </h3>
-                    {dailyJournals.find((j) => j.id === selectedJournal)?.late && (
-                      <p className="text-red-600 text-sm mb-4">
-                        This entry is overdue. Please complete it as soon as possible.
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-2">How are you feeling today?</label>
-                      <Textarea placeholder="Reflect on your day..." className="min-h-[100px]" />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium mb-2">What challenges did you face?</label>
-                      <Textarea placeholder="Describe any difficulties..." className="min-h-[100px]" />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium mb-2">What progress did you make?</label>
-                      <Textarea
-                        placeholder="Note your achievements..."
-                        className="min-h-[100px]"
-                        value={journalEntry}
-                        onChange={(e) => setJournalEntry(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-            <div className="p-6 border-t border-border flex justify-end gap-3">
-              <Button variant="outline" onClick={() => setSelectedJournal(null)}>
-                Cancel
-              </Button>
-              <Button
-                className="bg-green-600 hover:bg-green-700"
-                onClick={() => {
-                  setDailyJournals(dailyJournals.map((j) => (j.id === selectedJournal ? { ...j, completed: true } : j)))
-                  setSelectedJournal(null)
-                  setJournalEntry("")
-                }}
-              >
-                Submit Journal
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Session Viewer Modal */}
-      {showSessionViewer && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg w-full max-w-4xl h-[95vh] flex flex-col">
-            <div className="p-6 border-b flex items-center justify-between flex-shrink-0">
-              <h2 className="text-2xl font-bold">Prime Solutions - Session 1</h2>
-              <Button variant="ghost" size="icon" onClick={() => setShowSessionViewer(false)}>
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-6">
-              <div className="space-y-6 pb-6">
-                {currentSessionContent === 0 && (
-                  <div className="space-y-6">
-                    <h3 className="text-2xl font-bold text-center">Welcome to PRIME Solutions</h3>
-                    <div className="prose max-w-none space-y-4">
-                      <p>
-                        PRIME Solutions is your program. It is designed to help you reach your goals. How much you use
-                        the program is up to you. This workbook belongs to you. It is a tool to help you succeed. It is
-                        both a workbook and a reference book.
-                      </p>
-                      <p>
-                        Since people come into treatment at different times and with different needs, we will not always
-                        go through the workbook in order. Write in it! Take notes! Do the activities. You will get more
-                        out of the experience that way.
-                      </p>
-                      <p>
-                        This workbook is copyrighted. You can use the materials in it, but you may not copy it for
-                        others to use. Your counselor should have given you a brand new workbook. In that way your
-                        counselor is respecting copyright laws and helping the nonprofit organization that developed
-                        these materials continue to do its work.
-                      </p>
-
-                      <div className="bg-green-50 p-6 rounded-lg border-2 border-green-200 my-8">
-                        <h4 className="font-bold text-lg mb-4">A PRIME THOUGHT ABOUT STARTING TREATMENT</h4>
-                        <p className="mb-4">
-                          Think of your treatment experience as a voyage. Every voyage begins from a port.
-                        </p>
-                        <div className="space-y-2">
-                          <label className="block font-semibold">
-                            In one sentence, describe the place that you are sailing from:
-                          </label>
-                          <textarea
-                            className="w-full p-3 border rounded-lg min-h-[80px]"
-                            placeholder="I am sailing from..."
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {currentSessionContent === 1 && (
-                  <div className="space-y-6">
-                    <h3 className="text-2xl font-bold">A Quick Review of the Phases</h3>
-                    <div className="space-y-6">
-                      <div className="border-l-4 border-green-600 pl-4">
-                        <h4 className="font-bold text-lg mb-2">Phase 1: Low-Risk Choices</h4>
-                        <p>
-                          People in this phase do not use illegal drugs, use prescription drugs as prescribed, and
-                          follow the 0-1-2-3 low-risk guidelines for alcohol. For some people this is the 0. For others
-                          it is 1-2-3.
-                        </p>
-                      </div>
-
-                      <div className="border-l-4 border-yellow-600 pl-4">
-                        <h4 className="font-bold text-lg mb-2">Phase 2: High-Risk Choices</h4>
-                        <p>
-                          People in this phase may be using drugs from time to time or may be drinking more than the
-                          1-2-3 guidelines. Alcohol and drugs are pleasant from time to time, but not central to their
-                          lives. Their choices put them at risk for problems. Social Dependence may begin.
-                        </p>
-                      </div>
-
-                      <div className="border-l-4 border-orange-600 pl-4">
-                        <h4 className="font-bold text-lg mb-2">
-                          Phase 3: High-Risk Choices plus Psychological Dependence
-                        </h4>
-                        <p>
-                          High-risk alcohol or drug choices are a major part of having fun. High-risk choices are
-                          integrated into many parts of life. A person in Phase 3 may find in treatment that they have a
-                          diagnosis of either Abuse or (early) Dependence. It may take significant effort to make
-                          changes. People in Phase 3 may be able to drink in the low-risk range. Some do so, but others
-                          decide it is just not worth the effort it takes.
-                        </p>
-                      </div>
-
-                      <div className="border-l-4 border-red-600 pl-4">
-                        <h4 className="font-bold text-lg mb-2">Phase 4: Addiction</h4>
-                        <p>
-                          In this phase people experience loss of control over their use once they begin. Some also
-                          experience withdrawal when they stop using. This is advanced Dependence. In Phase 4, the only
-                          low-risk choice is to stop all use of drugs or alcohol.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {currentSessionContent === 2 && (
-                  <div className="space-y-6">
-                    <h3 className="text-2xl font-bold">Which Treatment Path Are You On?</h3>
-                    <div className="prose max-w-none space-y-4">
-                      <blockquote className="border-l-4 border-green-600 pl-4 italic">
-                        <p>"Which way should I go?" said Alice.</p>
-                        <p>"That depends on where you want to end up," said the cat.</p>
-                        <p className="text-sm">- Alice in Wonderland by Lewis Carol</p>
-                      </blockquote>
-
-                      <p>
-                        In the story of Alice in Wonderland, Alice came to a fork in the path and did not know which way
-                        to go. When she asked the Cheshire Cat for advice, the answer was simple but true. The Cat
-                        replied, "That depends on where you want to end up." It is not always clear where a path will
-                        take us. Yet every path goes somewhere, and when we choose a path, we are also choosing a
-                        destination.
-                      </p>
-
-                      <p>
-                        Treatment presents us with a fork in the path. It is a good time to think about what we want in
-                        life. During treatment, we will have an opportunity to think about things like relationships,
-                        jobs, legal issues, money, self-respect, and many more. For now, let's think in broad terms.
-                      </p>
-
-                      <p>
-                        What do you plan to do about using alcohol and drugs during treatment? What are your hopes for
-                        after treatment? Do you intend to not use at all? Do you intend to keep using? Some of us know
-                        the answers to those questions right now. Others do not. Let's think of two different Treatment
-                        Paths to guide us.
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {currentSessionContent === 3 && (
-                  <div className="space-y-6">
-                    <h3 className="text-2xl font-bold">My First Action Plan</h3>
-                    <div className="prose max-w-none space-y-4">
-                      <p>
-                        The Treatment Plan you developed with your counselor is a "big picture" plan of what you want to
-                        accomplish in treatment. It will guide your counselor in helping you reach your treatment goals.
-                      </p>
-                      <p>
-                        An Action Plan is much simpler. It covers one goal and the things you are willing to do to help
-                        reach that goal. Action Plans allow you to take your Treatment Plan and break it into
-                        "bite-sized pieces."
-                      </p>
-                      <p>
-                        Your first Action Plan is very basic. You have completed your treatment planning session, but
-                        nothing can happen if you do not come back. What do you need to take care of to make sure you
-                        come to your next treatment session? You might need to take care of something as basic as
-                        transportation, or something more complex like staying motivated. If you have trouble with this,
-                        ask your counselor to share some Action Plans, or discuss your current situation with you.
-                      </p>
-                    </div>
-                    <div className="bg-blue-50 p-6 rounded-lg border border-blue-200 mt-6">
-                      <h4 className="font-bold mb-4">Complete Your Action Plan:</h4>
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block font-semibold mb-2">
-                            Is your most immediate treatment goal coming to the next treatment session? If so, write
-                            that in here. If not, write in your current goal.
-                          </label>
-                          <textarea
-                            className="w-full p-3 border rounded-lg min-h-[80px]"
-                            placeholder="My immediate goal is..."
-                          />
-                        </div>
-                        <div>
-                          <label className="block font-semibold mb-2">
-                            Some steps I will take to reach this goal are:
-                          </label>
-                          <textarea
-                            className="w-full p-3 border rounded-lg min-h-[120px]"
-                            placeholder="Steps I will take..."
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
+      {/* Message Detail Modal */}
+      <Dialog open={showMessageModal} onOpenChange={setShowMessageModal}>
+        <DialogContent className="card-transparent">
+          <DialogHeader>
+            <DialogTitle>{selectedMessage?.subject}</DialogTitle>
+          </DialogHeader>
+          {selectedMessage && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between text-sm text-gray-600">
+                <span>From: {selectedMessage.fromName}</span>
+                <span>{new Date(selectedMessage.sentAt).toLocaleString()}</span>
               </div>
-            </div>
-
-            {sessionCompleted && !inLiveSession && (
-              <div className="p-4 border-t bg-white flex-shrink-0">
+              <div className="p-4 bg-gray-50/80 rounded-lg">
+                <p className="text-sm whitespace-pre-wrap">{selectedMessage.content}</p>
+              </div>
+              <div className="flex gap-2">
                 <Button
-                  variant="outline"
-                  onClick={() => setCurrentSessionContent(Math.max(0, currentSessionContent - 1))}
-                  disabled={currentSessionContent === 0}
+                  className="flex-1 bg-green-600 hover:bg-green-700"
+                  onClick={() => {
+                    setShowMessageModal(false)
+                    setReplyTo(selectedMessage)
+                    setShowComposeModal(true)
+                  }}
                 >
-                  <ChevronLeft className="h-4 w-4 mr-2" />
-                  Previous Section
-                </Button>
-                <div className="flex gap-2">
-                  {[0, 1, 2, 3].map((i) => (
-                    <button
-                      key={i}
-                      onClick={() => setCurrentSessionContent(i)}
-                      className={`w-3 h-3 rounded-full transition-colors ${
-                        currentSessionContent === i ? "bg-green-600" : "bg-gray-300"
-                      }`}
-                    />
-                  ))}
-                </div>
-                <Button
-                  className="bg-green-600 hover:bg-green-700"
-                  onClick={() => setCurrentSessionContent(Math.min(3, currentSessionContent + 1))}
-                  disabled={currentSessionContent === 3}
-                >
-                  Next Section
-                  <ChevronRight className="h-4 w-4 ml-2" />
+                  <Send className="h-4 w-4 mr-2" />
+                  Reply
                 </Button>
               </div>
-            )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
-            {inLiveSession && (
-              <div className="p-4 border-t bg-white flex-shrink-0 text-center">
-                <p className="text-gray-600">Your facilitator will guide you through each section</p>
+      {/* Compose Message Modal */}
+      <Dialog open={showComposeModal} onOpenChange={setShowComposeModal}>
+        <DialogContent className="card-transparent">
+          <DialogHeader>
+            <DialogTitle>{replyTo ? `Reply to: ${replyTo.subject}` : "New Message"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {!replyTo && (
+              <div>
+                <label className="text-sm font-medium">To:</label>
+                <select
+                  className="w-full mt-1 p-2 border rounded-lg bg-white/80"
+                  value={composeTo}
+                  onChange={(e) => setComposeTo(e.target.value)}
+                >
+                  <option value="">Select recipient...</option>
+                  <option value="facilitator">My Facilitator</option>
+                  <option value="admin">Admin</option>
+                </select>
               </div>
             )}
+            <div>
+              <label className="text-sm font-medium">Subject:</label>
+              <Input
+                value={composeSubject}
+                onChange={(e) => setComposeSubject(e.target.value)}
+                placeholder="Enter subject..."
+                className="mt-1 bg-white/80"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Message:</label>
+              <Textarea
+                value={composeBody}
+                onChange={(e) => setComposeBody(e.target.value)}
+                placeholder="Type your message..."
+                rows={5}
+                className="mt-1 bg-white/80"
+              />
+            </div>
+            <Button
+              className="w-full bg-green-600 hover:bg-green-700"
+              onClick={() => {
+                if ((composeTo || replyTo) && composeSubject && composeBody) {
+                  addMessage({
+                    fromId: currentUser?.id || "p1",
+                    fromName: currentUser?.name || "Participant",
+                    toId: replyTo?.fromId || composeTo,
+                    toName: replyTo?.fromName || (composeTo === "facilitator" ? "Facilitator" : "Admin"),
+                    subject: composeSubject,
+                    content: composeBody,
+                    read: false,
+                  })
+                  setShowComposeModal(false)
+                  setReplyTo(null)
+                  setComposeTo("")
+                  setComposeSubject("")
+                  setComposeBody("")
+                }
+              }}
+            >
+              <Send className="h-4 w-4 mr-2" />
+              Send Message
+            </Button>
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Class Detail Modal */}
+      <Dialog open={!!selectedClass} onOpenChange={() => setSelectedClass(null)}>
+        <DialogContent className="card-transparent">
+          <DialogHeader>
+            <DialogTitle>{selectedClass?.program}</DialogTitle>
+          </DialogHeader>
+          {selectedClass && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-gray-500">Day:</span>
+                  <p className="font-medium">{selectedClass.day}</p>
+                </div>
+                <div>
+                  <span className="text-gray-500">Time:</span>
+                  <p className="font-medium">{selectedClass.time}</p>
+                </div>
+                <div>
+                  <span className="text-gray-500">Facilitator:</span>
+                  <p className="font-medium">{selectedClass.facilitator}</p>
+                </div>
+                <div>
+                  <span className="text-gray-500">Location:</span>
+                  <p className="font-medium">{selectedClass.room}</p>
+                </div>
+                <div>
+                  <span className="text-gray-500">Session:</span>
+                  <p className="font-medium">{selectedClass.session}</p>
+                </div>
+              </div>
+              <Button
+                className="w-full bg-green-600 hover:bg-green-700"
+                onClick={() => {
+                  setSelectedClass(null)
+                  router.push(`/participant/programs/${selectedClass.programSlug}`)
+                }}
+              >
+                Go to Program
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

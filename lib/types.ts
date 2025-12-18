@@ -1,0 +1,143 @@
+// Core types for the Accountability Court Platform
+
+export type UserRole = "admin" | "facilitator" | "participant"
+
+export interface User {
+  id: string
+  role: UserRole
+  name: string
+  email: string
+}
+
+export interface Program {
+  id: string
+  slug: string
+  name: string
+  description: string
+  totalSessions: number
+  isLocked: boolean
+  sessions: Session[]
+}
+
+export interface Session {
+  id: string
+  programId: string
+  sessionNumber: number
+  title: string
+  purpose: string
+  objectives: string[]
+  facilitatorPrompts: FacilitatorPrompt[]
+  activityTemplates: ActivityTemplate[]
+  homeworkTemplate: HomeworkTemplate | null
+  journalTemplateId: string | null
+  caseworxNoteTemplate: string
+}
+
+export interface FacilitatorPrompt {
+  id: string
+  section: "overview" | "opening" | "review" | "teach" | "activity" | "wrapup"
+  content: string
+  suggestedPacing?: string
+}
+
+export interface ActivityTemplate {
+  id: string
+  type: "prompt" | "worksheet" | "poll"
+  title: string
+  instructions: string
+  questions: ActivityQuestion[]
+}
+
+export interface ActivityQuestion {
+  id: string
+  text: string
+  type: "text" | "multiple_choice" | "scale"
+  options?: string[]
+}
+
+export interface HomeworkTemplate {
+  id: string
+  title: string
+  steps: string[]
+  dueDescription: string
+}
+
+export interface Enrollment {
+  id: string
+  participantId: string
+  programId: string
+  currentSessionNumber: number
+  status: "active" | "completed" | "paused"
+  startedAt: string
+}
+
+export interface Attendance {
+  id: string
+  participantId: string
+  sessionId: string
+  attended: boolean
+  completedAt: string | null
+}
+
+export interface ActivityRun {
+  id: string
+  sessionId: string
+  activityTemplateId: string
+  status: "draft" | "live" | "closed"
+  startedAt: string | null
+  closedAt: string | null
+}
+
+export interface ParticipantResponse {
+  id: string
+  activityRunId: string
+  participantId: string
+  answers: Record<string, string>
+  submittedAt: string
+}
+
+export interface JournalEntry {
+  id: string
+  participantId: string
+  programId: string
+  sessionNumber: number
+  content: string
+  submittedAt: string
+}
+
+export interface HomeworkSubmission {
+  id: string
+  participantId: string
+  sessionId: string
+  content: string
+  status: "pending" | "approved" | "revision_requested"
+  submittedAt: string
+  reviewedAt: string | null
+  feedback: string | null
+}
+
+export interface FacilitatorNote {
+  id: string
+  facilitatorId: string
+  sessionId: string
+  content: string
+  createdAt: string
+}
+
+export interface QuickNote {
+  id: string
+  facilitatorId: string
+  sessionId: string
+  content: string
+  createdAt: string
+}
+
+export interface Message {
+  id: string
+  participantId: string
+  title: string
+  content: string
+  fromName: string
+  readAt: string | null
+  createdAt: string
+}

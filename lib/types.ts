@@ -183,3 +183,34 @@ export interface MakeupGroup {
   qrCode: string
   participants: string[] // participant IDs
 }
+
+export interface ClassQRCode {
+  id: string
+  facilitatorId: string
+  programId: string
+  programName: string
+  sessionNumber: number
+  day: string
+  time: string
+  room: string
+  isVirtual: boolean
+  virtualLink?: string
+  gpsLatitude: number | null
+  gpsLongitude: number | null
+  gpsRadius: number // meters - how close participant must be
+  generatedAt: string
+  expiresAt: string // QR codes expire after class time
+  code: string // unique code embedded in QR
+}
+
+export interface CheckIn {
+  id: string
+  participantId: string
+  qrCodeId: string
+  sessionId: string
+  checkedInAt: string
+  gpsLatitude: number | null
+  gpsLongitude: number | null
+  wasVirtual: boolean
+  verified: boolean
+}

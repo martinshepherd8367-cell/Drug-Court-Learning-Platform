@@ -16,6 +16,8 @@ import type {
   Message,
   MakeupAssignment,
   MakeupGroup,
+  ClassQRCode,
+  CheckIn,
 } from "./types"
 import {
   mockUsers,
@@ -96,6 +98,8 @@ interface StoreState {
   facilitatorNotes: FacilitatorNote[]
   quickNotes: QuickNote[]
   messages: Message[]
+  classQRCodes: ClassQRCode[]
+  checkIns: CheckIn[]
 
   // Current user (for demo)
   currentUser: User | null
@@ -157,6 +161,19 @@ interface StoreState {
   getMakeupAssignmentsForFacilitator: (facilitatorId: string) => MakeupAssignment[]
   getMakeupAssignmentsForParticipant: (participantId: string) => MakeupAssignment[]
   getPendingMakeupAssignments: () => MakeupAssignment[]
+
+  // QR Code and Check-in functions
+  generateClassQRCode: (qrCode: Omit<ClassQRCode, "id" | "code" | "generatedAt">) => ClassQRCode
+  getQRCodeForClass: (programId: string, sessionNumber: number, day: string, time: string) => ClassQRCode | undefined
+  validateCheckIn: (
+    participantId: string,
+    qrCode: string,
+    gpsLat: number | null,
+    gpsLng: number | null,
+  ) => { success: boolean; error?: string; isVirtual?: boolean }
+  recordCheckIn: (checkIn: Omit<CheckIn, "id">) => void
+  getCheckInsForSession: (sessionId: string) => CheckIn[]
+  markAbsentAfterClass: (sessionId: string, programId: string, programName: string, sessionNumber: number) => void
 }
 
 const StoreContext = createContext<StoreState | null>(null)
@@ -178,6 +195,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   // Added makeup group state
   const [makeupGroup, setMakeupGroup] = useState<MakeupGroup>(initialMakeupGroup)
   const [makeupAssignments, setMakeupAssignments] = useState<MakeupAssignment[]>(initialMakeupAssignments)
+
+  const [classQRCodes, setClassQRCodes] = useState<ClassQRCode[]>([])
+  const [checkIns, setCheckIns] = useState<CheckIn[]>([])
 
   const launchActivity = useCallback((sessionId: string, activityTemplateId: string): ActivityRun => {
     const newRun: ActivityRun = {
@@ -505,6 +525,134 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setPrograms((prev) => prev.filter((p) => p.id !== id))
   }, [])
 
+  const generateClassQRCode = useCallback(
+    (qrCodeData: Omit<ClassQRCode, "id" | "code" | "generatedAt">): ClassQRCode => {
+      const code = `CLASS-${qrCodeData.programId}-${qrCodeData.sessionNumber}-${Date.now()}`
+      const newQRCode: ClassQRCode = {
+        ...qrCodeData,
+        id: `qr-${Date.now()}`,
+        code,
+        generatedAt: new Date().toISOString(),
+      }
+      setClassQRCodes((prev) => [...prev, newQRCode])
+      return newQRCode
+    },
+    [],
+  )
+
+  const getQRCodeForClass = useCallback(
+    (programId: string, sessionNumber: number, day: string, time: string) => {
+      return classQRCodes.find(
+        (qr) =>
+          qr.programId === programId &&
+          qr.sessionNumber === sessionNumber &&
+          qr.day === day &&
+          qr.time === time &&
+          new Date(qr.expiresAt) > new Date(),
+      )
+    },
+    [classQRCodes],
+  )
+
+  const validateCheckIn = useCallback(
+    (
+      participantId: string,
+      qrCode: string,
+      gpsLat: number | null,
+      gpsLng: number | null,
+    ): { success: boolean; error?: string; isVirtual?: boolean } => {
+      const qrCodeRecord = classQRCodes.find((qr) => qr.code === qrCode)
+
+      if (!qrCodeRecord) {
+        return { success: false, error: "Invalid QR code. Please scan the correct code for this class." }
+      }
+
+      if (new Date(qrCodeRecord.expiresAt) < new Date()) {
+        return { success: false, error: "This QR code has expired. Please ask your facilitator for a new code." }
+      }
+
+      // Virtual class - no GPS check needed
+      if (qrCodeRecord.isVirtual) {
+        return { success: true, isVirtual: true }
+      }
+
+      // In-person class - GPS validation required
+      if (!gpsLat || !gpsLng) {
+        return { success: false, error: "Location access is required. Please enable GPS and try again." }
+      }
+
+      if (!qrCodeRecord.gpsLatitude || !qrCodeRecord.gpsLongitude) {
+        return { success: false, error: "This class location has not been set. Please contact your facilitator." }
+      }
+
+      // Calculate distance using Haversine formula
+      const R = 6371e3 // Earth's radius in meters
+      const φ1 = (gpsLat * Math.PI) / 180
+      const φ2 = (qrCodeRecord.gpsLatitude * Math.PI) / 180
+      const Δφ = ((qrCodeRecord.gpsLatitude - gpsLat) * Math.PI) / 180
+      const Δλ = ((qrCodeRecord.gpsLongitude - gpsLng) * Math.PI) / 180
+
+      const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2)
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+      const distance = R * c // Distance in meters
+
+      if (distance > qrCodeRecord.gpsRadius) {
+        return {
+          success: false,
+          error: `You are too far from the classroom (${Math.round(distance)}m away). Please move closer and try again.`,
+        }
+      }
+
+      return { success: true, isVirtual: false }
+    },
+    [classQRCodes],
+  )
+
+  const recordCheckIn = useCallback((checkIn: Omit<CheckIn, "id">) => {
+    const newCheckIn: CheckIn = {
+      ...checkIn,
+      id: `checkin-${Date.now()}`,
+    }
+    setCheckIns((prev) => [...prev, newCheckIn])
+  }, [])
+
+  const getCheckInsForSession = useCallback(
+    (sessionId: string) => {
+      return checkIns.filter((c) => c.sessionId === sessionId)
+    },
+    [checkIns],
+  )
+
+  const markAbsentAfterClass = useCallback(
+    (sessionId: string, programId: string, programName: string, sessionNumber: number) => {
+      // Get all enrolled participants for this program
+      const programEnrollments = enrollments.filter((e) => e.programId === programId && e.status === "active")
+
+      // Get check-ins for this session
+      const sessionCheckIns = checkIns.filter((c) => c.sessionId === sessionId)
+      const checkedInParticipantIds = new Set(sessionCheckIns.map((c) => c.participantId))
+
+      // Find participants who didn't check in
+      programEnrollments.forEach((enrollment) => {
+        if (!checkedInParticipantIds.has(enrollment.participantId)) {
+          const participant = users.find((u) => u.id === enrollment.participantId)
+          if (participant) {
+            // This will create makeup assignment and send messages
+            markParticipantAbsent(
+              enrollment.participantId,
+              participant.name,
+              sessionId,
+              programId,
+              programName,
+              sessionNumber,
+            )
+          }
+        }
+      })
+    },
+    [enrollments, checkIns, users, markParticipantAbsent],
+  )
+
   return (
     <StoreContext.Provider
       value={{
@@ -519,6 +667,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         facilitatorNotes,
         quickNotes,
         messages,
+        classQRCodes,
+        checkIns,
         currentUser,
         setCurrentUser,
         launchActivity,
@@ -559,6 +709,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         addProgram,
         updateProgram,
         deleteProgram,
+        generateClassQRCode,
+        getQRCodeForClass,
+        validateCheckIn,
+        recordCheckIn,
+        getCheckInsForSession,
+        markAbsentAfterClass,
       }}
     >
       {children}

@@ -1,49 +1,599 @@
-# Drug-Court-Learning-Platform
-This app is to assist accountability court class facilitators and participants
-Drug Court Learning Platform
+# Drug Court Learning Platform
 
-This project is a role-based web application designed to support accountability court participants and facilitators during structured psychoeducational programs. The platform focuses on reducing cognitive load for participants while giving facilitators clear instructional tools and session control.
+A role-based web application designed to support accountability court participants and facilitators during structured psychoeducational programs. Built with Next.js 14, TypeScript, and Tailwind CSS.
 
-Core Concept
+## Table of Contents
 
-The system is built around one class and one set of sessions, rendered differently depending on user role.
+1. [Core Architecture](#core-architecture)
+2. [User Roles](#user-roles)
+3. [File Structure](#file-structure)
+4. [Data Models](#data-models)
+5. [Feature Documentation](#feature-documentation)
+6. [Adding New Curricula](#adding-new-curricula)
+7. [AI Assistant Integration](#ai-assistant-integration)
+8. [Makeup Group System](#makeup-group-system)
+9. [Development Mode](#development-mode)
+10. [Integration Points (TODO)](#integration-points-todo)
 
-Facilitators access full instructional content, session flow guidance, prompts, and administrative controls.
+---
 
-Participants see a simplified, task-focused version of the same session, including brief objectives and limited reflection or response inputs.
+## Core Architecture
 
-There are not separate classes or curricula for each role. The difference is strictly in visibility and presentation, not structure.
+### Design Principles
+- **One source of truth** for class and session data
+- **Role-based rendering** (Admin, Facilitator, Participant)
+- **Minimal cognitive load** for participants
+- **Facilitator-first content design**
+- **Three-zone facilitation console** for session delivery
 
-Intended Use
+### Technology Stack
+- Next.js 14 (App Router)
+- TypeScript
+- Tailwind CSS
+- React Context for state management
+- shadcn/ui components
 
-The platform is designed for accountability court populations who often experience educational gaps, impaired attention, and difficulty retaining information. Sessions are intentionally structured to emphasize clarity, repetition, and single-task engagement.
+---
 
-Design Principles
+## User Roles
 
-One source of truth for class and session data
+### Admin (`/admin`)
+- Full system oversight and configuration
+- User management (create/edit/delete facilitators and participants)
+- Program management (add/edit curricula)
+- Enrollment management (assign participants to programs)
+- Schedule management (weekly grid calendar)
+- Makeup group configuration
+- Reports and CaseWorx integration
+- AI Assistant for schedule optimization
 
-Role-based rendering (facilitator vs. participant)
+### Facilitator (`/facilitator`)
+- Program and session delivery
+- Three-zone session console (header controls, navigation spine, content workspace)
+- Participant management (view by class)
+- Homework review and feedback
+- Daily journal review
+- Makeup work assignment
+- Messaging to participants
+- CaseWorx note copying
+- AI Assistant for session guidance
 
-Minimal cognitive load for participants
+### Participant (`/participant`)
+- Simplified, task-focused interface
+- Weekly schedule grid with enrolled classes
+- Messages from facilitators/admin
+- Homework submissions
+- Daily journal entries
+- Achievement badges (animated)
+- Makeup group sessions
+- AI Assistant for term definitions (restricted from homework answers)
 
-Facilitator-first content design
+---
 
-Progressive enhancement rather than over-engineering
+## File Structure
 
-Technology Overview
+```
+├── app/
+│   ├── page.tsx                    # Landing page with role selection and sign-in
+│   ├── layout.tsx                  # Root layout with StoreProvider
+│   ├── globals.css                 # Global styles, animations, transparency settings
+│   │
+│   ├── admin/
+│   │   ├── page.tsx                # Admin dashboard
+│   │   ├── programs/
+│   │   │   ├── page.tsx            # Program management (create/import curricula)
+│   │   │   └── [programId]/
+│   │   │       └── sessions/
+│   │   │           └── page.tsx    # Session management for a program
+│   │   ├── users/
+│   │   │   └── page.tsx            # User management
+│   │   ├── enrollments/
+│   │   │   └── page.tsx            # Enrollment management with participant details
+│   │   ├── schedule/
+│   │   │   └── page.tsx            # Weekly schedule grid (Mon-Fri + Saturday specials)
+│   │   └── reports/
+│   │       └── page.tsx            # Reports and CaseWorx export
+│   │
+│   ├── facilitator/
+│   │   ├── page.tsx                # Facilitator dashboard
+│   │   └── programs/
+│   │       └── [programSlug]/
+│   │           ├── page.tsx        # Program overview
+│   │           └── sessions/
+│   │               └── [sessionNumber]/
+│   │                   └── page.tsx # Three-zone session console
+│   │
+│   └── participant/
+│       ├── page.tsx                # Participant dashboard
+│       ├── journal/
+│       │   └── page.tsx            # Journal archive
+│       ├── makeup/
+│       │   └── page.tsx            # Makeup group session interface
+│       └── programs/
+│           └── [programSlug]/
+│               ├── page.tsx        # Program overview
+│               └── sessions/
+│                   └── [sessionNumber]/
+│                       └── page.tsx # Participant session view
+│
+├── components/
+│   ├── ai-assistant.tsx            # AI Assistant component (role-aware)
+│   ├── role-nav.tsx                # Role-based navigation component
+│   └── ui/                         # shadcn/ui components
+│
+├── lib/
+│   ├── types.ts                    # TypeScript type definitions
+│   ├── store.tsx                   # React Context store with all state management
+│   └── mock-data.ts                # Mock data for development
+│
+└── public/
+    └── images/
+        └── image.png               # Background image (mountain scene)
+```
 
-This project uses a modern web stack with:
+---
 
-A single repository as the source of truth
+## Data Models
 
-Continuous deployment for rapid iteration
+### Core Types (lib/types.ts)
 
-Role-aware routing and rendering
+```typescript
+// User with demographics
+interface User {
+  id: string
+  email: string
+  name: string
+  role: 'admin' | 'facilitator' | 'participant'
+  demographics?: {
+    phone, dateOfBirth, address, city, state, zip,
+    emergencyContact, emergencyPhone, caseNumber, probationOfficer
+  }
+}
 
-A sandboxed UI workflow for fast experimentation
+// Program (curriculum)
+interface Program {
+  id: string
+  slug: string
+  title: string
+  description: string
+  totalSessions: number
+  sessions: Session[]
+  locked: boolean
+}
 
-Specific tools and services may evolve, but the architectural principles are intended to remain stable.
+// Session within a program
+interface Session {
+  id: string
+  programId: string
+  sessionNumber: number
+  title: string
+  objectives: string[]
+  sections: CurriculumSection[]
+  facilitatorPrompt?: string
+  participantPrompt?: string
+  homeworkTemplate?: HomeworkTemplate
+  caseworxNoteTemplate?: string
+}
 
-Project Status
+// Curriculum section (facilitator vs participant content)
+interface CurriculumSection {
+  id: string
+  title: string
+  type: 'intro' | 'content' | 'activity' | 'discussion' | 'homework' | 'wrapup'
+  facilitatorContent: ContentBlock[]
+  participantContent: ContentBlock[]
+  duration?: number
+}
 
-This project is under active development. Core focus areas include session flow, role separation, and usability testing with real-world accountability court scenarios.
+// Content block
+interface ContentBlock {
+  type: 'text' | 'prompt' | 'script' | 'list' | 'worksheet' | 'video' | 'reading'
+  content: string
+  items?: string[]
+}
+
+// Enrollment
+interface Enrollment {
+  id: string
+  odipantId: string
+  programId: string
+  currentSession: number
+  status: 'active' | 'paused' | 'completed'
+  startDate: string
+  schedule: { day, time, room, facilitatorId }
+}
+
+// Makeup Assignment
+interface MakeupAssignment {
+  id: string
+  participantId: string
+  missedSessionId: string
+  programId: string
+  assignedDate: string
+  makeupGroupId: string
+  status: 'pending' | 'assigned' | 'completed'
+  assignedWork?: {
+    worksheets: string[]
+    readings: string[]
+    instructions: string
+  }
+}
+
+// Message
+interface Message {
+  id: string
+  participantId: string
+  title: string
+  content: string
+  fromName: string
+  readAt: string | null
+  createdAt: string
+  isUrgent?: boolean
+}
+```
+
+---
+
+## Feature Documentation
+
+### Sign-In Page (`/`)
+- Three role cards: Admin, Facilitator, Participant
+- Admin/Facilitator: Email + password authentication
+- Participant: QR code scan + email verification
+- **DEV_MODE bypass**: Set `DEV_MODE = true` at top of file for development
+
+### Admin Dashboard
+- Stats cards (total participants, active programs, sessions this week, completion rate)
+- Registration QR code display
+- Quick links to all admin sections
+- AI Assistant button (purple gradient)
+
+### Admin Schedule (`/admin/schedule`)
+- Weekly grid: Monday-Friday
+- Time slots: Morning (9:00 AM, 10:30 AM), Afternoon (12:00 PM, 1:00 PM, 4:00 PM, 5:30 PM, 7:00 PM)
+- Color-coded progress: Green (0-25%), Blue (25-50%), Yellow (50-75%), Red (75-100%)
+- Click class to see details, participants, demographics
+- Saturday Special Groups section at bottom
+- Makeup Group with editable date/time
+- Participant status: Red (needs work assigned), Green (work assigned)
+
+### Facilitator Dashboard
+- Weekly schedule grid (scaled 65%)
+- View Participants button (grouped by class)
+- Copy to CaseWorx button (pending exports)
+- Messages section with reply
+- Homework Review with common feedback dropdown
+- Daily Journals section
+- Makeup Work Needed section
+- Notifications with badge clearing
+- Settings with QR code display
+
+### Participant Dashboard
+- Weekly schedule grid (mobile-responsive, horizontal scroll)
+- Messages card (unread indicator, compose new)
+- Homework card (pending assignments)
+- Journal card (quick entry, archive link)
+- My Programs card (progress bars)
+- Achievements section (last 3 shown, click to see all)
+- Makeup Group notice (red urgent card when assigned)
+
+### Three-Zone Facilitation Console
+- **Zone A (Header)**: Session title, timer, progress bar, participant count, controls
+- **Zone B (Navigation Spine)**: Collapsible sections with checkboxes, completion tracking
+- **Zone C (Content Workspace)**: Active section content, facilitator scripts, activities
+
+---
+
+## Adding New Curricula
+
+### Method 1: Admin UI Import
+1. Navigate to `/admin/programs`
+2. Click "Create Program"
+3. Select "Import from Code" tab
+4. Paste JSON or TypeScript curriculum code
+5. Click "Parse & Preview"
+6. Verify structure, click "Import Program"
+
+### Method 2: Direct Code Addition
+1. Create new file in `lib/` (e.g., `anger-management-program.ts`)
+2. Follow the Program/Session/CurriculumSection structure
+3. Export the program object
+4. Import in `lib/mock-data.ts` and add to `mockPrograms` array
+
+### Curriculum JSON Structure
+
+```json
+{
+  "id": "program-id",
+  "slug": "program-slug",
+  "title": "Program Title",
+  "description": "Description",
+  "totalSessions": 16,
+  "locked": false,
+  "sessions": [
+    {
+      "id": "session-1",
+      "programId": "program-id",
+      "sessionNumber": 1,
+      "title": "Session Title",
+      "objectives": ["Objective 1", "Objective 2"],
+      "sections": [
+        {
+          "id": "section-1",
+          "title": "Introduction",
+          "type": "intro",
+          "duration": 10,
+          "facilitatorContent": [
+            { "type": "script", "content": "Facilitator speaking notes..." },
+            { "type": "list", "content": "Key Points:", "items": ["Point 1", "Point 2"] }
+          ],
+          "participantContent": [
+            { "type": "text", "content": "What participants see..." }
+          ]
+        }
+      ],
+      "homeworkTemplate": {
+        "title": "Homework Title",
+        "instructions": "Instructions...",
+        "questions": ["Question 1?", "Question 2?"]
+      },
+      "caseworxNoteTemplate": "{{participant}} attended Session {{sessionNumber}}..."
+    }
+  ]
+}
+```
+
+### Content Block Types
+- `text`: Plain text content
+- `prompt`: Discussion or reflection prompt
+- `script`: Facilitator speaking notes (facilitator only)
+- `list`: Bulleted list with items array
+- `worksheet`: Interactive worksheet
+- `video`: Video embed reference
+- `reading`: Reading material reference
+
+---
+
+## AI Assistant Integration
+
+### Component: `components/ai-assistant.tsx`
+
+### Role-Specific Behavior
+
+#### Participant AI (`role="participant"`)
+- **Purpose**: Help understand recovery terminology
+- **Restrictions**: Cannot answer homework questions
+- **Sample prompts**: "What is a trigger?", "What does co-occurring mean?"
+- **TODO**: Wire to OpenAI API with content filtering
+
+#### Facilitator AI (`role="facilitator"`)
+- **Purpose**: Session guidance and support
+- **Capabilities**: Session tips, participant engagement strategies, content clarification
+- **TODO**: Wire to OpenAI API with session context
+
+#### Admin AI (`role="admin"`)
+- **Purpose**: Schedule optimization and curriculum adherence
+- **Capabilities**: 
+  - Optimize participant schedules
+  - Ensure curriculum adherence
+  - Flag attendance issues
+  - Suggest makeup group assignments
+- **TODO**: Wire to OpenAI API with full system context
+
+### Wiring Instructions (TODO)
+
+```typescript
+// In components/ai-assistant.tsx, replace handleSend function:
+
+const handleSend = async () => {
+  // 1. Build context based on role
+  const systemPrompt = buildSystemPrompt(role)
+  
+  // 2. Add content filtering for participants
+  if (role === 'participant') {
+    const isHomeworkQuestion = await checkHomeworkRelated(input)
+    if (isHomeworkQuestion) {
+      // Return restriction message
+      return
+    }
+  }
+  
+  // 3. Call OpenAI API
+  const response = await fetch('/api/ai-chat', {
+    method: 'POST',
+    body: JSON.stringify({
+      messages: [...messages, { role: 'user', content: input }],
+      systemPrompt,
+      role
+    })
+  })
+  
+  // 4. Stream response to UI
+}
+```
+
+### API Route (TODO: Create `/api/ai-chat/route.ts`)
+
+```typescript
+import OpenAI from 'openai'
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+
+export async function POST(req: Request) {
+  const { messages, systemPrompt, role } = await req.json()
+  
+  const completion = await openai.chat.completions.create({
+    model: 'gpt-4',
+    messages: [
+      { role: 'system', content: systemPrompt },
+      ...messages
+    ]
+  })
+  
+  return Response.json({ message: completion.choices[0].message })
+}
+```
+
+---
+
+## Makeup Group System
+
+### Flow Overview
+
+1. **Absence Detection**: When facilitator marks participant absent
+2. **Auto-Assignment**: System adds participant to next makeup group
+3. **Notifications**: 
+   - Participant receives urgent (red) message
+   - Facilitator receives work assignment request
+4. **Work Assignment**: Facilitator assigns worksheets/readings for missed content
+5. **Status Update**: Participant card turns green (work assigned)
+6. **Makeup Session**: Participant scans QR at Saturday group, completes assigned work
+7. **Completion**: Facilitator marks makeup complete, credit given
+
+### Admin Configuration (`/admin/schedule`)
+- Set makeup group date (defaults to 1st Saturday of month)
+- Set makeup group time (defaults to 10:00 AM)
+- View assigned participants
+- See work assignment status (red/green indicators)
+
+### Facilitator Workflow
+- "Makeup Work Needed" section shows pending assignments
+- Click participant to see missed session
+- Select worksheets and readings
+- Add custom instructions
+- Click "Assign Work" (card disappears, status turns green)
+
+### Participant Experience
+- Red urgent message appears in Messages
+- Makeup session appears on Saturday in schedule
+- `/participant/makeup` page for session day:
+  - QR code scanner for check-in
+  - Assigned materials (readings, worksheets)
+  - Interactive worksheet completion
+  - Mark session complete
+
+### Store Functions
+```typescript
+addMakeupAssignment(assignment: MakeupAssignment)
+assignMakeupWork(assignmentId: string, work: AssignedWork)
+completeMakeupAssignment(assignmentId: string)
+getMakeupAssignmentsByParticipant(participantId: string)
+getPendingMakeupAssignments()
+```
+
+---
+
+## Development Mode
+
+### DEV_MODE Bypass
+
+In `app/page.tsx`, set at top of file:
+
+```typescript
+// TODO: Remove before production launch
+const DEV_MODE = true  // Set to false for production
+```
+
+When `DEV_MODE = true`:
+- Orange "[DEV] Skip Sign In" buttons appear on all role cards
+- Clicking bypasses all authentication
+- Participant bypass skips both QR scan AND email verification
+- Direct access to any dashboard for testing
+
+### Mock Data
+
+Located in `lib/mock-data.ts`:
+- 4 mock users (1 admin, 1 facilitator, 2 participants)
+- 6 programs (Prime Solutions fully populated, others placeholder)
+- Sample enrollments, messages, homework, journal entries
+- Makeup assignments for testing
+
+### Current User
+
+In `lib/store.tsx`, the default user is set:
+```typescript
+currentUser: mockUsers[3]  // participant-4 (Emily Brown)
+```
+
+Change index to test different roles:
+- `mockUsers[0]` - Admin
+- `mockUsers[1]` - Facilitator
+- `mockUsers[2]` - Participant (John Doe)
+- `mockUsers[3]` - Participant (Emily Brown)
+
+---
+
+## Integration Points (TODO)
+
+### Authentication
+- [ ] Replace DEV_MODE bypass with real authentication
+- [ ] Implement secure login for Admin/Facilitator
+- [ ] Implement QR + email verification for Participants
+- [ ] Add session management and token refresh
+
+### Database
+- [ ] Replace React Context store with database (Supabase recommended)
+- [ ] Migrate mock data to database tables
+- [ ] Implement real-time updates for attendance, messages
+
+### AI Integration
+- [ ] Wire OpenAI API to AI Assistant component
+- [ ] Implement content filtering for participant restrictions
+- [ ] Build admin AI for schedule optimization
+- [ ] Add context injection for session guidance
+
+### File Storage
+- [ ] Store curriculum JSON/code in database or file system
+- [ ] Handle worksheet uploads and storage
+- [ ] Manage reading material attachments
+
+### QR Code System
+- [ ] Generate unique QR codes per session/class
+- [ ] Implement QR scanning with camera access
+- [ ] Validate QR codes against session schedule
+- [ ] Add GPS verification for location confirmation
+
+### CaseWorx Integration
+- [ ] Define CaseWorx API endpoints
+- [ ] Build export format for attendance records
+- [ ] Implement direct API push (vs manual copy)
+
+### Notifications
+- [ ] Implement push notifications for urgent messages
+- [ ] Add email notifications for makeup assignments
+- [ ] Build reminder system for upcoming sessions
+
+### Reports
+- [ ] Build comprehensive attendance reports
+- [ ] Add progress tracking exports
+- [ ] Implement court-ready documentation generation
+
+---
+
+## Visual Design
+
+### Background
+- Serene mountain/forest scene (calming for recovery context)
+- Fixed position, covers viewport
+- Cards use 55% opacity white backgrounds with backdrop blur
+
+### Color Coding
+- **Green**: Positive/complete/approved
+- **Blue**: In progress/info
+- **Yellow**: Warning/attention needed
+- **Red**: Urgent/incomplete/revision needed
+- **Amber**: Special (makeup groups)
+
+### Animations
+- Achievement badges: `bounce-slow`, `shine`, `sparkle`
+- Smooth transitions on all interactive elements
+- Loading states for async operations
+
+---
+
+## Support
+
+For issues or questions about this build, refer to the conversation history in v0 or contact the development team.
+
+**Built with v0 by Vercel**
+**Copyright DMS Clinical Services**

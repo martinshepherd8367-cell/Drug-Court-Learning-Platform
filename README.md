@@ -5,16 +5,17 @@ A role-based web application designed to support accountability court participan
 ## Table of Contents
 
 1. [Core Architecture](#core-architecture)
-2. [User Roles](#user-roles)
-3. [File Structure](#file-structure)
-4. [Data Models](#data-models)
-5. [Feature Documentation](#feature-documentation)
-6. [Adding New Curricula](#adding-new-curricula)
-7. [AI Assistant Integration](#ai-assistant-integration)
-8. [Makeup Group System](#makeup-group-system)
-9. [Class Check-In System](#class-check-in-system)
-10. [Development Mode](#development-mode)
-11. [Integration Points (TODO)](#integration-points-todo)
+2. [Current Status](#current-status-build-phase)
+3. [User Roles](#user-roles)
+4. [File Structure](#file-structure)
+5. [Data Models](#data-models)
+6. [Feature Documentation](#feature-documentation)
+7. [Adding New Curricula](#adding-new-curricula)
+8. [AI Assistant Integration](#ai-assistant-integration)
+9. [Makeup Group System](#makeup-group-system)
+10. [Class Check-In System](#class-check-in-system)
+11. [Development Mode](#development-mode)
+12. [Integration Points (TODO)](#integration-points-todo)
 
 ---
 
@@ -35,7 +36,7 @@ A role-based web application designed to support accountability court participan
 |--------|-----------|-------------------|
 | Purpose | Ordered content delivery | Real-world meeting events |
 | Time | No dates/times, only `sessionNumber` | Specific day, time, location |
-| Storage | `Program.sessions[]` | `Enrollment.schedule` (TODO: separate `ScheduleEvent` entity) |
+| Storage | `Program.sessions[]` | `Enrollment.schedule` (temporary) → TODO: separate `ScheduleEvent` entity |
 | Example | "Session 3: Cognitive Distortions" | "Monday 10:30 AM, Room 101" |
 
 ### Two-Layer Editing Governance (Planned for Antigravity)
@@ -53,12 +54,21 @@ A role-based web application designed to support accountability court participan
 
 ---
 
+## Current Status (Build Phase)
+
+- UI scaffolding implemented for Admin/Facilitator/Participant dashboards and schedule grid.
+- DEV_MODE bypass exists for build/testing and **MUST be removed before production**.
+- Curriculum is currently mock/seed data; database + versioning will be implemented in Antigravity.
+- CaseWorx export is manual copy/paste today; automation is future work.
+
+---
+
 ## User Roles
 
 ### Admin (`/admin`)
 - Full system oversight and configuration
 - User management (create/edit/delete facilitators and participants)
-- Program management (add/edit curricula)
+- Program management (view programs; curriculum editing via versioned publish workflow planned)
 - Enrollment management (assign participants to programs)
 - Schedule management (weekly grid calendar)
 - Makeup group configuration
@@ -423,6 +433,8 @@ This is the recommended method for initial production builds until Antigravity w
 
 ## AI Assistant Integration
 
+**Status: UI component present; API route not implemented yet.**
+
 ### Component: `components/ai-assistant.tsx`
 
 ### Role-Specific Behavior
@@ -487,7 +499,7 @@ export async function POST(req: Request) {
   const { messages, systemPrompt, role } = await req.json()
   
   const completion = await openai.chat.completions.create({
-    model: 'gpt-4',
+    model: process.env.OPENAI_MODEL,
     messages: [
       { role: 'system', content: systemPrompt },
       ...messages
@@ -552,6 +564,8 @@ getPendingMakeupAssignments()
 ---
 
 ## Class Check-In System
+
+**Status: UI scaffolding present; validation + persistence planned for Antigravity.**
 
 ### Overview
 

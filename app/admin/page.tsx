@@ -3,9 +3,10 @@
 import { useRouter } from "next/navigation"
 import { useStore } from "@/lib/store"
 import { RoleNav } from "@/components/role-nav"
+import { AIAssistantButton } from "@/components/ai-assistant"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Users, BookOpen, UserCheck, FileBarChart, ChevronRight, QrCode } from "lucide-react"
+import { Users, BookOpen, UserCheck, FileBarChart, ChevronRight, QrCode, Calendar } from "lucide-react"
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -20,11 +21,26 @@ export default function AdminDashboard() {
 
   const quickLinks = [
     {
+      title: "Weekly Schedule",
+      description: "View all classes by day and time",
+      icon: Calendar,
+      href: "/admin/schedule",
+      count: null,
+      highlight: true,
+    },
+    {
       title: "Programs",
       description: "Manage programs and sessions",
       icon: BookOpen,
       href: "/admin/programs",
       count: stats.totalPrograms,
+    },
+    {
+      title: "Class Schedule",
+      description: "View weekly class schedule grid",
+      icon: Calendar,
+      href: "/admin/schedule",
+      count: null,
     },
     {
       title: "Users",
@@ -54,10 +70,37 @@ export default function AdminDashboard() {
       <RoleNav />
 
       <main className="container mx-auto px-8 py-10">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 drop-shadow-sm">Admin Dashboard</h1>
-          <p className="text-gray-700 mt-1 drop-shadow-sm">Manage programs, users, and enrollments</p>
+        {/* Header with AI Assistant button */}
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 drop-shadow-sm">Admin Dashboard</h1>
+            <p className="text-gray-700 mt-1 drop-shadow-sm">Manage programs, users, and enrollments</p>
+          </div>
+          <AIAssistantButton role="admin" />
         </div>
+
+        {/* Prominent Weekly Schedule button */}
+        <Card className="mb-8 border-blue-200 bg-blue-50/80 card-transparent">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="p-4 bg-white/80 rounded-lg border border-blue-200">
+                  <Calendar className="h-12 w-12 text-blue-700" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg text-blue-800">Weekly Class Schedule</h3>
+                  <p className="text-sm text-blue-700">
+                    View all classes, facilitators, and enrollment status at a glance
+                  </p>
+                </div>
+              </div>
+              <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => router.push("/admin/schedule")}>
+                <Calendar className="h-4 w-4 mr-2" />
+                View Schedule
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -152,14 +195,16 @@ export default function AdminDashboard() {
                 return (
                   <Card
                     key={link.href}
-                    className="cursor-pointer hover:border-green-500 hover:shadow-md transition-all card-transparent"
+                    className={`cursor-pointer hover:border-green-500 hover:shadow-md transition-all card-transparent ${
+                      link.highlight ? "border-blue-300 bg-blue-50/50" : ""
+                    }`}
                     onClick={() => router.push(link.href)}
                   >
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                          <div className="p-3 bg-gray-100/80 rounded-lg">
-                            <Icon className="h-6 w-6 text-gray-700" />
+                          <div className={`p-3 rounded-lg ${link.highlight ? "bg-blue-100/80" : "bg-gray-100/80"}`}>
+                            <Icon className={`h-6 w-6 ${link.highlight ? "text-blue-700" : "text-gray-700"}`} />
                           </div>
                           <div>
                             <h3 className="font-semibold text-lg">{link.title}</h3>

@@ -14,6 +14,8 @@ import type {
   FacilitatorNote,
   QuickNote,
   Message,
+  MakeupAssignment,
+  MakeupGroup,
 } from "./types"
 import {
   mockUsers,
@@ -28,6 +30,58 @@ import {
   mockQuickNotes,
   mockMessages,
 } from "./mock-data"
+
+const initialMakeupGroup: MakeupGroup = {
+  id: "makeup-1",
+  date: "2025-01-04",
+  time: "10:00 AM",
+  facilitatorId: "fac-1",
+  facilitatorName: "Sarah Johnson",
+  room: "Room 101",
+  qrCode: "MAKEUP-GROUP-2025-01",
+  participants: [],
+}
+
+const initialMakeupAssignments: MakeupAssignment[] = [
+  {
+    id: "ma-1",
+    participantId: "part-1",
+    participantName: "John Smith",
+    missedSessionId: "ps-3",
+    missedProgramId: "prime-solutions",
+    missedProgramName: "Prime Solutions",
+    missedSessionNumber: 3,
+    missedDate: "2024-12-16",
+    makeupDate: "2025-01-04",
+    makeupTime: "10:00 AM",
+    facilitatorId: "fac-1",
+    facilitatorAssigned: false,
+    assignedWorksheets: [],
+    assignedReadings: [],
+    assignedInstructions: "",
+    status: "pending",
+    checkedIn: false,
+  },
+  {
+    id: "ma-2",
+    participantId: "part-2",
+    participantName: "Sarah Johnson",
+    missedSessionId: "ps-5",
+    missedProgramId: "prime-solutions",
+    missedProgramName: "Prime Solutions",
+    missedSessionNumber: 5,
+    missedDate: "2024-12-17",
+    makeupDate: "2025-01-04",
+    makeupTime: "10:00 AM",
+    facilitatorId: "fac-1",
+    facilitatorAssigned: true,
+    assignedWorksheets: ["Thinking Errors Worksheet", "Self-Assessment"],
+    assignedReadings: ["Chapter 5: Cognitive Restructuring"],
+    assignedInstructions: "Complete the thinking errors worksheet and reflect on three situations from the past week.",
+    status: "work_assigned",
+    checkedIn: false,
+  },
+]
 
 interface StoreState {
   // Data
@@ -65,6 +119,11 @@ interface StoreState {
   addFacilitatorNote: (note: Omit<FacilitatorNote, "id">) => void
   addQuickNote: (note: Omit<QuickNote, "id">) => void
 
+  // Program management functions
+  addProgram: (program: Omit<Program, "id">) => void
+  updateProgram: (id: string, updates: Partial<Program>) => void
+  deleteProgram: (id: string) => void
+
   // Getters
   getProgramBySlug: (slug: string) => Program | undefined
   getSessionByNumber: (programSlug: string, sessionNumber: number) => Session | undefined
@@ -77,13 +136,34 @@ interface StoreState {
     participantId: string,
   ) => { program: Program; session: Session; homework: HomeworkSubmission | null }[]
   getJournalEntriesForParticipant: (participantId: string) => JournalEntry[]
+
+  // Makeup group state and actions
+  makeupGroup: MakeupGroup
+  makeupAssignments: MakeupAssignment[]
+  updateMakeupGroup: (updates: Partial<MakeupGroup>) => void
+  addMakeupAssignment: (assignment: Omit<MakeupAssignment, "id">) => void
+  updateMakeupAssignment: (id: string, updates: Partial<MakeupAssignment>) => void
+  markParticipantAbsent: (
+    participantId: string,
+    participantName: string,
+    sessionId: string,
+    programId: string,
+    programName: string,
+    sessionNumber: number,
+  ) => void
+  assignMakeupWork: (assignmentId: string, worksheets: string[], readings: string[], instructions: string) => void
+  checkInToMakeup: (assignmentId: string) => void
+  completeMakeupAssignment: (assignmentId: string) => void
+  getMakeupAssignmentsForFacilitator: (facilitatorId: string) => MakeupAssignment[]
+  getMakeupAssignmentsForParticipant: (participantId: string) => MakeupAssignment[]
+  getPendingMakeupAssignments: () => MakeupAssignment[]
 }
 
 const StoreContext = createContext<StoreState | null>(null)
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [users] = useState<User[]>(mockUsers)
-  const [programs] = useState<Program[]>(mockPrograms)
+  const [programs, setPrograms] = useState<Program[]>(mockPrograms)
   const [enrollments, setEnrollments] = useState<Enrollment[]>(mockEnrollments)
   const [attendance, setAttendance] = useState<Attendance[]>(mockAttendance)
   const [activityRuns, setActivityRuns] = useState<ActivityRun[]>(mockActivityRuns)
@@ -94,6 +174,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [quickNotes, setQuickNotes] = useState<QuickNote[]>(mockQuickNotes)
   const [messages, setMessages] = useState<Message[]>(mockMessages)
   const [currentUser, setCurrentUser] = useState<User | null>(mockUsers[3])
+
+  // Added makeup group state
+  const [makeupGroup, setMakeupGroup] = useState<MakeupGroup>(initialMakeupGroup)
+  const [makeupAssignments, setMakeupAssignments] = useState<MakeupAssignment[]>(initialMakeupAssignments)
 
   const launchActivity = useCallback((sessionId: string, activityTemplateId: string): ActivityRun => {
     const newRun: ActivityRun = {
@@ -272,6 +356,155 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [journalEntries],
   )
 
+  const updateMakeupGroup = useCallback((updates: Partial<MakeupGroup>) => {
+    setMakeupGroup((prev) => ({ ...prev, ...updates }))
+  }, [])
+
+  const addMakeupAssignment = useCallback((assignment: Omit<MakeupAssignment, "id">) => {
+    const newAssignment: MakeupAssignment = {
+      ...assignment,
+      id: `ma-${Date.now()}`,
+    }
+    setMakeupAssignments((prev) => [...prev, newAssignment])
+    setMakeupGroup((prev) => ({
+      ...prev,
+      participants: [...prev.participants, assignment.participantId],
+    }))
+  }, [])
+
+  const updateMakeupAssignment = useCallback((id: string, updates: Partial<MakeupAssignment>) => {
+    setMakeupAssignments((prev) => prev.map((a) => (a.id === id ? { ...a, ...updates } : a)))
+  }, [])
+
+  const markParticipantAbsent = useCallback(
+    (
+      participantId: string,
+      participantName: string,
+      sessionId: string,
+      programId: string,
+      programName: string,
+      sessionNumber: number,
+    ) => {
+      // Create makeup assignment
+      const newAssignment: MakeupAssignment = {
+        id: `ma-${Date.now()}`,
+        participantId,
+        participantName,
+        missedSessionId: sessionId,
+        missedProgramId: programId,
+        missedProgramName: programName,
+        missedSessionNumber: sessionNumber,
+        missedDate: new Date().toISOString(),
+        makeupDate: makeupGroup.date,
+        makeupTime: makeupGroup.time,
+        facilitatorId: makeupGroup.facilitatorId,
+        facilitatorAssigned: false,
+        assignedWorksheets: [],
+        assignedReadings: [],
+        assignedInstructions: "",
+        status: "pending",
+        checkedIn: false,
+      }
+
+      setMakeupAssignments((prev) => [...prev, newAssignment])
+      setMakeupGroup((prev) => ({
+        ...prev,
+        participants: [...prev.participants, participantId],
+      }))
+
+      // Send urgent message to participant
+      const participantMessage: Message = {
+        id: `msg-${Date.now()}`,
+        participantId,
+        title: "MAKEUP GROUP REQUIRED",
+        content: `You missed ${programName} Session ${sessionNumber}. You are scheduled for the Makeup Group on ${new Date(makeupGroup.date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })} at ${makeupGroup.time} in ${makeupGroup.room}. Please arrive on time with your phone ready to scan the QR code.`,
+        fromName: "Administration",
+        readAt: null,
+        createdAt: new Date().toISOString(),
+        isUrgent: true,
+      }
+      setMessages((prev) => [...prev, participantMessage])
+
+      // Send message to facilitator
+      const facilitatorMessage: Message = {
+        id: `msg-${Date.now() + 1}`,
+        participantId: makeupGroup.facilitatorId,
+        title: `Makeup Work Needed: ${participantName}`,
+        content: `${participantName} missed ${programName} Session ${sessionNumber} and has been assigned to your Makeup Group on ${new Date(makeupGroup.date).toLocaleDateString()}. Please assign makeup work for this participant.`,
+        fromName: "Administration",
+        readAt: null,
+        createdAt: new Date().toISOString(),
+        isUrgent: false,
+      }
+      setMessages((prev) => [...prev, facilitatorMessage])
+    },
+    [makeupGroup],
+  )
+
+  const assignMakeupWork = useCallback(
+    (assignmentId: string, worksheets: string[], readings: string[], instructions: string) => {
+      setMakeupAssignments((prev) =>
+        prev.map((a) =>
+          a.id === assignmentId
+            ? {
+                ...a,
+                assignedWorksheets: worksheets,
+                assignedReadings: readings,
+                assignedInstructions: instructions,
+                facilitatorAssigned: true,
+                status: "work_assigned" as const,
+              }
+            : a,
+        ),
+      )
+    },
+    [],
+  )
+
+  const checkInToMakeup = useCallback((assignmentId: string) => {
+    setMakeupAssignments((prev) => prev.map((a) => (a.id === assignmentId ? { ...a, checkedIn: true } : a)))
+  }, [])
+
+  const completeMakeupAssignment = useCallback((assignmentId: string) => {
+    setMakeupAssignments((prev) =>
+      prev.map((a) => (a.id === assignmentId ? { ...a, status: "completed" as const } : a)),
+    )
+  }, [])
+
+  const getMakeupAssignmentsForFacilitator = useCallback(
+    (facilitatorId: string) => {
+      return makeupAssignments.filter((a) => a.facilitatorId === facilitatorId && a.status !== "completed")
+    },
+    [makeupAssignments],
+  )
+
+  const getMakeupAssignmentsForParticipant = useCallback(
+    (participantId: string) => {
+      return makeupAssignments.filter((a) => a.participantId === participantId && a.status !== "completed")
+    },
+    [makeupAssignments],
+  )
+
+  const getPendingMakeupAssignments = useCallback(() => {
+    return makeupAssignments.filter((a) => a.status === "pending")
+  }, [makeupAssignments])
+
+  const addProgram = useCallback((program: Omit<Program, "id">) => {
+    const newProgram: Program = {
+      ...program,
+      id: program.slug || `prog-${Date.now()}`,
+    }
+    setPrograms((prev) => [...prev, newProgram])
+  }, [])
+
+  const updateProgram = useCallback((id: string, updates: Partial<Program>) => {
+    setPrograms((prev) => prev.map((p) => (p.id === id ? { ...p, ...updates } : p)))
+  }, [])
+
+  const deleteProgram = useCallback((id: string) => {
+    setPrograms((prev) => prev.filter((p) => p.id !== id))
+  }, [])
+
   return (
     <StoreContext.Provider
       value={{
@@ -293,6 +526,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         submitResponse,
         endSession,
         copyCaseworx,
+        markMessageRead,
+        addMessage,
         addEnrollment,
         updateEnrollment,
         addJournalEntry,
@@ -300,8 +535,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         updateHomeworkSubmission,
         addFacilitatorNote,
         addQuickNote,
-        markMessageRead,
-        addMessage,
         getProgramBySlug,
         getSessionByNumber,
         getEnrollmentsByParticipant,
@@ -311,6 +544,21 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         getMessagesForParticipant,
         getHomeworkForParticipant,
         getJournalEntriesForParticipant,
+        makeupGroup,
+        makeupAssignments,
+        updateMakeupGroup,
+        addMakeupAssignment,
+        updateMakeupAssignment,
+        markParticipantAbsent,
+        assignMakeupWork,
+        checkInToMakeup,
+        completeMakeupAssignment,
+        getMakeupAssignmentsForFacilitator,
+        getMakeupAssignmentsForParticipant,
+        getPendingMakeupAssignments,
+        addProgram,
+        updateProgram,
+        deleteProgram,
       }}
     >
       {children}

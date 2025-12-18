@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Shield, Users, QrCode, Camera, ArrowLeft } from "lucide-react"
 
+const DEV_MODE = true
+
 export default function SignInPage() {
   const router = useRouter()
   const [selectedRole, setSelectedRole] = useState<"admin" | "facilitator" | "participant" | null>(null)
@@ -62,6 +64,12 @@ export default function SignInPage() {
     setShowEmailVerify(false)
   }
 
+  const handleDevBypass = (role: "admin" | "facilitator" | "participant") => {
+    if (role === "admin") router.push("/admin")
+    else if (role === "facilitator") router.push("/facilitator")
+    else router.push("/participant")
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <div className="flex-1 flex items-center justify-center p-4">
@@ -74,7 +82,7 @@ export default function SignInPage() {
             </div>
 
             <div className="grid md:grid-cols-3 gap-6">
-              {/* Admin Entry - added card-transparent class */}
+              {/* Admin Entry */}
               <Card
                 className="cursor-pointer hover:border-green-500 transition-colors card-transparent"
                 onClick={() => setSelectedRole("admin")}
@@ -86,9 +94,22 @@ export default function SignInPage() {
                   <CardTitle className="text-xl">Admin</CardTitle>
                   <CardDescription>Clinical Director Access</CardDescription>
                 </CardHeader>
-                <CardContent className="text-center">
+                <CardContent className="text-center space-y-2">
                   <p className="text-sm text-gray-500 mb-4">Manage programs, users, enrollments and reports</p>
                   <Button className="w-full bg-green-600 hover:bg-green-700">Sign In with Email</Button>
+                  {DEV_MODE && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full text-xs text-orange-600 border-orange-300 hover:bg-orange-50 bg-transparent"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDevBypass("admin")
+                      }}
+                    >
+                      [DEV] Skip Sign In
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
 
@@ -104,9 +125,22 @@ export default function SignInPage() {
                   <CardTitle className="text-xl">Facilitator</CardTitle>
                   <CardDescription>Group Facilitator Access</CardDescription>
                 </CardHeader>
-                <CardContent className="text-center">
+                <CardContent className="text-center space-y-2">
                   <p className="text-sm text-gray-500 mb-4">Lead sessions, review homework, manage participants</p>
                   <Button className="w-full bg-green-600 hover:bg-green-700">Sign In with Email</Button>
+                  {DEV_MODE && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full text-xs text-orange-600 border-orange-300 hover:bg-orange-50 bg-transparent"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDevBypass("facilitator")
+                      }}
+                    >
+                      [DEV] Skip Sign In
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
 
@@ -122,15 +156,42 @@ export default function SignInPage() {
                   <CardTitle className="text-xl">Participant</CardTitle>
                   <CardDescription>Program Participant Access</CardDescription>
                 </CardHeader>
-                <CardContent className="text-center">
+                <CardContent className="text-center space-y-2">
                   <p className="text-sm text-gray-500 mb-4">Access classes, complete homework, write journal entries</p>
-                  <Button onClick={() => setShowScanner(true)} className="w-full bg-green-600 hover:bg-green-700">
+                  <Button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setShowScanner(true)
+                    }}
+                    className="w-full bg-green-600 hover:bg-green-700"
+                  >
                     <Camera className="h-4 w-4 mr-2" />
                     Scan QR Code
                   </Button>
+                  {DEV_MODE && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full text-xs text-orange-600 border-orange-300 hover:bg-orange-50 bg-transparent"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDevBypass("participant")
+                      }}
+                    >
+                      [DEV] Skip Sign In
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             </div>
+
+            {DEV_MODE && (
+              <div className="mt-6 text-center">
+                <p className="text-xs text-orange-600 bg-orange-100/80 inline-block px-3 py-1 rounded-full">
+                  DEV MODE ENABLED - Remove before launch
+                </p>
+              </div>
+            )}
           </div>
         )}
 
@@ -182,6 +243,16 @@ export default function SignInPage() {
               <Button onClick={handleAdminSignIn} className="w-full bg-green-600 hover:bg-green-700">
                 Sign In
               </Button>
+              {DEV_MODE && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full text-xs text-orange-600 border-orange-300 hover:bg-orange-50 bg-transparent"
+                  onClick={() => handleDevBypass("admin")}
+                >
+                  [DEV] Skip Sign In
+                </Button>
+              )}
             </CardContent>
           </Card>
         )}
@@ -234,6 +305,16 @@ export default function SignInPage() {
               <Button onClick={handleFacilitatorSignIn} className="w-full bg-green-600 hover:bg-green-700">
                 Sign In
               </Button>
+              {DEV_MODE && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full text-xs text-orange-600 border-orange-300 hover:bg-orange-50 bg-transparent"
+                  onClick={() => handleDevBypass("facilitator")}
+                >
+                  [DEV] Skip Sign In
+                </Button>
+              )}
             </CardContent>
           </Card>
         )}
@@ -267,6 +348,16 @@ export default function SignInPage() {
                   Already registered? Go to dashboard
                 </Button>
               </div>
+              {DEV_MODE && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full text-xs text-orange-600 border-orange-300 hover:bg-orange-50 bg-transparent"
+                  onClick={() => handleDevBypass("participant")}
+                >
+                  [DEV] Skip QR + Email Verification
+                </Button>
+              )}
             </CardContent>
           </Card>
         )}
@@ -310,6 +401,16 @@ export default function SignInPage() {
               <Button onClick={handleParticipantEmailSignIn} className="w-full bg-green-600 hover:bg-green-700">
                 Sign In
               </Button>
+              {DEV_MODE && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full text-xs text-orange-600 border-orange-300 hover:bg-orange-50 bg-transparent"
+                  onClick={() => handleDevBypass("participant")}
+                >
+                  [DEV] Skip Email Verification
+                </Button>
+              )}
             </CardContent>
           </Card>
         )}

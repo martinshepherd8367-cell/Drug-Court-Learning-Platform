@@ -7,6 +7,16 @@ export interface User {
   role: UserRole
   name: string
   email: string
+  phone?: string
+  dateOfBirth?: string
+  address?: string
+  emergencyContact?: string
+  emergencyPhone?: string
+  caseNumber?: string
+  referralSource?: string
+  startDate?: string
+  probationOfficer?: string
+  notes?: string
 }
 
 export interface Program {
@@ -140,4 +150,36 @@ export interface Message {
   fromName: string
   readAt: string | null
   createdAt: string
+  isUrgent?: boolean // Added urgent flag for makeup group notifications
+}
+
+export interface MakeupAssignment {
+  id: string
+  participantId: string
+  participantName: string
+  missedSessionId: string
+  missedProgramId: string
+  missedProgramName: string
+  missedSessionNumber: number
+  missedDate: string
+  makeupDate: string
+  makeupTime: string
+  facilitatorId: string
+  facilitatorAssigned: boolean // Has the facilitator assigned work?
+  assignedWorksheets: string[]
+  assignedReadings: string[]
+  assignedInstructions: string
+  status: "pending" | "work_assigned" | "completed"
+  checkedIn: boolean
+}
+
+export interface MakeupGroup {
+  id: string
+  date: string // e.g., "2025-01-04" (first Saturday)
+  time: string // e.g., "10:00 AM"
+  facilitatorId: string
+  facilitatorName: string
+  room: string
+  qrCode: string
+  participants: string[] // participant IDs
 }

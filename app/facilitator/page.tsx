@@ -1,14 +1,18 @@
 "use client"
 
+import { CardDescription } from "@/components/ui/card"
+
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useStore } from "@/lib/store"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { AIAssistantButton } from "@/components/ai-assistant"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Label } from "@/components/ui/label" // Import Label component
 import {
   BookOpen,
   Users,
@@ -28,11 +32,21 @@ import {
   Play,
   ChevronLeft,
   Clock,
+  AlertTriangle,
 } from "lucide-react"
 
 export default function FacilitatorDashboard() {
   const router = useRouter()
-  const { programs, enrollments, users, messages, journalEntries, participantResponses } = useStore()
+  const {
+    programs,
+    enrollments,
+    users,
+    messages,
+    journalEntries,
+    participantResponses,
+    makeupAssignments,
+    assignMakeupWork,
+  } = useStore()
 
   // Modal states
   const [showViewParticipants, setShowViewParticipants] = useState(false)
@@ -52,10 +66,19 @@ export default function FacilitatorDashboard() {
   const [selectedHomework, setSelectedHomework] = useState<(typeof homeworkSubmissions)[0] | null>(null)
   const [feedbackText, setFeedbackText] = useState("")
 
+  const [showMakeupAssignments, setShowMakeupAssignments] = useState(false)
+  const [selectedMakeupParticipant, setSelectedMakeupParticipant] = useState<any>(null)
+  const [makeupWorksheets, setMakeupWorksheets] = useState<string[]>([])
+  const [makeupReadings, setMakeupReadings] = useState<string[]>([])
+  const [makeupInstructions, setMakeupInstructions] = useState("")
+
   const [homeworkList, setHomeworkList] = useState<typeof homeworkSubmissions>([])
   const [pendingRevisions, setPendingRevisions] = useState<typeof homeworkSubmissions>([])
   const [showPendingRevisions, setShowPendingRevisions] = useState(false)
   const [processedHomework, setProcessedHomework] = useState<Record<string, "approved" | "revision">>({})
+
+  // New state for button state
+  const [makeupAssignButtonState, setMakeupAssignButtonState] = useState<Record<string, boolean>>({})
 
   // Mock schedule data for the grid calendar
   const scheduleClasses = [
@@ -281,6 +304,31 @@ export default function FacilitatorDashboard() {
   const pendingJournals = journalSubmissions.filter((j) => !j.late).length
   const totalNotifications = notificationsViewed ? 0 : unreadMessages + pendingHomework
 
+  const pendingMakeupAssignments = makeupAssignments.filter((a) => a.status === "pending" && !a.facilitatorAssigned)
+
+  // Available worksheets and readings for makeup work
+  const availableWorksheets = [
+    "Thinking Errors Worksheet",
+    "Self-Assessment Checklist",
+    "Trigger Identification Form",
+    "Coping Skills Inventory",
+    "Goal Setting Worksheet",
+    "Relapse Prevention Plan",
+    "Communication Skills Exercise",
+    "Emotional Regulation Diary",
+  ]
+
+  const availableReadings = [
+    "Chapter 1: Understanding Addiction",
+    "Chapter 2: The Change Process",
+    "Chapter 3: Identifying Triggers",
+    "Chapter 4: Building Support",
+    "Chapter 5: Cognitive Restructuring",
+    "Chapter 6: Healthy Coping",
+    "Chapter 7: Relapse Prevention",
+    "Chapter 8: Moving Forward",
+  ]
+
   const getClassForSlot = (day: string, time: string) => {
     return scheduleClasses.find((c) => c.day === day && c.time === time)
   }
@@ -309,8 +357,22 @@ export default function FacilitatorDashboard() {
     "Well done identifying your thinking errors!",
   ]
 
+  const handleAssignMakeupWork = () => {
+    if (selectedMakeupParticipant && makeupInstructions) {
+      assignMakeupWork(selectedMakeupParticipant.id, makeupWorksheets, makeupReadings, makeupInstructions)
+      // Mark button as clicked (blue)
+      setMakeupAssignButtonState((prev) => ({ ...prev, [selectedMakeupParticipant.id]: true }))
+      // Close dialog and reset form
+      setShowMakeupAssignments(false)
+      setSelectedMakeupParticipant(null)
+      setMakeupWorksheets([])
+      setMakeupReadings([])
+      setMakeupInstructions("")
+    }
+  }
+
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen flex flex-col">
       {/* Header */}
       <header className="border-b border-gray-200/50 header-transparent sticky top-0 z-40">
         <div className="px-4 py-3">
@@ -321,6 +383,8 @@ export default function FacilitatorDashboard() {
             </div>
 
             <div className="flex items-center gap-2">
+              <AIAssistantButton role="facilitator" />
+
               {/* View Participants Button */}
               <Button
                 variant="outline"
@@ -365,7 +429,55 @@ export default function FacilitatorDashboard() {
         </div>
       </header>
 
-      <main className="p-6 space-y-6">
+      <main className="p-6 space-y-6 flex-1">
+        {pendingMakeupAssignments.length > 0 && (
+          <Card className="card-transparent border-red-300 bg-red-50/50">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center justify-between text-base text-red-800">
+                <span className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-red-600" />
+                  Makeup Work Needed
+                </span>
+                <Badge className="bg-red-600">{pendingMakeupAssignments.length} pending</Badge>
+              </CardTitle>
+              <CardDescription className="text-red-700">
+                These participants need work assigned for the upcoming makeup group
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {pendingMakeupAssignments.map((assignment) => (
+                  <button
+                    key={assignment.id}
+                    className={`w-full p-3 bg-white rounded-lg border text-left hover:bg-red-50 transition-colors ${
+                      makeupAssignButtonState[assignment.id] ? "border-blue-500 bg-blue-50" : "border-red-200"
+                    }`}
+                    onClick={() => {
+                      setSelectedMakeupParticipant(assignment)
+                      setShowMakeupAssignments(true)
+                    }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-medium">{assignment.participantName}</div>
+                        <div className="text-sm text-gray-600">
+                          Missed: {assignment.missedProgramName} - Session {assignment.missedSessionNumber}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          Makeup Date: {new Date(assignment.makeupDate).toLocaleDateString()}
+                        </div>
+                      </div>
+                      <Badge className={makeupAssignButtonState[assignment.id] ? "bg-blue-600" : "bg-red-600"}>
+                        {makeupAssignButtonState[assignment.id] ? "Assigned" : "Assign Work"}
+                      </Badge>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Weekly Schedule Grid */}
         <Card className="card-transparent">
           <CardHeader className="pb-2">
@@ -1159,6 +1271,112 @@ export default function FacilitatorDashboard() {
               ))
             )}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showMakeupAssignments} onOpenChange={setShowMakeupAssignments}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto card-transparent">
+          <DialogHeader>
+            <DialogTitle>Assign Makeup Work - {selectedMakeupParticipant?.participantName}</DialogTitle>
+          </DialogHeader>
+          {selectedMakeupParticipant && (
+            <div className="space-y-4">
+              <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
+                <h4 className="font-semibold text-amber-800">Missed Class Information</h4>
+                <p className="text-sm mt-1">
+                  <strong>Program:</strong> {selectedMakeupParticipant.missedProgramName}
+                </p>
+                <p className="text-sm">
+                  <strong>Session:</strong> {selectedMakeupParticipant.missedSessionNumber}
+                </p>
+                <p className="text-sm">
+                  <strong>Missed Date:</strong> {new Date(selectedMakeupParticipant.missedDate).toLocaleDateString()}
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Select Worksheets</Label>
+                <div className="grid grid-cols-2 gap-2 max-h-[150px] overflow-y-auto border rounded p-2">
+                  {availableWorksheets.map((worksheet) => (
+                    <label
+                      key={worksheet}
+                      className="flex items-center gap-2 text-sm cursor-pointer hover:bg-gray-50 p-1 rounded"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={makeupWorksheets.includes(worksheet)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setMakeupWorksheets([...makeupWorksheets, worksheet])
+                          } else {
+                            setMakeupWorksheets(makeupWorksheets.filter((w) => w !== worksheet))
+                          }
+                        }}
+                        className="rounded"
+                      />
+                      {worksheet}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Select Readings</Label>
+                <div className="grid grid-cols-2 gap-2 max-h-[150px] overflow-y-auto border rounded p-2">
+                  {availableReadings.map((reading) => (
+                    <label
+                      key={reading}
+                      className="flex items-center gap-2 text-sm cursor-pointer hover:bg-gray-50 p-1 rounded"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={makeupReadings.includes(reading)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setMakeupReadings([...makeupReadings, reading])
+                          } else {
+                            setMakeupReadings(makeupReadings.filter((r) => r !== reading))
+                          }
+                        }}
+                        className="rounded"
+                      />
+                      {reading}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Instructions for Participant</Label>
+                <Textarea
+                  placeholder="Enter specific instructions for what the participant should focus on during the makeup group..."
+                  value={makeupInstructions}
+                  onChange={(e) => setMakeupInstructions(e.target.value)}
+                  rows={4}
+                />
+              </div>
+
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1 bg-transparent"
+                  onClick={() => {
+                    setSelectedMakeupParticipant(null)
+                    setShowMakeupAssignments(false)
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="flex-1 bg-green-600 hover:bg-green-700"
+                  onClick={handleAssignMakeupWork}
+                  disabled={(makeupWorksheets.length === 0 && makeupReadings.length === 0) || !makeupInstructions}
+                >
+                  Assign Work
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 

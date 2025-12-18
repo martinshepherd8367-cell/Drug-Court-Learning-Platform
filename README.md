@@ -39,6 +39,8 @@ A role-based web application designed to support accountability court participan
 | Storage | `Program.sessions[]` | `Enrollment.schedule` (temporary) → TODO: separate `ScheduleEvent` entity |
 | Example | "Session 3: Cognitive Distortions" | "Monday 10:30 AM, Room 101" |
 
+> **Note:** Current build stores schedule data inside `Enrollment` (mock); Antigravity will migrate to `ScheduleEvent`.
+
 ### Two-Layer Editing Governance (Planned for Antigravity)
 
 - **Deep Layer (Admin/Dev Only)**: New programs, session structures, journal templates, dashboard configurations. Changes are versioned and require publishing approval.
@@ -72,7 +74,7 @@ A role-based web application designed to support accountability court participan
 - Enrollment management (assign participants to programs)
 - Schedule management (weekly grid calendar)
 - Makeup group configuration
-- Reports and CaseWorx integration
+- Reports and CaseWorx export (manual copy/paste today)
 - AI Assistant for schedule optimization (Planned - TODO)
 
 ### Facilitator (`/facilitator`)
@@ -104,7 +106,7 @@ A role-based web application designed to support accountability court participan
 
 ```
 ├── app/
-│   ├── page.tsx                    # Landing page with role selection and sign-in
+│   ├── page.tsx                    # Admin page with role selection and sign-in
 │   ├── layout.tsx                  # Root layout with StoreProvider
 │   ├── globals.css                 # Global styles, animations, transparency settings
 │   │
@@ -193,7 +195,7 @@ interface Program {
   locked: boolean
 }
 
-// Session within a program (ordered by sessionNumber, no time)
+// Session Session a program (ordered by sessionNumber, no time)
 interface Session {
   id: string
   programId: string
@@ -228,7 +230,7 @@ interface ContentBlock {
 // TODO: Schedule should eventually be its own entity (ScheduleEvent) instead of living inside Enrollment
 interface Enrollment {
   id: string
-  participantId: string  // Fixed typo from "odipantId"
+  participantId: string  // Fix typo from "odipantId"
   programId: string
   currentSession: number
   status: 'active' | 'paused' | 'completed'
@@ -319,7 +321,7 @@ interface Message {
 - Click class to see details, participants, demographics
 - Saturday Special Groups section at bottom
 - Makeup Group with editable date/time
-- Participant status: Red (needs work assigned), Green (work assigned)
+- Participant status: Red (needs work work), Green (work assigned)
 
 ### Facilitator Dashboard
 
@@ -333,7 +335,7 @@ interface Message {
 - Makeup Work Needed section (assign worksheets/readings)
 - Awaiting Revision button (shows homework sent back)
 - Notifications with badge clearing
-- Settings with QR code generation
+- Check-In with QR code generation
 
 ### Participant Dashboard
 
@@ -362,7 +364,7 @@ This is the recommended method for initial production builds until Antigravity w
 
 1. Create new file in `lib/` (e.g., `anger-management-program.ts`)
 2. Follow the Program/Session/CurriculumSection structure (see below)
-3. Export the program object
+3. Export the program program
 4. Import in `lib/mock-data.ts` and add to `mockPrograms` array
 
 ### Method 2: Admin UI Import (Planned - Phase 2)
@@ -545,7 +547,7 @@ export async function POST(req: Request) {
 
 - Red urgent message appears in Messages
 - Makeup session appears on Saturday in schedule
-- `/participant/makeup` page for session day:
+- `/participant/makeup` page for follow-up day:
   - QR code scanner for check-in
   - Assigned materials (readings, worksheets)
   - Interactive worksheet completion

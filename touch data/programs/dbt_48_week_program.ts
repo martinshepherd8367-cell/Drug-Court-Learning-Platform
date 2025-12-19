@@ -1,0 +1,3463 @@
+export const dbt48WeekProgram = {
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2025-12-17T01:06:36.840965Z",
+  "programSlug": "dbt-skills-48wk",
+  "programName": "DBT Skills Group (48 Weeks)",
+  "programAbbrev": "DBT",
+  "intendedSetting": "Accountability Court / Drug Court Skills Group",
+  "totalWeeks": 48,
+  "sections": [
+    {
+      "sectionId": "dbt-1",
+      "sectionName": "DBT 1: Foundations + Mindfulness + Behavior Basics",
+      "weekRange": [
+        1,
+        16
+      ],
+      "dailyJournalTemplateId": "journal-A"
+    },
+    {
+      "sectionId": "dbt-2",
+      "sectionName": "DBT 2: Emotion Regulation + Distress Tolerance",
+      "weekRange": [
+        17,
+        32
+      ],
+      "dailyJournalTemplateId": "journal-B"
+    },
+    {
+      "sectionId": "dbt-3",
+      "sectionName": "DBT 3: Interpersonal Effectiveness + Maintenance",
+      "weekRange": [
+        33,
+        48
+      ],
+      "dailyJournalTemplateId": "journal-C"
+    }
+  ],
+  "dailyJournalTemplates": [
+    {
+      "id": "journal-A",
+      "title": "Daily Journal A: Awareness + Skills Noticing",
+      "instructions": [
+        "Complete once per day. Keep entries short and factual.",
+        "If you had no major stressors, use a small everyday example."
+      ],
+      "prompts": [
+        "What situation tested me today?",
+        "What was my first thought? What did it push me to do?",
+        "What skill did I try (or could I have tried)?",
+        "One wise decision I made today (even if small)."
+      ]
+    },
+    {
+      "id": "journal-B",
+      "title": "Daily Journal B: Emotion + Urge + Body",
+      "instructions": [
+        "Complete once per day.",
+        "Use 0–10 ratings for emotion and urge/craving intensity."
+      ],
+      "prompts": [
+        "Emotion(s) today (0–10). Where did I feel it in my body?",
+        "Urge/craving today (0–10). Trigger?",
+        "What vulnerability factor was present (sleep, hunger, stress, conflict, isolation)?",
+        "What did I do that reduced harm today?"
+      ]
+    },
+    {
+      "id": "journal-C",
+      "title": "Daily Journal C: Relationships + Values + Boundaries",
+      "instructions": [
+        "Complete once per day.",
+        "If you had little contact with others, focus on one interaction (staff, coworker, family, phone call, text) or a planned interaction."
+      ],
+      "prompts": [
+        "One interaction that mattered today.",
+        "What did I want/need? Did I ask?",
+        "Did I keep self-respect? Did I act on values?",
+        "One repair I made (or could make)."
+      ]
+    }
+  ],
+  "standardSessionFlow": {
+    "opening": "Brief mindfulness/grounding + 1-word check-in (emotion + urge 0–10).",
+    "review": "Review last week’s practice: where skill worked, where it didn’t, what blocked it.",
+    "teach": "Teach today’s core concept in plain language with drug-court relevant examples.",
+    "practice": "Complete the in-class worksheet and discuss (pairs/small groups).",
+    "homework": "Assign homework; clarify minimum viable practice (1 use + 1 journal entry).",
+    "close": "Wind-down + one sentence commitment."
+  },
+  "weeks": [
+    {
+      "weekNumber": 1,
+      "sectionId": "dbt-1",
+      "sectionWeekNumber": 1,
+      "title": "Orientation: DBT for Drug Court",
+      "sessionPurpose": "Introduce DBT as a skills-based program that supports court compliance and recovery through practicing specific behaviors.",
+      "discussionPrompts": [
+        "What does a life worth living mean for you in this program right now?",
+        "What keeps people stuck in the same cycle even when they want change?",
+        "What is one thing you want to do differently this time?"
+      ],
+      "tags": [
+        "orientation",
+        "commitment"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w01-inclass",
+        "title": "My Program Target Map",
+        "purpose": "Identify top risk areas and one skills goal for the week.",
+        "fields": [
+          {
+            "id": "my_top_3_legal_court_risks",
+            "label": "My top 3 legal/court risks",
+            "type": "text"
+          },
+          {
+            "id": "my_top_3_relapse_risks",
+            "label": "My top 3 relapse risks",
+            "type": "text"
+          },
+          {
+            "id": "my_top_3_relationship_risks",
+            "label": "My top 3 relationship risks",
+            "type": "text"
+          },
+          {
+            "id": "one_skill_goal_for_the_next_7_days",
+            "label": "One skill goal for the next 7 days",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w01-homework",
+        "title": "Skills Commitment Contract",
+        "purpose": "Commit to minimum skills practice with a barrier plan.",
+        "fields": [
+          {
+            "id": "if_i_miss_a_skill_i_will_restart_within_hours",
+            "label": "If I miss a skill, I will restart within (hours)",
+            "type": "text"
+          },
+          {
+            "id": "three_support_contacts_or_support_options",
+            "label": "Three support contacts or support options",
+            "type": "text"
+          },
+          {
+            "id": "one_barrier_i_expect_this_week_my_workaround",
+            "label": "One barrier I expect this week + my workaround",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-A"
+    },
+    {
+      "weekNumber": 2,
+      "sectionId": "dbt-1",
+      "sectionWeekNumber": 2,
+      "title": "Dialectics: Two Things Can Be True",
+      "sessionPurpose": "Teach acceptance + change as a both/and approach to reduce all-or-nothing thinking and increase effectiveness.",
+      "discussionPrompts": [
+        "How can you accept reality and still work to change it?",
+        "Where do you get stuck in extreme (all-or-nothing) thinking?",
+        "What is the cost of insisting on being right during conflict?"
+      ],
+      "tags": [
+        "dialectics"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w02-inclass",
+        "title": "Dialectical Reframe Practice",
+        "purpose": "Practice translating extreme thinking into a balanced acceptance + change plan.",
+        "fields": [
+          {
+            "id": "stuck_thought",
+            "label": "Stuck thought",
+            "type": "text"
+          },
+          {
+            "id": "acceptance_statement",
+            "label": "Acceptance statement",
+            "type": "text"
+          },
+          {
+            "id": "change_statement",
+            "label": "Change statement",
+            "type": "text"
+          },
+          {
+            "id": "middle_path_behavior_what_i_will_do_next_time",
+            "label": "Middle path behavior (what I will do next time)",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w02-homework",
+        "title": "Dialectics Log (3 days)",
+        "purpose": "Track situations where you practiced the middle path.",
+        "fields": [
+          {
+            "id": "situation",
+            "label": "Situation",
+            "type": "text"
+          },
+          {
+            "id": "my_extreme_view",
+            "label": "My extreme view",
+            "type": "text"
+          },
+          {
+            "id": "opposite_view",
+            "label": "Opposite view",
+            "type": "text"
+          },
+          {
+            "id": "middle_path_action_taken",
+            "label": "Middle path action taken",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-A"
+    },
+    {
+      "weekNumber": 3,
+      "sectionId": "dbt-1",
+      "sectionWeekNumber": 3,
+      "title": "States of Mind: Emotion Mind, Reasonable Mind, Wise Mind",
+      "sessionPurpose": "Teach three mind states and practice generating wise-mind responses to stress.",
+      "discussionPrompts": [
+        "What does Emotion Mind look like for you during cravings or conflict?",
+        "What does Reasonable Mind miss about recovery?",
+        "How do you recognize Wise Mind?"
+      ],
+      "tags": [
+        "mindfulness",
+        "wise_mind"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w03-inclass",
+        "title": "Wise Mind Snapshot",
+        "purpose": "Practice identifying emotion mind and reasonable mind, then choosing a wise-mind response.",
+        "fields": [
+          {
+            "id": "recent_problem_situation",
+            "label": "Recent problem situation",
+            "type": "text"
+          },
+          {
+            "id": "emotion_mind_says",
+            "label": "Emotion Mind says",
+            "type": "text"
+          },
+          {
+            "id": "reasonable_mind_says",
+            "label": "Reasonable Mind says",
+            "type": "text"
+          },
+          {
+            "id": "wise_mind_says",
+            "label": "Wise Mind says",
+            "type": "text"
+          },
+          {
+            "id": "wise_mind_action_step",
+            "label": "Wise Mind action step",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w03-homework",
+        "title": "Wise Mind Practice x4",
+        "purpose": "Complete four Wise Mind Snapshots during the week.",
+        "fields": [
+          {
+            "id": "situation",
+            "label": "Situation",
+            "type": "text"
+          },
+          {
+            "id": "emotion_mind_says",
+            "label": "Emotion Mind says",
+            "type": "text"
+          },
+          {
+            "id": "reasonable_mind_says",
+            "label": "Reasonable Mind says",
+            "type": "text"
+          },
+          {
+            "id": "wise_mind_says",
+            "label": "Wise Mind says",
+            "type": "text"
+          },
+          {
+            "id": "wise_mind_action",
+            "label": "Wise Mind action",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-A"
+    },
+    {
+      "weekNumber": 4,
+      "sectionId": "dbt-1",
+      "sectionWeekNumber": 4,
+      "title": "Mindfulness What Skill: Observe",
+      "sessionPurpose": "Build the ability to notice urges and emotions without immediately acting.",
+      "discussionPrompts": [
+        "What happens when you notice an urge without reacting?",
+        "What do you usually do to avoid noticing feelings?",
+        "How does observing help with court choices?"
+      ],
+      "tags": [
+        "mindfulness",
+        "observe"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w04-inclass",
+        "title": "Urge Observation Ladder",
+        "purpose": "Practice observing a trigger/urge as body sensations, thoughts, and action urges.",
+        "fields": [
+          {
+            "id": "trigger",
+            "label": "Trigger",
+            "type": "text"
+          },
+          {
+            "id": "body_sensations",
+            "label": "Body sensations",
+            "type": "text"
+          },
+          {
+            "id": "thoughts",
+            "label": "Thoughts",
+            "type": "text"
+          },
+          {
+            "id": "emotion",
+            "label": "Emotion",
+            "type": "text"
+          },
+          {
+            "id": "action_urge",
+            "label": "Action urge",
+            "type": "text"
+          },
+          {
+            "id": "1_minute_observe_plan",
+            "label": "1-minute observe plan",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w04-homework",
+        "title": "Observe Challenge (7 days)",
+        "purpose": "Observe one urge or emotion daily and record three facts.",
+        "fields": [
+          {
+            "id": "what_i_observed_facts_only",
+            "label": "What I observed (facts only)",
+            "type": "text"
+          },
+          {
+            "id": "body_sensation",
+            "label": "Body sensation",
+            "type": "text"
+          },
+          {
+            "id": "urge_intensity_0_10",
+            "label": "Urge intensity (0–10)",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-A"
+    },
+    {
+      "weekNumber": 5,
+      "sectionId": "dbt-1",
+      "sectionWeekNumber": 5,
+      "title": "Mindfulness What Skill: Describe",
+      "sessionPurpose": "Practice labeling experiences clearly (facts, feelings, urges) to reduce escalation and confusion.",
+      "discussionPrompts": [
+        "Why do labels reduce chaos?",
+        "What labels help you stay out of court trouble?",
+        "What is the difference between facts and stories?"
+      ],
+      "tags": [
+        "mindfulness",
+        "describe"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w05-inclass",
+        "title": "Facts vs. Story",
+        "purpose": "Separate observable facts from interpretations and choose an effective next step.",
+        "fields": [
+          {
+            "id": "facts_camera_could_record",
+            "label": "Facts (camera could record)",
+            "type": "text"
+          },
+          {
+            "id": "my_story_interpretation",
+            "label": "My story/interpretation",
+            "type": "text"
+          },
+          {
+            "id": "alternative_interpretation",
+            "label": "Alternative interpretation",
+            "type": "text"
+          },
+          {
+            "id": "best_next_step",
+            "label": "Best next step",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w05-homework",
+        "title": "Describe It Clean (5 entries)",
+        "purpose": "Write five situations with facts + feeling + urge.",
+        "fields": [
+          {
+            "id": "situation_facts",
+            "label": "Situation facts",
+            "type": "text"
+          },
+          {
+            "id": "feeling_label",
+            "label": "Feeling label",
+            "type": "text"
+          },
+          {
+            "id": "urge_action_tendency",
+            "label": "Urge/action tendency",
+            "type": "text"
+          },
+          {
+            "id": "skill_i_could_use",
+            "label": "Skill I could use",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-A"
+    },
+    {
+      "weekNumber": 6,
+      "sectionId": "dbt-1",
+      "sectionWeekNumber": 6,
+      "title": "Mindfulness What Skill: Participate",
+      "sessionPurpose": "Increase engagement in life and recovery by practicing participation rather than avoidance.",
+      "discussionPrompts": [
+        "What is participating when you do not feel like it?",
+        "Where do you check out and what does it cost you?",
+        "What does participation look like in court, work, or treatment?"
+      ],
+      "tags": [
+        "mindfulness",
+        "participate"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w06-inclass",
+        "title": "Participation Plan",
+        "purpose": "Choose one area of avoidance and plan a small participation step.",
+        "fields": [
+          {
+            "id": "one_place_i_avoid_participating",
+            "label": "One place I avoid participating",
+            "type": "text"
+          },
+          {
+            "id": "what_i_fear_will_happen",
+            "label": "What I fear will happen",
+            "type": "text"
+          },
+          {
+            "id": "small_participation_step",
+            "label": "Small participation step",
+            "type": "text"
+          },
+          {
+            "id": "reward_i_will_give_myself",
+            "label": "Reward I will give myself",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w06-homework",
+        "title": "Participation Streak (7 days)",
+        "purpose": "Complete one small participation step daily and record outcomes.",
+        "fields": [
+          {
+            "id": "participation_step",
+            "label": "Participation step",
+            "type": "text"
+          },
+          {
+            "id": "what_happened",
+            "label": "What happened",
+            "type": "text"
+          },
+          {
+            "id": "what_i_learned",
+            "label": "What I learned",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-A"
+    },
+    {
+      "weekNumber": 7,
+      "sectionId": "dbt-1",
+      "sectionWeekNumber": 7,
+      "title": "Mindfulness How Skill: Nonjudgmental Stance",
+      "sessionPurpose": "Reduce shame and escalation by translating judgments into neutral descriptions and effective actions.",
+      "discussionPrompts": [
+        "How do judgments increase relapse risk?",
+        "Difference between 'I messed up' and 'I am a mess'?",
+        "How does shame affect honesty with staff?"
+      ],
+      "tags": [
+        "mindfulness",
+        "nonjudgmental"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w07-inclass",
+        "title": "Judgment Translation",
+        "purpose": "Translate a judgment into a neutral description and an effective action.",
+        "fields": [
+          {
+            "id": "judgment_thought",
+            "label": "Judgment thought",
+            "type": "text"
+          },
+          {
+            "id": "what_emotion_it_fuels",
+            "label": "What emotion it fuels",
+            "type": "text"
+          },
+          {
+            "id": "neutral_description",
+            "label": "Neutral description",
+            "type": "text"
+          },
+          {
+            "id": "effective_action",
+            "label": "Effective action",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w07-homework",
+        "title": "Nonjudgmental Rewrites (10)",
+        "purpose": "Rewrite ten judgment statements into neutral descriptions.",
+        "fields": [
+          {
+            "id": "judgment_statement",
+            "label": "Judgment statement",
+            "type": "text"
+          },
+          {
+            "id": "neutral_rewrite",
+            "label": "Neutral rewrite",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-A"
+    },
+    {
+      "weekNumber": 8,
+      "sectionId": "dbt-1",
+      "sectionWeekNumber": 8,
+      "title": "Mindfulness How Skill: One-Mindful",
+      "sessionPurpose": "Practice focusing on one task at a time to reduce impulsivity and improve follow-through.",
+      "discussionPrompts": [
+        "Multitasking vs. one-mindful: which helps recovery?",
+        "What happens when you are half-in/half-out of treatment?",
+        "How does one-mindful reduce impulsivity?"
+      ],
+      "tags": [
+        "mindfulness",
+        "one_mindful"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w08-inclass",
+        "title": "One-Mindful Routine",
+        "purpose": "Plan one daily activity to do one-mindfully and define a return cue.",
+        "fields": [
+          {
+            "id": "daily_activity_to_do_one_mindfully",
+            "label": "Daily activity to do one-mindfully",
+            "type": "text"
+          },
+          {
+            "id": "what_distracts_me",
+            "label": "What distracts me",
+            "type": "text"
+          },
+          {
+            "id": "cue_to_return_attention",
+            "label": "Cue to return attention",
+            "type": "text"
+          },
+          {
+            "id": "how_i_will_know_it_worked",
+            "label": "How I will know it worked",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w08-homework",
+        "title": "One-Mindful Daily (7 days)",
+        "purpose": "Practice one-mindful activity daily and track distractions and returns.",
+        "fields": [
+          {
+            "id": "activity",
+            "label": "Activity",
+            "type": "text"
+          },
+          {
+            "id": "distractions_noticed",
+            "label": "Distractions noticed",
+            "type": "text"
+          },
+          {
+            "id": "return_strategy_used",
+            "label": "Return strategy used",
+            "type": "text"
+          },
+          {
+            "id": "rating_0_10",
+            "label": "Rating (0–10)",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-A"
+    },
+    {
+      "weekNumber": 9,
+      "sectionId": "dbt-1",
+      "sectionWeekNumber": 9,
+      "title": "Mindfulness How Skill: Effectiveness",
+      "sessionPurpose": "Teach choosing what works (effective behavior) over being right, fair, or in control.",
+      "discussionPrompts": [
+        "Effective vs fair vs right: which keeps you free?",
+        "What is one fight you keep losing because you want to be right?",
+        "How does effectiveness support compliance without losing self-respect?"
+      ],
+      "tags": [
+        "mindfulness",
+        "effectiveness"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w09-inclass",
+        "title": "Effectiveness Decision Tool",
+        "purpose": "Identify goals and choose an effective alternative action.",
+        "fields": [
+          {
+            "id": "my_goal",
+            "label": "My goal",
+            "type": "text"
+          },
+          {
+            "id": "what_i_am_doing_now",
+            "label": "What I am doing now",
+            "type": "text"
+          },
+          {
+            "id": "does_it_work_short_term_long_term",
+            "label": "Does it work short-term? long-term?",
+            "type": "text"
+          },
+          {
+            "id": "effective_alternative",
+            "label": "Effective alternative",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w09-homework",
+        "title": "Effectiveness Swap (3 situations)",
+        "purpose": "Identify three times you chose 'right' over 'effective' and rewrite.",
+        "fields": [
+          {
+            "id": "situation",
+            "label": "Situation",
+            "type": "text"
+          },
+          {
+            "id": "what_i_did",
+            "label": "What I did",
+            "type": "text"
+          },
+          {
+            "id": "what_it_cost_me",
+            "label": "What it cost me",
+            "type": "text"
+          },
+          {
+            "id": "effective_alternative",
+            "label": "Effective alternative",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-A"
+    },
+    {
+      "weekNumber": 10,
+      "sectionId": "dbt-1",
+      "sectionWeekNumber": 10,
+      "title": "Behavior Change Basics: Mini Chain Analysis",
+      "sessionPurpose": "Introduce behavior chains and identify one link where a different skillful choice is possible.",
+      "discussionPrompts": [
+        "What is the difference between a slip and a chain?",
+        "Where do your chains start (sleep, people, pride, money)?",
+        "What is one link you can change this week?"
+      ],
+      "tags": [
+        "behavior_chain"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w10-inclass",
+        "title": "Mini Chain Analysis",
+        "purpose": "Break down a problem behavior into trigger, vulnerabilities, thoughts/feelings, urges, and alternatives.",
+        "fields": [
+          {
+            "id": "problem_behavior",
+            "label": "Problem behavior",
+            "type": "text"
+          },
+          {
+            "id": "trigger_event",
+            "label": "Trigger event",
+            "type": "text"
+          },
+          {
+            "id": "vulnerability_factors",
+            "label": "Vulnerability factors",
+            "type": "text"
+          },
+          {
+            "id": "thoughts_feelings",
+            "label": "Thoughts/feelings",
+            "type": "text"
+          },
+          {
+            "id": "action_urge",
+            "label": "Action urge",
+            "type": "text"
+          },
+          {
+            "id": "skillful_alternative_at_one_link",
+            "label": "Skillful alternative at one link",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w10-homework",
+        "title": "Mini Chain x2",
+        "purpose": "Complete two mini chain analyses during the week.",
+        "fields": [
+          {
+            "id": "problem_behavior",
+            "label": "Problem behavior",
+            "type": "text"
+          },
+          {
+            "id": "trigger_event",
+            "label": "Trigger event",
+            "type": "text"
+          },
+          {
+            "id": "one_link_i_changed_or_could_change",
+            "label": "One link I changed or could change",
+            "type": "text"
+          },
+          {
+            "id": "outcome",
+            "label": "Outcome",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-A"
+    },
+    {
+      "weekNumber": 11,
+      "sectionId": "dbt-1",
+      "sectionWeekNumber": 11,
+      "title": "Problem-Solving Steps",
+      "sessionPurpose": "Practice small-step problem-solving that fits limited time and resources.",
+      "discussionPrompts": [
+        "When does problem-solving help and when does it become avoidance?",
+        "What problems keep bringing you back to the same outcomes?",
+        "How can you plan when money and time are limited?"
+      ],
+      "tags": [
+        "problem_solving"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w11-inclass",
+        "title": "Small-Step Problem Plan",
+        "purpose": "Turn one problem into a 24-hour next step.",
+        "fields": [
+          {
+            "id": "problem",
+            "label": "Problem",
+            "type": "text"
+          },
+          {
+            "id": "goal",
+            "label": "Goal",
+            "type": "text"
+          },
+          {
+            "id": "three_options",
+            "label": "Three options",
+            "type": "text"
+          },
+          {
+            "id": "best_option",
+            "label": "Best option",
+            "type": "text"
+          },
+          {
+            "id": "first_tiny_step_within_24_hours",
+            "label": "First tiny step within 24 hours",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w11-homework",
+        "title": "2 Plans + 2 Follow-ups",
+        "purpose": "Create two plans and report what you did.",
+        "fields": [
+          {
+            "id": "problem",
+            "label": "Problem",
+            "type": "text"
+          },
+          {
+            "id": "24_hour_step",
+            "label": "24-hour step",
+            "type": "text"
+          },
+          {
+            "id": "did_i_do_it_yes_no",
+            "label": "Did I do it? (yes/no)",
+            "type": "text"
+          },
+          {
+            "id": "what_happened",
+            "label": "What happened",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-A"
+    },
+    {
+      "weekNumber": 12,
+      "sectionId": "dbt-1",
+      "sectionWeekNumber": 12,
+      "title": "Validation Basics (Self + Others)",
+      "sessionPurpose": "Teach validation as a tool for reducing escalation and improving cooperation without excusing behavior.",
+      "discussionPrompts": [
+        "Why do people relapse when they feel invalidated?",
+        "What does self-validation look like without excusing behavior?",
+        "How do you validate without agreeing?"
+      ],
+      "tags": [
+        "validation"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w12-inclass",
+        "title": "Validation Scripts",
+        "purpose": "Write self-validation and other-validation statements for real situations.",
+        "fields": [
+          {
+            "id": "validate_self_statement",
+            "label": "Validate self statement",
+            "type": "text"
+          },
+          {
+            "id": "validate_other_statement",
+            "label": "Validate other statement",
+            "type": "text"
+          },
+          {
+            "id": "situation_where_i_will_try_validation",
+            "label": "Situation where I will try validation",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w12-homework",
+        "title": "Validation Practice Log (7 days)",
+        "purpose": "Practice one self-validation and one other-validation daily.",
+        "fields": [
+          {
+            "id": "self_validation_used",
+            "label": "Self-validation used",
+            "type": "text"
+          },
+          {
+            "id": "other_validation_used",
+            "label": "Other-validation used",
+            "type": "text"
+          },
+          {
+            "id": "effect_what_changed",
+            "label": "Effect (what changed)",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-A"
+    },
+    {
+      "weekNumber": 13,
+      "sectionId": "dbt-1",
+      "sectionWeekNumber": 13,
+      "title": "Skills Breakdown Point: Early Warning Signs",
+      "sessionPurpose": "Identify early, mid, and late signs of dysregulation and pick one usable skill per stage.",
+      "discussionPrompts": [
+        "What does skills breakdown feel like in your body?",
+        "What do you do when you are past your thinking brain?",
+        "What is your early warning signal?"
+      ],
+      "tags": [
+        "crisis_prep"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w13-inclass",
+        "title": "My Breakdown Signs",
+        "purpose": "Map early/mid/late signs and one skill that still works late.",
+        "fields": [
+          {
+            "id": "early_signs",
+            "label": "Early signs",
+            "type": "text"
+          },
+          {
+            "id": "mid_signs",
+            "label": "Mid signs",
+            "type": "text"
+          },
+          {
+            "id": "late_signs",
+            "label": "Late signs",
+            "type": "text"
+          },
+          {
+            "id": "skill_i_can_still_do_when_late",
+            "label": "Skill I can still do when late",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w13-homework",
+        "title": "Crisis Plan Draft",
+        "purpose": "Draft warning signs + three crisis actions + three safe contacts/places.",
+        "fields": [
+          {
+            "id": "warning_signs",
+            "label": "Warning signs",
+            "type": "text"
+          },
+          {
+            "id": "three_crisis_actions",
+            "label": "Three crisis actions",
+            "type": "text"
+          },
+          {
+            "id": "three_people_places_that_are_safe",
+            "label": "Three people/places that are safe",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-A"
+    },
+    {
+      "weekNumber": 14,
+      "sectionId": "dbt-1",
+      "sectionWeekNumber": 14,
+      "title": "Values + Life Worth Living (Drug Court Aligned)",
+      "sessionPurpose": "Connect values to specific court-safe behaviors and weekly action steps.",
+      "discussionPrompts": [
+        "What do you want your life to look like after court?",
+        "Which choices move you toward that life?",
+        "What value do you want to practice this week?"
+      ],
+      "tags": [
+        "values"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w14-inclass",
+        "title": "Values-to-Behavior Bridge",
+        "purpose": "Translate one value into concrete recovery, relationship, and court behaviors.",
+        "fields": [
+          {
+            "id": "value",
+            "label": "Value",
+            "type": "text"
+          },
+          {
+            "id": "one_court_safe_behavior_that_shows_it",
+            "label": "One court-safe behavior that shows it",
+            "type": "text"
+          },
+          {
+            "id": "one_relationship_behavior",
+            "label": "One relationship behavior",
+            "type": "text"
+          },
+          {
+            "id": "one_recovery_behavior",
+            "label": "One recovery behavior",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w14-homework",
+        "title": "Values Practice x7",
+        "purpose": "Daily value + one action.",
+        "fields": [
+          {
+            "id": "value",
+            "label": "Value",
+            "type": "text"
+          },
+          {
+            "id": "action_i_took",
+            "label": "Action I took",
+            "type": "text"
+          },
+          {
+            "id": "what_it_changed",
+            "label": "What it changed",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-A"
+    },
+    {
+      "weekNumber": 15,
+      "sectionId": "dbt-1",
+      "sectionWeekNumber": 15,
+      "title": "Mindfulness Review + Skill Integration",
+      "sessionPurpose": "Select top skills and identify common blocks to using them under stress.",
+      "discussionPrompts": [
+        "Which mindfulness skill changed your week most?",
+        "Where did you resist skills and why?",
+        "What is your go-to skill under stress?"
+      ],
+      "tags": [
+        "review"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w15-inclass",
+        "title": "My Top 3 Skills Card",
+        "purpose": "Create a personal quick-reference card for top skills and barriers.",
+        "fields": [
+          {
+            "id": "top_3_skills",
+            "label": "Top 3 skills",
+            "type": "text"
+          },
+          {
+            "id": "when_to_use_them",
+            "label": "When to use them",
+            "type": "text"
+          },
+          {
+            "id": "what_blocks_me",
+            "label": "What blocks me",
+            "type": "text"
+          },
+          {
+            "id": "what_i_will_do_when_blocked",
+            "label": "What I will do when blocked",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w15-homework",
+        "title": "Skill Reps (7 days)",
+        "purpose": "Use one skill daily and record situation and effect.",
+        "fields": [
+          {
+            "id": "situation",
+            "label": "Situation",
+            "type": "text"
+          },
+          {
+            "id": "skill_used",
+            "label": "Skill used",
+            "type": "text"
+          },
+          {
+            "id": "effect_0_10",
+            "label": "Effect (0–10)",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-A"
+    },
+    {
+      "weekNumber": 16,
+      "sectionId": "dbt-1",
+      "sectionWeekNumber": 16,
+      "title": "Section 1 Checkpoint + Readiness Bridge",
+      "sessionPurpose": "Review gains and set two goals for the next section: one emotion goal and one crisis goal.",
+      "discussionPrompts": [
+        "What do you understand about your patterns now?",
+        "What skill do you still avoid?",
+        "What would make the next section successful?"
+      ],
+      "tags": [
+        "checkpoint"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w16-inclass",
+        "title": "Section 1 Progress Snapshot",
+        "purpose": "Summarize biggest change, biggest struggle, and support needs.",
+        "fields": [
+          {
+            "id": "biggest_change",
+            "label": "Biggest change",
+            "type": "text"
+          },
+          {
+            "id": "biggest_struggle",
+            "label": "Biggest struggle",
+            "type": "text"
+          },
+          {
+            "id": "skill_i_am_committing_to_keep",
+            "label": "Skill I am committing to keep",
+            "type": "text"
+          },
+          {
+            "id": "support_i_need_from_group",
+            "label": "Support I need from group",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w16-homework",
+        "title": "Section 2 Prep Goals",
+        "purpose": "Pick an emotion goal and a crisis goal for the next 30 days.",
+        "fields": [
+          {
+            "id": "emotion_goal",
+            "label": "Emotion goal",
+            "type": "text"
+          },
+          {
+            "id": "crisis_goal",
+            "label": "Crisis goal",
+            "type": "text"
+          },
+          {
+            "id": "one_action_step_this_week",
+            "label": "One action step this week",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-A"
+    },
+    {
+      "weekNumber": 17,
+      "sectionId": "dbt-2",
+      "sectionWeekNumber": 1,
+      "title": "Understanding Emotions: What Emotions Do",
+      "sessionPurpose": "Teach the functions of emotions and identify emotions that commonly precede relapse or violations.",
+      "discussionPrompts": [
+        "What is the job of anger? fear? shame?",
+        "What emotions show up before you use?",
+        "What emotions show up before you violate conditions?"
+      ],
+      "tags": [
+        "emotion_regulation"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w17-inclass",
+        "title": "Emotion Job Chart",
+        "purpose": "Identify emotion functions and skillful responses.",
+        "fields": [
+          {
+            "id": "emotion",
+            "label": "Emotion",
+            "type": "text"
+          },
+          {
+            "id": "what_it_tries_to_protect",
+            "label": "What it tries to protect",
+            "type": "text"
+          },
+          {
+            "id": "what_it_pushes_me_to_do",
+            "label": "What it pushes me to do",
+            "type": "text"
+          },
+          {
+            "id": "skillful_response",
+            "label": "Skillful response",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w17-homework",
+        "title": "Emotion Tracking (7 days)",
+        "purpose": "Track one emotion per day with intensity, trigger, and action urge.",
+        "fields": [
+          {
+            "id": "emotion",
+            "label": "Emotion",
+            "type": "text"
+          },
+          {
+            "id": "intensity_0_10",
+            "label": "Intensity (0–10)",
+            "type": "text"
+          },
+          {
+            "id": "trigger",
+            "label": "Trigger",
+            "type": "text"
+          },
+          {
+            "id": "action_urge",
+            "label": "Action urge",
+            "type": "text"
+          },
+          {
+            "id": "what_i_did",
+            "label": "What I did",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-B"
+    },
+    {
+      "weekNumber": 18,
+      "sectionId": "dbt-2",
+      "sectionWeekNumber": 2,
+      "title": "Naming Emotions + Body Signals",
+      "sessionPurpose": "Increase emotional literacy by linking body cues to emotion labels and early interventions.",
+      "discussionPrompts": [
+        "How does your body warn you before your behavior changes?",
+        "What happens when you mislabel emotions?",
+        "How does labeling reduce impulsivity?"
+      ],
+      "tags": [
+        "emotion_regulation"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w18-inclass",
+        "title": "Body Signals Map",
+        "purpose": "Identify where stress/anger/craving show up and what to do early.",
+        "fields": [
+          {
+            "id": "where_i_feel_stress",
+            "label": "Where I feel stress",
+            "type": "text"
+          },
+          {
+            "id": "where_i_feel_anger",
+            "label": "Where I feel anger",
+            "type": "text"
+          },
+          {
+            "id": "where_i_feel_craving",
+            "label": "Where I feel craving",
+            "type": "text"
+          },
+          {
+            "id": "early_signs_response_plan",
+            "label": "Early signs + response plan",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w18-homework",
+        "title": "Body Signal Log (5 entries)",
+        "purpose": "Log body signals, label the emotion, and choose a skill.",
+        "fields": [
+          {
+            "id": "body_signal_noticed",
+            "label": "Body signal noticed",
+            "type": "text"
+          },
+          {
+            "id": "emotion_label",
+            "label": "Emotion label",
+            "type": "text"
+          },
+          {
+            "id": "skill_used",
+            "label": "Skill used",
+            "type": "text"
+          },
+          {
+            "id": "outcome",
+            "label": "Outcome",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-B"
+    },
+    {
+      "weekNumber": 19,
+      "sectionId": "dbt-2",
+      "sectionWeekNumber": 3,
+      "title": "Check the Facts",
+      "sessionPurpose": "Reduce emotion-driven assumptions by checking facts and generating alternative interpretations.",
+      "discussionPrompts": [
+        "When did your feelings not match the facts?",
+        "How do assumptions escalate conflict with staff/family?",
+        "What are your most common court-thinking errors?"
+      ],
+      "tags": [
+        "emotion_regulation",
+        "cognition"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w19-inclass",
+        "title": "Facts Check",
+        "purpose": "Practice separating interpretations from facts and choosing an effective next step.",
+        "fields": [
+          {
+            "id": "situation",
+            "label": "Situation",
+            "type": "text"
+          },
+          {
+            "id": "interpretation",
+            "label": "Interpretation",
+            "type": "text"
+          },
+          {
+            "id": "facts",
+            "label": "Facts",
+            "type": "text"
+          },
+          {
+            "id": "other_possible_explanations",
+            "label": "Other possible explanations",
+            "type": "text"
+          },
+          {
+            "id": "best_next_step",
+            "label": "Best next step",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w19-homework",
+        "title": "Check the Facts x3",
+        "purpose": "Use the facts check three times and record what changed.",
+        "fields": [
+          {
+            "id": "situation",
+            "label": "Situation",
+            "type": "text"
+          },
+          {
+            "id": "my_first_story",
+            "label": "My first story",
+            "type": "text"
+          },
+          {
+            "id": "facts_i_found",
+            "label": "Facts I found",
+            "type": "text"
+          },
+          {
+            "id": "what_changed_in_my_response",
+            "label": "What changed in my response",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-B"
+    },
+    {
+      "weekNumber": 20,
+      "sectionId": "dbt-2",
+      "sectionWeekNumber": 4,
+      "title": "Opposite Action",
+      "sessionPurpose": "Practice acting opposite to unhelpful urges when emotions are not justified or not effective.",
+      "discussionPrompts": [
+        "When does acting how you feel keep you trapped?",
+        "What is opposite action for shame? anger? fear?",
+        "Where can you practice safely?"
+      ],
+      "tags": [
+        "emotion_regulation"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w20-inclass",
+        "title": "Opposite Action Plan",
+        "purpose": "Plan an opposite-action behavior and how to measure success.",
+        "fields": [
+          {
+            "id": "emotion_urge",
+            "label": "Emotion + urge",
+            "type": "text"
+          },
+          {
+            "id": "is_emotion_justified_yes_no_unsure",
+            "label": "Is emotion justified? (yes/no/unsure)",
+            "type": "text"
+          },
+          {
+            "id": "opposite_action_behavior",
+            "label": "Opposite action behavior",
+            "type": "text"
+          },
+          {
+            "id": "how_i_will_measure_success",
+            "label": "How I will measure success",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w20-homework",
+        "title": "Opposite Action x4",
+        "purpose": "Try opposite action four times and rate intensity change.",
+        "fields": [
+          {
+            "id": "emotion",
+            "label": "Emotion",
+            "type": "text"
+          },
+          {
+            "id": "urge",
+            "label": "Urge",
+            "type": "text"
+          },
+          {
+            "id": "opposite_action_i_did",
+            "label": "Opposite action I did",
+            "type": "text"
+          },
+          {
+            "id": "intensity_before_0_10",
+            "label": "Intensity before (0–10)",
+            "type": "text"
+          },
+          {
+            "id": "intensity_after_0_10",
+            "label": "Intensity after (0–10)",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-B"
+    },
+    {
+      "weekNumber": 21,
+      "sectionId": "dbt-2",
+      "sectionWeekNumber": 5,
+      "title": "Solve the Problem vs Change the Emotion vs Tolerate",
+      "sessionPurpose": "Choose the right skills pathway depending on what is changeable and what is not.",
+      "discussionPrompts": [
+        "When do you solve the problem versus change the emotion?",
+        "What repeat problem needs solving?",
+        "Where does avoidance show up?"
+      ],
+      "tags": [
+        "emotion_regulation",
+        "problem_solving"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w21-inclass",
+        "title": "Choose the Path",
+        "purpose": "Decide whether to solve, change emotion, or tolerate; select a first step.",
+        "fields": [
+          {
+            "id": "situation",
+            "label": "Situation",
+            "type": "text"
+          },
+          {
+            "id": "solve_problem_change_emotion_tolerate",
+            "label": "Solve problem / Change emotion / Tolerate",
+            "type": "text"
+          },
+          {
+            "id": "chosen_skill_path",
+            "label": "Chosen skill path",
+            "type": "text"
+          },
+          {
+            "id": "first_step",
+            "label": "First step",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w21-homework",
+        "title": "Two Paths Practice",
+        "purpose": "Do one problem-solving plan and one emotion-change attempt.",
+        "fields": [
+          {
+            "id": "situation",
+            "label": "Situation",
+            "type": "text"
+          },
+          {
+            "id": "chosen_path",
+            "label": "Chosen path",
+            "type": "text"
+          },
+          {
+            "id": "skill_used",
+            "label": "Skill used",
+            "type": "text"
+          },
+          {
+            "id": "outcome",
+            "label": "Outcome",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-B"
+    },
+    {
+      "weekNumber": 22,
+      "sectionId": "dbt-2",
+      "sectionWeekNumber": 6,
+      "title": "Build Positive Experiences (Short-Term)",
+      "sessionPurpose": "Increase healthy reinforcement by building a low-cost menu of positive activities.",
+      "discussionPrompts": [
+        "Why does recovery collapse when life is only 'don’t use'?",
+        "What low-cost positives work in your real life?",
+        "What positives reduce cravings?"
+      ],
+      "tags": [
+        "behavior_activation"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w22-inclass",
+        "title": "Low-Cost Positive Menu",
+        "purpose": "Create a menu and select three activities for this week.",
+        "fields": [
+          {
+            "id": "10_low_cost_activities",
+            "label": "10 low-cost activities",
+            "type": "text"
+          },
+          {
+            "id": "3_i_will_do_this_week",
+            "label": "3 I will do this week",
+            "type": "text"
+          },
+          {
+            "id": "barriers_workaround",
+            "label": "Barriers + workaround",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w22-homework",
+        "title": "Positive Activity Log (3)",
+        "purpose": "Plan and do three activities; rate effect.",
+        "fields": [
+          {
+            "id": "activity_planned",
+            "label": "Activity planned",
+            "type": "text"
+          },
+          {
+            "id": "did_i_do_it_yes_no",
+            "label": "Did I do it? (yes/no)",
+            "type": "text"
+          },
+          {
+            "id": "effect_on_mood_urge_0_10",
+            "label": "Effect on mood/urge (0–10)",
+            "type": "text"
+          },
+          {
+            "id": "what_i_learned",
+            "label": "What I learned",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-B"
+    },
+    {
+      "weekNumber": 23,
+      "sectionId": "dbt-2",
+      "sectionWeekNumber": 7,
+      "title": "Build Positive Experiences (Long-Term) + Goals",
+      "sessionPurpose": "Connect long-term goals to small steps that build a stable recovery lifestyle.",
+      "discussionPrompts": [
+        "What long-term goal makes court worth it?",
+        "How do goals protect you from relapse?",
+        "What is one next-right-step goal?"
+      ],
+      "tags": [
+        "goals"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w23-inclass",
+        "title": "Goal Ladder",
+        "purpose": "Create 6-month, 3-month, 1-week, and 24-hour steps.",
+        "fields": [
+          {
+            "id": "6_month_goal",
+            "label": "6-month goal",
+            "type": "text"
+          },
+          {
+            "id": "3_month_step",
+            "label": "3-month step",
+            "type": "text"
+          },
+          {
+            "id": "1_week_step",
+            "label": "1-week step",
+            "type": "text"
+          },
+          {
+            "id": "24_hour_step",
+            "label": "24-hour step",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w23-homework",
+        "title": "Goal Step Execution",
+        "purpose": "Complete the 24-hour step and reflect.",
+        "fields": [
+          {
+            "id": "24_hour_step",
+            "label": "24-hour step",
+            "type": "text"
+          },
+          {
+            "id": "did_i_do_it_yes_no",
+            "label": "Did I do it? (yes/no)",
+            "type": "text"
+          },
+          {
+            "id": "obstacle",
+            "label": "Obstacle",
+            "type": "text"
+          },
+          {
+            "id": "next_adjustment",
+            "label": "Next adjustment",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-B"
+    },
+    {
+      "weekNumber": 24,
+      "sectionId": "dbt-2",
+      "sectionWeekNumber": 8,
+      "title": "PLEASE: Vulnerability Reduction Basics",
+      "sessionPurpose": "Reduce emotional vulnerability through realistic sleep, nutrition, and health behavior planning.",
+      "discussionPrompts": [
+        "How do sleep and hunger show up in your attitude?",
+        "How does illness or stress increase relapse risk?",
+        "What is one small health habit you can actually do?"
+      ],
+      "tags": [
+        "emotion_regulation",
+        "health"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w24-inclass",
+        "title": "PLEASE Micro Plan",
+        "purpose": "Create a realistic plan for sleep, eating, and one health action.",
+        "fields": [
+          {
+            "id": "sleep_plan_realistic",
+            "label": "Sleep plan (realistic)",
+            "type": "text"
+          },
+          {
+            "id": "eating_plan_realistic",
+            "label": "Eating plan (realistic)",
+            "type": "text"
+          },
+          {
+            "id": "substance_boundary_plan",
+            "label": "Substance boundary plan",
+            "type": "text"
+          },
+          {
+            "id": "one_medical_health_action",
+            "label": "One medical/health action",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w24-homework",
+        "title": "PLEASE Tracker (7 days)",
+        "purpose": "Track sleep, meals, activity minutes, and health actions.",
+        "fields": [
+          {
+            "id": "sleep_hours",
+            "label": "Sleep hours",
+            "type": "text"
+          },
+          {
+            "id": "meals_count",
+            "label": "Meals (count)",
+            "type": "text"
+          },
+          {
+            "id": "activity_minutes",
+            "label": "Activity minutes",
+            "type": "text"
+          },
+          {
+            "id": "meds_health_action_taken",
+            "label": "Meds/health action taken",
+            "type": "text"
+          },
+          {
+            "id": "urge_level_0_10",
+            "label": "Urge level (0–10)",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-B"
+    },
+    {
+      "weekNumber": 25,
+      "sectionId": "dbt-2",
+      "sectionWeekNumber": 9,
+      "title": "Build Mastery + Cope Ahead",
+      "sessionPurpose": "Increase mastery experiences and prepare for predictable high-risk events using cope-ahead planning.",
+      "discussionPrompts": [
+        "Why does mastery reduce shame?",
+        "What mastery task can you do despite low resources?",
+        "What is one high-risk event you can cope-ahead for?"
+      ],
+      "tags": [
+        "cope_ahead"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w25-inclass",
+        "title": "Cope Ahead Script",
+        "purpose": "Write a cope-ahead rehearsal including skills, obstacles, and backup plan.",
+        "fields": [
+          {
+            "id": "situation",
+            "label": "Situation",
+            "type": "text"
+          },
+          {
+            "id": "skills_i_will_use",
+            "label": "Skills I will use",
+            "type": "text"
+          },
+          {
+            "id": "obstacles",
+            "label": "Obstacles",
+            "type": "text"
+          },
+          {
+            "id": "backup_plan",
+            "label": "Backup plan",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w25-homework",
+        "title": "Cope Ahead x2",
+        "purpose": "Complete two cope-ahead plans; reflect after each event.",
+        "fields": [
+          {
+            "id": "situation",
+            "label": "Situation",
+            "type": "text"
+          },
+          {
+            "id": "plan_used",
+            "label": "Plan used",
+            "type": "text"
+          },
+          {
+            "id": "what_happened",
+            "label": "What happened",
+            "type": "text"
+          },
+          {
+            "id": "what_i_would_change",
+            "label": "What I would change",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-B"
+    },
+    {
+      "weekNumber": 26,
+      "sectionId": "dbt-2",
+      "sectionWeekNumber": 10,
+      "title": "Distress Tolerance: Crisis vs. Problem",
+      "sessionPurpose": "Differentiate crises from solvable problems and apply the right strategy.",
+      "discussionPrompts": [
+        "What makes something a crisis in your body/brain?",
+        "What do you do that makes it worse?",
+        "What does 'survive without making it worse' mean?"
+      ],
+      "tags": [
+        "distress_tolerance"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w26-inclass",
+        "title": "Crisis Decision Tree",
+        "purpose": "Decide whether to problem-solve or use crisis survival skills.",
+        "fields": [
+          {
+            "id": "situation",
+            "label": "Situation",
+            "type": "text"
+          },
+          {
+            "id": "can_i_fix_it_now_yes_no",
+            "label": "Can I fix it now? (yes/no)",
+            "type": "text"
+          },
+          {
+            "id": "if_no_crisis_survival_skills_list",
+            "label": "If no: crisis survival skills list",
+            "type": "text"
+          },
+          {
+            "id": "if_yes_first_problem_solving_step",
+            "label": "If yes: first problem-solving step",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w26-homework",
+        "title": "Crisis Tree Use x2",
+        "purpose": "Use the crisis decision tree twice and record outcomes.",
+        "fields": [
+          {
+            "id": "situation",
+            "label": "Situation",
+            "type": "text"
+          },
+          {
+            "id": "path_chosen",
+            "label": "Path chosen",
+            "type": "text"
+          },
+          {
+            "id": "skill_used",
+            "label": "Skill used",
+            "type": "text"
+          },
+          {
+            "id": "outcome",
+            "label": "Outcome",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-B"
+    },
+    {
+      "weekNumber": 27,
+      "sectionId": "dbt-2",
+      "sectionWeekNumber": 11,
+      "title": "STOP + Pause Skills",
+      "sessionPurpose": "Build a pause between trigger and action using a simple STOP-based plan.",
+      "discussionPrompts": [
+        "Where do you speed up and lose control?",
+        "What does your pause look like?",
+        "Who can you contact before this becomes a violation?"
+      ],
+      "tags": [
+        "distress_tolerance",
+        "stop"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w27-inclass",
+        "title": "Pause Plan Card",
+        "purpose": "Create a personal STOP cue, grounding step, and contact plan.",
+        "fields": [
+          {
+            "id": "my_stop_cue",
+            "label": "My STOP cue",
+            "type": "text"
+          },
+          {
+            "id": "my_grounding_step",
+            "label": "My grounding step",
+            "type": "text"
+          },
+          {
+            "id": "my_next_call_text",
+            "label": "My next call/text",
+            "type": "text"
+          },
+          {
+            "id": "my_safe_location_option",
+            "label": "My safe location option",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w27-homework",
+        "title": "Pause Practice (daily)",
+        "purpose": "Practice pause once daily (even when calm) and record.",
+        "fields": [
+          {
+            "id": "when_i_practiced",
+            "label": "When I practiced",
+            "type": "text"
+          },
+          {
+            "id": "what_i_noticed",
+            "label": "What I noticed",
+            "type": "text"
+          },
+          {
+            "id": "did_it_help_0_10",
+            "label": "Did it help? (0–10)",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-B"
+    },
+    {
+      "weekNumber": 28,
+      "sectionId": "dbt-2",
+      "sectionWeekNumber": 12,
+      "title": "TIP Skills: Fast Body Regulation",
+      "sessionPurpose": "Practice body-based regulation strategies for rapid reduction of emotional arousal.",
+      "discussionPrompts": [
+        "Why do body skills work faster than thinking skills?",
+        "When do you need fast skills vs slow skills?",
+        "What is safe and appropriate in your setting?"
+      ],
+      "tags": [
+        "distress_tolerance",
+        "tip"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w28-inclass",
+        "title": "Fast Regulation Menu",
+        "purpose": "Identify three body-based skills you can safely use and when.",
+        "fields": [
+          {
+            "id": "three_body_based_skills_i_can_do_safely",
+            "label": "Three body-based skills I can do safely",
+            "type": "text"
+          },
+          {
+            "id": "when_i_will_use_each",
+            "label": "When I will use each",
+            "type": "text"
+          },
+          {
+            "id": "what_i_noticed_after",
+            "label": "What I noticed after",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w28-homework",
+        "title": "TIP Reps x5",
+        "purpose": "Try fast regulation five times; rate intensity before/after.",
+        "fields": [
+          {
+            "id": "skill_used",
+            "label": "Skill used",
+            "type": "text"
+          },
+          {
+            "id": "intensity_before_0_10",
+            "label": "Intensity before (0–10)",
+            "type": "text"
+          },
+          {
+            "id": "intensity_after_0_10",
+            "label": "Intensity after (0–10)",
+            "type": "text"
+          },
+          {
+            "id": "notes",
+            "label": "Notes",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-B"
+    },
+    {
+      "weekNumber": 29,
+      "sectionId": "dbt-2",
+      "sectionWeekNumber": 13,
+      "title": "Self-Soothing + Grounding (5 senses)",
+      "sessionPurpose": "Build low-cost soothing and grounding strategies to tolerate distress without impulsive action.",
+      "discussionPrompts": [
+        "What is soothing versus avoidance?",
+        "What can you do with low money?",
+        "What helps you tolerate shame without using?"
+      ],
+      "tags": [
+        "distress_tolerance",
+        "self_soothe"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w29-inclass",
+        "title": "5-Senses Soothing Plan",
+        "purpose": "Create a plan with one soothing option per sense.",
+        "fields": [
+          {
+            "id": "sight_option",
+            "label": "Sight option",
+            "type": "text"
+          },
+          {
+            "id": "sound_option",
+            "label": "Sound option",
+            "type": "text"
+          },
+          {
+            "id": "touch_option",
+            "label": "Touch option",
+            "type": "text"
+          },
+          {
+            "id": "smell_option",
+            "label": "Smell option",
+            "type": "text"
+          },
+          {
+            "id": "taste_option",
+            "label": "Taste option",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w29-homework",
+        "title": "Soothing Practice x7",
+        "purpose": "Practice one sense-based soothing strategy daily.",
+        "fields": [
+          {
+            "id": "sense_used",
+            "label": "Sense used",
+            "type": "text"
+          },
+          {
+            "id": "strategy",
+            "label": "Strategy",
+            "type": "text"
+          },
+          {
+            "id": "effect_0_10",
+            "label": "Effect (0–10)",
+            "type": "text"
+          },
+          {
+            "id": "notes",
+            "label": "Notes",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-B"
+    },
+    {
+      "weekNumber": 30,
+      "sectionId": "dbt-2",
+      "sectionWeekNumber": 14,
+      "title": "Reality Acceptance: Radical Acceptance + Willingness",
+      "sessionPurpose": "Practice accepting what cannot be changed today and choosing willing actions aligned with recovery.",
+      "discussionPrompts": [
+        "What reality are you still fighting?",
+        "How does fighting reality increase suffering and relapse risk?",
+        "What does willingness look like in drug court?"
+      ],
+      "tags": [
+        "distress_tolerance",
+        "acceptance"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w30-inclass",
+        "title": "Acceptance Statement Builder",
+        "purpose": "Write acceptance and change statements plus a willing action.",
+        "fields": [
+          {
+            "id": "reality_i_hate",
+            "label": "Reality I hate",
+            "type": "text"
+          },
+          {
+            "id": "what_i_cannot_change_today",
+            "label": "What I cannot change today",
+            "type": "text"
+          },
+          {
+            "id": "what_i_can_do_today",
+            "label": "What I can do today",
+            "type": "text"
+          },
+          {
+            "id": "willing_action",
+            "label": "Willing action",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w30-homework",
+        "title": "Radical Acceptance x3",
+        "purpose": "Complete three acceptance entries during the week.",
+        "fields": [
+          {
+            "id": "reality",
+            "label": "Reality",
+            "type": "text"
+          },
+          {
+            "id": "acceptance_statement",
+            "label": "Acceptance statement",
+            "type": "text"
+          },
+          {
+            "id": "willing_action",
+            "label": "Willing action",
+            "type": "text"
+          },
+          {
+            "id": "effect_0_10",
+            "label": "Effect (0–10)",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-B"
+    },
+    {
+      "weekNumber": 31,
+      "sectionId": "dbt-2",
+      "sectionWeekNumber": 15,
+      "title": "Addiction-Focused Crisis Skills: Slip Response Plan",
+      "sessionPurpose": "Reduce lapse-to-relapse risk by planning immediate actions after a slip or near-slip.",
+      "discussionPrompts": [
+        "What does abstinence mean in behavior, not just words?",
+        "What happens after a slip if shame drives the next choice?",
+        "How do you return to recovery fast?"
+      ],
+      "tags": [
+        "distress_tolerance",
+        "addiction"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w31-inclass",
+        "title": "Slip Response Plan",
+        "purpose": "Create a personal 24-hour plan after a slip or near-slip.",
+        "fields": [
+          {
+            "id": "my_highest_risk_moment",
+            "label": "My highest-risk moment",
+            "type": "text"
+          },
+          {
+            "id": "my_three_early_actions_after_a_slip",
+            "label": "My three early actions after a slip",
+            "type": "text"
+          },
+          {
+            "id": "who_i_tell",
+            "label": "Who I tell",
+            "type": "text"
+          },
+          {
+            "id": "how_i_reduce_harm_immediately",
+            "label": "How I reduce harm immediately",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w31-homework",
+        "title": "Bridge Back Plan",
+        "purpose": "Write a 24-hour return plan and rehearse once.",
+        "fields": [
+          {
+            "id": "24_hour_return_plan",
+            "label": "24-hour return plan",
+            "type": "text"
+          },
+          {
+            "id": "where_i_will_be",
+            "label": "Where I will be",
+            "type": "text"
+          },
+          {
+            "id": "who_i_will_contact",
+            "label": "Who I will contact",
+            "type": "text"
+          },
+          {
+            "id": "what_i_will_do_first",
+            "label": "What I will do first",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-B"
+    },
+    {
+      "weekNumber": 32,
+      "sectionId": "dbt-2",
+      "sectionWeekNumber": 16,
+      "title": "Section 2 Checkpoint: Emotion Plan + Crisis Plan",
+      "sessionPurpose": "Consolidate learning into two usable plans: emotion regulation plan and crisis plan.",
+      "discussionPrompts": [
+        "What skill reduced intensity the fastest?",
+        "What vulnerability factor hits you hardest?",
+        "What plan do you trust enough to use?"
+      ],
+      "tags": [
+        "checkpoint"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w32-inclass",
+        "title": "My Two Plans",
+        "purpose": "Finalize an emotion plan and crisis plan using your most effective skills.",
+        "fields": [
+          {
+            "id": "emotion_plan_top_triggers_top_skills",
+            "label": "Emotion plan: top triggers + top skills",
+            "type": "text"
+          },
+          {
+            "id": "crisis_plan_warning_signs_steps_contacts",
+            "label": "Crisis plan: warning signs + steps + contacts",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w32-homework",
+        "title": "Plan Test Week",
+        "purpose": "Use emotion plan twice and crisis plan once; record what worked.",
+        "fields": [
+          {
+            "id": "plan_used",
+            "label": "Plan used",
+            "type": "text"
+          },
+          {
+            "id": "situation",
+            "label": "Situation",
+            "type": "text"
+          },
+          {
+            "id": "skill_used",
+            "label": "Skill used",
+            "type": "text"
+          },
+          {
+            "id": "outcome",
+            "label": "Outcome",
+            "type": "text"
+          },
+          {
+            "id": "what_i_will_change",
+            "label": "What I will change",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-B"
+    },
+    {
+      "weekNumber": 33,
+      "sectionId": "dbt-3",
+      "sectionWeekNumber": 1,
+      "title": "Interpersonal Goals: Objective, Relationship, Self-Respect",
+      "sessionPurpose": "Clarify interpersonal priorities and choose balanced actions aligned with goals.",
+      "discussionPrompts": [
+        "Which goal do you sacrifice first under stress?",
+        "How does pride show up as self-respect versus ego?",
+        "What goals matter most with probation or case managers?"
+      ],
+      "tags": [
+        "interpersonal_effectiveness"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w33-inclass",
+        "title": "Goal Picker",
+        "purpose": "Clarify objective, relationship, and self-respect goals in a real situation.",
+        "fields": [
+          {
+            "id": "situation",
+            "label": "Situation",
+            "type": "text"
+          },
+          {
+            "id": "objective_goal",
+            "label": "Objective goal",
+            "type": "text"
+          },
+          {
+            "id": "relationship_goal",
+            "label": "Relationship goal",
+            "type": "text"
+          },
+          {
+            "id": "self_respect_goal",
+            "label": "Self-respect goal",
+            "type": "text"
+          },
+          {
+            "id": "balanced_script_idea",
+            "label": "Balanced script idea",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w33-homework",
+        "title": "Goal Picker x3",
+        "purpose": "Complete three goal pickers for real situations.",
+        "fields": [
+          {
+            "id": "situation",
+            "label": "Situation",
+            "type": "text"
+          },
+          {
+            "id": "most_important_goal_objective_relationship_self_respect",
+            "label": "Most important goal (objective/relationship/self-respect)",
+            "type": "text"
+          },
+          {
+            "id": "planned_response",
+            "label": "Planned response",
+            "type": "text"
+          },
+          {
+            "id": "outcome",
+            "label": "Outcome",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-C"
+    },
+    {
+      "weekNumber": 34,
+      "sectionId": "dbt-3",
+      "sectionWeekNumber": 2,
+      "title": "Asking for What You Need: Clear Ask Builder",
+      "sessionPurpose": "Practice making clear, respectful requests without aggression or passive hints.",
+      "discussionPrompts": [
+        "Why do people hint instead of ask?",
+        "What happens when you ask aggressively or passively?",
+        "What is a respectful ask in drug court context?"
+      ],
+      "tags": [
+        "interpersonal_effectiveness"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w34-inclass",
+        "title": "Clear Ask Builder",
+        "purpose": "Build a structured request script and a negotiation option.",
+        "fields": [
+          {
+            "id": "describe_facts",
+            "label": "Describe facts",
+            "type": "text"
+          },
+          {
+            "id": "express_feeling",
+            "label": "Express feeling",
+            "type": "text"
+          },
+          {
+            "id": "assert_request",
+            "label": "Assert request",
+            "type": "text"
+          },
+          {
+            "id": "reinforce_benefit",
+            "label": "Reinforce benefit",
+            "type": "text"
+          },
+          {
+            "id": "mindful_repeat_line",
+            "label": "Mindful repeat line",
+            "type": "text"
+          },
+          {
+            "id": "appear_confident_cue",
+            "label": "Appear confident cue",
+            "type": "text"
+          },
+          {
+            "id": "negotiate_option",
+            "label": "Negotiate option",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w34-homework",
+        "title": "One Ask",
+        "purpose": "Use the script once (or role-play) and record results.",
+        "fields": [
+          {
+            "id": "who_i_asked",
+            "label": "Who I asked",
+            "type": "text"
+          },
+          {
+            "id": "what_i_asked_for",
+            "label": "What I asked for",
+            "type": "text"
+          },
+          {
+            "id": "what_happened",
+            "label": "What happened",
+            "type": "text"
+          },
+          {
+            "id": "what_i_learned",
+            "label": "What I learned",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-C"
+    },
+    {
+      "weekNumber": 35,
+      "sectionId": "dbt-3",
+      "sectionWeekNumber": 3,
+      "title": "Saying No / Setting Limits: Boundary Script",
+      "sessionPurpose": "Practice saying no and setting limits without escalation or guilt-driven overexplaining.",
+      "discussionPrompts": [
+        "What is the difference between boundaries and control?",
+        "What do you say yes to that wrecks your progress?",
+        "How do you say no without escalating?"
+      ],
+      "tags": [
+        "interpersonal_effectiveness",
+        "boundaries"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w35-inclass",
+        "title": "Boundary Script",
+        "purpose": "Write a one-sentence no plus a broken-record line.",
+        "fields": [
+          {
+            "id": "the_request",
+            "label": "The request",
+            "type": "text"
+          },
+          {
+            "id": "my_value",
+            "label": "My value",
+            "type": "text"
+          },
+          {
+            "id": "my_limit",
+            "label": "My limit",
+            "type": "text"
+          },
+          {
+            "id": "my_one_sentence_no",
+            "label": "My one-sentence no",
+            "type": "text"
+          },
+          {
+            "id": "my_broken_record_line",
+            "label": "My broken-record line",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w35-homework",
+        "title": "Boundary Rep x2",
+        "purpose": "Use boundary script twice or role-play twice.",
+        "fields": [
+          {
+            "id": "situation",
+            "label": "Situation",
+            "type": "text"
+          },
+          {
+            "id": "boundary_statement",
+            "label": "Boundary statement",
+            "type": "text"
+          },
+          {
+            "id": "result",
+            "label": "Result",
+            "type": "text"
+          },
+          {
+            "id": "what_i_would_adjust",
+            "label": "What I would adjust",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-C"
+    },
+    {
+      "weekNumber": 36,
+      "sectionId": "dbt-3",
+      "sectionWeekNumber": 4,
+      "title": "Conflict De-escalation + Repair",
+      "sessionPurpose": "Reduce conflict escalation and increase repair behaviors that protect recovery and compliance.",
+      "discussionPrompts": [
+        "What is your conflict pattern: fight, flee, freeze, appease?",
+        "How does conflict connect to relapse?",
+        "What does a repair sound like?"
+      ],
+      "tags": [
+        "interpersonal_effectiveness",
+        "repair"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w36-inclass",
+        "title": "Repair Map",
+        "purpose": "Create a repair statement and action repair for a recent conflict.",
+        "fields": [
+          {
+            "id": "what_happened_facts",
+            "label": "What happened (facts)",
+            "type": "text"
+          },
+          {
+            "id": "my_part",
+            "label": "My part",
+            "type": "text"
+          },
+          {
+            "id": "their_part_possible",
+            "label": "Their part (possible)",
+            "type": "text"
+          },
+          {
+            "id": "repair_statement",
+            "label": "Repair statement",
+            "type": "text"
+          },
+          {
+            "id": "action_repair",
+            "label": "Action repair",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w36-homework",
+        "title": "One Repair Attempt",
+        "purpose": "Make one repair attempt or prepare a safe repair message.",
+        "fields": [
+          {
+            "id": "repair_planned",
+            "label": "Repair planned",
+            "type": "text"
+          },
+          {
+            "id": "did_i_do_it_yes_no",
+            "label": "Did I do it? (yes/no)",
+            "type": "text"
+          },
+          {
+            "id": "outcome",
+            "label": "Outcome",
+            "type": "text"
+          },
+          {
+            "id": "next_step",
+            "label": "Next step",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-C"
+    },
+    {
+      "weekNumber": 37,
+      "sectionId": "dbt-3",
+      "sectionWeekNumber": 5,
+      "title": "Validation in Conflict: Validation Ladder",
+      "sessionPurpose": "Use validation to reduce defensiveness and improve cooperation while maintaining boundaries.",
+      "discussionPrompts": [
+        "How can you validate without agreeing?",
+        "What happens when people feel heard?",
+        "How does validation help with authority figures?"
+      ],
+      "tags": [
+        "validation",
+        "interpersonal_effectiveness"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w37-inclass",
+        "title": "Validation Ladder",
+        "purpose": "Practice three levels of validation and write example lines.",
+        "fields": [
+          {
+            "id": "reflect_facts_line",
+            "label": "Reflect facts line",
+            "type": "text"
+          },
+          {
+            "id": "reflect_feelings_line",
+            "label": "Reflect feelings line",
+            "type": "text"
+          },
+          {
+            "id": "validate_reason_line",
+            "label": "Validate reason line",
+            "type": "text"
+          },
+          {
+            "id": "where_i_will_use_it_this_week",
+            "label": "Where I will use it this week",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w37-homework",
+        "title": "Validate 7 Days",
+        "purpose": "Validate one person daily and record effects.",
+        "fields": [
+          {
+            "id": "who_i_validated",
+            "label": "Who I validated",
+            "type": "text"
+          },
+          {
+            "id": "what_i_said",
+            "label": "What I said",
+            "type": "text"
+          },
+          {
+            "id": "effect",
+            "label": "Effect",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-C"
+    },
+    {
+      "weekNumber": 38,
+      "sectionId": "dbt-3",
+      "sectionWeekNumber": 6,
+      "title": "Building Relationships: Support Inventory",
+      "sessionPurpose": "Identify safe supports and create one action step to reduce isolation.",
+      "discussionPrompts": [
+        "What makes a safe person versus a fun person?",
+        "Why does isolation raise relapse risk?",
+        "Where can you build healthy supports in your community?"
+      ],
+      "tags": [
+        "support_network"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w38-inclass",
+        "title": "Support Inventory",
+        "purpose": "Sort supports into protective vs risky and choose a new environment.",
+        "fields": [
+          {
+            "id": "people_who_support_sobriety",
+            "label": "People who support sobriety",
+            "type": "text"
+          },
+          {
+            "id": "people_who_threaten_sobriety",
+            "label": "People who threaten sobriety",
+            "type": "text"
+          },
+          {
+            "id": "one_new_support_environment",
+            "label": "One new support environment",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w38-homework",
+        "title": "Support Action",
+        "purpose": "Attend one prosocial activity/meeting and reflect.",
+        "fields": [
+          {
+            "id": "activity_attended",
+            "label": "Activity attended",
+            "type": "text"
+          },
+          {
+            "id": "who_i_connected_with",
+            "label": "Who I connected with",
+            "type": "text"
+          },
+          {
+            "id": "how_it_affected_my_week",
+            "label": "How it affected my week",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-C"
+    },
+    {
+      "weekNumber": 39,
+      "sectionId": "dbt-3",
+      "sectionWeekNumber": 7,
+      "title": "Maintaining Relationships: Trust Behaviors Plan",
+      "sessionPurpose": "Strengthen relationships through consistent trust-building behaviors and repair planning.",
+      "discussionPrompts": [
+        "What behaviors build trust?",
+        "What behaviors break trust fast?",
+        "What does consistency look like when stressed?"
+      ],
+      "tags": [
+        "relationships"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w39-inclass",
+        "title": "Trust Behaviors Plan",
+        "purpose": "Choose trust-building actions and identify trust-breaking behaviors to avoid.",
+        "fields": [
+          {
+            "id": "3_trust_building_behaviors_i_will_do",
+            "label": "3 trust-building behaviors I will do",
+            "type": "text"
+          },
+          {
+            "id": "3_trust_breaking_behaviors_i_will_avoid",
+            "label": "3 trust-breaking behaviors I will avoid",
+            "type": "text"
+          },
+          {
+            "id": "repair_plan_if_i_slip",
+            "label": "Repair plan if I slip",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w39-homework",
+        "title": "Trust Behaviors Log (7 days)",
+        "purpose": "Track daily trust behaviors and repair attempts.",
+        "fields": [
+          {
+            "id": "trust_building_behavior_done",
+            "label": "Trust-building behavior done",
+            "type": "text"
+          },
+          {
+            "id": "trust_breaking_behavior_avoided",
+            "label": "Trust-breaking behavior avoided",
+            "type": "text"
+          },
+          {
+            "id": "repair_attempted_if_needed",
+            "label": "Repair attempted (if needed)",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-C"
+    },
+    {
+      "weekNumber": 40,
+      "sectionId": "dbt-3",
+      "sectionWeekNumber": 8,
+      "title": "Ending Destructive Relationships / High-Risk People: Exit Plan",
+      "sessionPurpose": "Plan boundaries or exits from high-risk relationships and build replacement supports.",
+      "discussionPrompts": [
+        "How do you know a relationship is destructive?",
+        "What keeps people attached to high-risk connections?",
+        "What is a safe exit plan?"
+      ],
+      "tags": [
+        "boundaries",
+        "safety"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w40-inclass",
+        "title": "Exit Plan",
+        "purpose": "Create boundary/exit steps and safety considerations.",
+        "fields": [
+          {
+            "id": "relationship_risk_signs",
+            "label": "Relationship risk signs",
+            "type": "text"
+          },
+          {
+            "id": "boundary_exit_steps",
+            "label": "Boundary/exit steps",
+            "type": "text"
+          },
+          {
+            "id": "replacement_supports",
+            "label": "Replacement supports",
+            "type": "text"
+          },
+          {
+            "id": "safety_considerations",
+            "label": "Safety considerations",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w40-homework",
+        "title": "One Exit Step",
+        "purpose": "Take one safe step toward distancing or boundary-setting.",
+        "fields": [
+          {
+            "id": "step_i_took_or_planned",
+            "label": "Step I took or planned",
+            "type": "text"
+          },
+          {
+            "id": "barrier",
+            "label": "Barrier",
+            "type": "text"
+          },
+          {
+            "id": "support_used",
+            "label": "Support used",
+            "type": "text"
+          },
+          {
+            "id": "next_step",
+            "label": "Next step",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-C"
+    },
+    {
+      "weekNumber": 41,
+      "sectionId": "dbt-3",
+      "sectionWeekNumber": 9,
+      "title": "Middle Path: Balancing Acceptance and Change in Relationships",
+      "sessionPurpose": "Reduce interpersonal extremes by choosing middle-path behaviors and compromises.",
+      "discussionPrompts": [
+        "Where do you swing extreme (all-in/all-out)?",
+        "What does compromise look like without losing yourself?",
+        "How does middle path reduce chaos?"
+      ],
+      "tags": [
+        "middle_path",
+        "interpersonal_effectiveness"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w41-inclass",
+        "title": "Middle Path Map",
+        "purpose": "Map two extremes and plan a middle-path response.",
+        "fields": [
+          {
+            "id": "my_extreme",
+            "label": "My extreme",
+            "type": "text"
+          },
+          {
+            "id": "their_extreme",
+            "label": "Their extreme",
+            "type": "text"
+          },
+          {
+            "id": "middle_path_behavior",
+            "label": "Middle path behavior",
+            "type": "text"
+          },
+          {
+            "id": "one_sentence_compromise",
+            "label": "One sentence compromise",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w41-homework",
+        "title": "Middle Path x3",
+        "purpose": "Practice middle path in three situations.",
+        "fields": [
+          {
+            "id": "situation",
+            "label": "Situation",
+            "type": "text"
+          },
+          {
+            "id": "extreme_i_avoided",
+            "label": "Extreme I avoided",
+            "type": "text"
+          },
+          {
+            "id": "middle_path_action",
+            "label": "Middle path action",
+            "type": "text"
+          },
+          {
+            "id": "outcome",
+            "label": "Outcome",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-C"
+    },
+    {
+      "weekNumber": 42,
+      "sectionId": "dbt-3",
+      "sectionWeekNumber": 10,
+      "title": "Communication Under Stress: Pause-Then-Speak Plan",
+      "sessionPurpose": "Identify flooding cues and use pause strategies to communicate clearly.",
+      "discussionPrompts": [
+        "What happens when you talk while flooded?",
+        "What timing makes conflict worse?",
+        "What is one communication habit you want to change?"
+      ],
+      "tags": [
+        "communication"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w42-inclass",
+        "title": "Pause-Then-Speak Plan",
+        "purpose": "Build a communication plan that starts with pausing when flooded.",
+        "fields": [
+          {
+            "id": "my_flood_signs",
+            "label": "My flood signs",
+            "type": "text"
+          },
+          {
+            "id": "my_pause_strategy",
+            "label": "My pause strategy",
+            "type": "text"
+          },
+          {
+            "id": "my_message_in_1_2_sentences",
+            "label": "My message in 1–2 sentences",
+            "type": "text"
+          },
+          {
+            "id": "my_ask",
+            "label": "My ask",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w42-homework",
+        "title": "Message Practice x2",
+        "purpose": "Practice two messages (real or role-play) and reflect.",
+        "fields": [
+          {
+            "id": "message_topic",
+            "label": "Message topic",
+            "type": "text"
+          },
+          {
+            "id": "did_i_pause_first_yes_no",
+            "label": "Did I pause first? (yes/no)",
+            "type": "text"
+          },
+          {
+            "id": "result",
+            "label": "Result",
+            "type": "text"
+          },
+          {
+            "id": "adjustment",
+            "label": "Adjustment",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-C"
+    },
+    {
+      "weekNumber": 43,
+      "sectionId": "dbt-3",
+      "sectionWeekNumber": 11,
+      "title": "Accountability + Honesty (Drug Court Specific)",
+      "sessionPurpose": "Practice honest disclosure scripts that reduce shame-driven avoidance and improve compliance.",
+      "discussionPrompts": [
+        "Why is honesty hard when shame is high?",
+        "What is the cost of managing impressions?",
+        "How can you be honest and still respectful?"
+      ],
+      "tags": [
+        "accountability"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w43-inclass",
+        "title": "Honesty Script",
+        "purpose": "Create a factual disclosure statement plus a respectful request for support.",
+        "fields": [
+          {
+            "id": "what_i_need_to_disclose",
+            "label": "What I need to disclose",
+            "type": "text"
+          },
+          {
+            "id": "what_i_fear_will_happen",
+            "label": "What I fear will happen",
+            "type": "text"
+          },
+          {
+            "id": "what_i_will_say_facts",
+            "label": "What I will say (facts)",
+            "type": "text"
+          },
+          {
+            "id": "what_i_will_ask_for",
+            "label": "What I will ask for",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w43-homework",
+        "title": "One Honest Conversation",
+        "purpose": "Complete or prepare an honest conversation; role-play if needed.",
+        "fields": [
+          {
+            "id": "who_i_will_talk_to",
+            "label": "Who I will talk to",
+            "type": "text"
+          },
+          {
+            "id": "what_i_will_say",
+            "label": "What I will say",
+            "type": "text"
+          },
+          {
+            "id": "outcome_or_practice_notes",
+            "label": "Outcome or practice notes",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-C"
+    },
+    {
+      "weekNumber": 44,
+      "sectionId": "dbt-3",
+      "sectionWeekNumber": 12,
+      "title": "Managing Shame + Self-Respect After Mistakes",
+      "sessionPurpose": "Reduce shame spirals by using responsibility statements and repair actions after setbacks.",
+      "discussionPrompts": [
+        "How does shame trigger using or aggression?",
+        "What is self-respect behavior when you mess up?",
+        "What does repair look like after setbacks?"
+      ],
+      "tags": [
+        "shame",
+        "repair"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w44-inclass",
+        "title": "Self-Respect After Mistakes",
+        "purpose": "Write responsibility and repair steps for a mistake.",
+        "fields": [
+          {
+            "id": "mistake",
+            "label": "Mistake",
+            "type": "text"
+          },
+          {
+            "id": "shame_story",
+            "label": "Shame story",
+            "type": "text"
+          },
+          {
+            "id": "responsibility_statement",
+            "label": "Responsibility statement",
+            "type": "text"
+          },
+          {
+            "id": "repair_action",
+            "label": "Repair action",
+            "type": "text"
+          },
+          {
+            "id": "skills_used",
+            "label": "Skills used",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w44-homework",
+        "title": "Repair + Skill Use",
+        "purpose": "Do one repair plus one skill attempt; record the outcome.",
+        "fields": [
+          {
+            "id": "repair_i_did",
+            "label": "Repair I did",
+            "type": "text"
+          },
+          {
+            "id": "skill_i_used",
+            "label": "Skill I used",
+            "type": "text"
+          },
+          {
+            "id": "effect_0_10",
+            "label": "Effect (0–10)",
+            "type": "text"
+          },
+          {
+            "id": "next_step",
+            "label": "Next step",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-C"
+    },
+    {
+      "weekNumber": 45,
+      "sectionId": "dbt-3",
+      "sectionWeekNumber": 13,
+      "title": "Integrated Prevention Map (CAT/RP/DBT Integration)",
+      "sessionPurpose": "Integrate triggers, warning signs, skills, and supports into one usable prevention map.",
+      "discussionPrompts": [
+        "What is your most predictable relapse chain?",
+        "What is your first domino?",
+        "What support must be in place?"
+      ],
+      "tags": [
+        "integration",
+        "relapse_prevention"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w45-inclass",
+        "title": "Integrated Prevention Map",
+        "purpose": "Build a consolidated map that links triggers to skills and supports.",
+        "fields": [
+          {
+            "id": "triggers_external_internal",
+            "label": "Triggers (external/internal)",
+            "type": "text"
+          },
+          {
+            "id": "early_warning_signs",
+            "label": "Early warning signs",
+            "type": "text"
+          },
+          {
+            "id": "skills_that_work",
+            "label": "Skills that work",
+            "type": "text"
+          },
+          {
+            "id": "people_places",
+            "label": "People/places",
+            "type": "text"
+          },
+          {
+            "id": "emergency_steps",
+            "label": "Emergency steps",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w45-homework",
+        "title": "Plan Walkthrough",
+        "purpose": "Rehearse the plan once and note changes.",
+        "fields": [
+          {
+            "id": "what_i_rehearsed",
+            "label": "What I rehearsed",
+            "type": "text"
+          },
+          {
+            "id": "what_felt_realistic",
+            "label": "What felt realistic",
+            "type": "text"
+          },
+          {
+            "id": "what_i_will_change",
+            "label": "What I will change",
+            "type": "text"
+          },
+          {
+            "id": "one_support_i_will_add",
+            "label": "One support I will add",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-C"
+    },
+    {
+      "weekNumber": 46,
+      "sectionId": "dbt-3",
+      "sectionWeekNumber": 14,
+      "title": "Lifestyle Structure: Routines + Compliance",
+      "sessionPurpose": "Use routines and structure to reduce chaos, financial stress reactivity, and compliance failures.",
+      "discussionPrompts": [
+        "Which routine protects your recovery most?",
+        "What tiny structure creates big stability?",
+        "How do you plan for low money weeks?"
+      ],
+      "tags": [
+        "structure"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w46-inclass",
+        "title": "Weekly Structure Grid",
+        "purpose": "Create a simple weekly structure plan aligned with appointments and recovery supports.",
+        "fields": [
+          {
+            "id": "sleep_schedule_target",
+            "label": "Sleep schedule target",
+            "type": "text"
+          },
+          {
+            "id": "work_appointments",
+            "label": "Work/appointments",
+            "type": "text"
+          },
+          {
+            "id": "recovery_supports",
+            "label": "Recovery supports",
+            "type": "text"
+          },
+          {
+            "id": "one_stability_habit_daily",
+            "label": "One stability habit daily",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w46-homework",
+        "title": "Structure Trial Week",
+        "purpose": "Follow the grid 5/7 days and record obstacles.",
+        "fields": [
+          {
+            "id": "day",
+            "label": "Day",
+            "type": "text"
+          },
+          {
+            "id": "did_i_follow_structure_yes_no",
+            "label": "Did I follow structure? (yes/no)",
+            "type": "text"
+          },
+          {
+            "id": "obstacle",
+            "label": "Obstacle",
+            "type": "text"
+          },
+          {
+            "id": "adjustment",
+            "label": "Adjustment",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-C"
+    },
+    {
+      "weekNumber": 47,
+      "sectionId": "dbt-3",
+      "sectionWeekNumber": 15,
+      "title": "Graduation Planning: Skills Generalization Plan",
+      "sessionPurpose": "Plan how skills will continue after court structure decreases; define supports and warning signs.",
+      "discussionPrompts": [
+        "What skills keep you well?",
+        "What barriers show up when you are stressed?",
+        "What support will replace the structure of court?"
+      ],
+      "tags": [
+        "aftercare"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w47-inclass",
+        "title": "Skills Generalization Plan",
+        "purpose": "List top skills by category, warning signs, supports, and next level of care.",
+        "fields": [
+          {
+            "id": "my_top_skills_by_category",
+            "label": "My top skills by category",
+            "type": "text"
+          },
+          {
+            "id": "my_warning_signs",
+            "label": "My warning signs",
+            "type": "text"
+          },
+          {
+            "id": "my_support_list",
+            "label": "My support list",
+            "type": "text"
+          },
+          {
+            "id": "my_next_level_of_care_support",
+            "label": "My next level of care/support",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w47-homework",
+        "title": "Aftercare Commitments",
+        "purpose": "Write three commitments for the next 90 days.",
+        "fields": [
+          {
+            "id": "commitment_1",
+            "label": "Commitment 1",
+            "type": "text"
+          },
+          {
+            "id": "commitment_2",
+            "label": "Commitment 2",
+            "type": "text"
+          },
+          {
+            "id": "commitment_3",
+            "label": "Commitment 3",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-C"
+    },
+    {
+      "weekNumber": 48,
+      "sectionId": "dbt-3",
+      "sectionWeekNumber": 16,
+      "title": "Integration + Future-Self Letter + Closeout",
+      "sessionPurpose": "Consolidate learning into a future-self message and a 30-day maintenance plan.",
+      "discussionPrompts": [
+        "What is different about you now?",
+        "What skills changed your outcomes?",
+        "What do you want to remember when you are tempted?"
+      ],
+      "tags": [
+        "graduation",
+        "maintenance"
+      ],
+      "inClassWorksheet": {
+        "id": "dbt-w48-inclass",
+        "title": "Letter to Future Me",
+        "purpose": "Write a short letter describing skills and supports to use during future high-risk moments.",
+        "fields": [
+          {
+            "id": "what_i_have_survived",
+            "label": "What I have survived",
+            "type": "text"
+          },
+          {
+            "id": "what_i_have_learned",
+            "label": "What I have learned",
+            "type": "text"
+          },
+          {
+            "id": "what_i_must_do_when_urges_hit",
+            "label": "What I must do when urges hit",
+            "type": "text"
+          },
+          {
+            "id": "who_i_will_contact",
+            "label": "Who I will contact",
+            "type": "text"
+          }
+        ]
+      },
+      "homeworkSheet": {
+        "id": "dbt-w48-homework",
+        "title": "30-Day Maintenance Challenge",
+        "purpose": "Commit to 30 days of one skill + one journal entry.",
+        "fields": [
+          {
+            "id": "my_chosen_daily_skill",
+            "label": "My chosen daily skill",
+            "type": "text"
+          },
+          {
+            "id": "my_plan_for_30_daily_journal_entries",
+            "label": "My plan for 30 daily journal entries",
+            "type": "text"
+          },
+          {
+            "id": "my_backup_plan_if_i_miss_a_day",
+            "label": "My backup plan if I miss a day",
+            "type": "text"
+          }
+        ]
+      },
+      "dailyJournalTemplateId": "journal-C"
+    }
+  ]
+} as const;
+
+export type Dbt48WeekProgram = typeof dbt48WeekProgram;

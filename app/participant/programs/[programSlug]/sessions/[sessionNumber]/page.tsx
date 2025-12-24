@@ -182,7 +182,7 @@ export default function ParticipantSessionView() {
   // Filter prompts for display
   const participantSections = ["opening", "review", "teach", "activity", "responses", "notes", "wrapup"] as const;
   const getSectionPrompts = (sectionId: string) => {
-    return session.facilitatorPrompts.filter((p) => p.section === sectionId)
+    return session.facilitatorPrompts?.filter((p) => p.section === sectionId) || []
   }
 
   return (

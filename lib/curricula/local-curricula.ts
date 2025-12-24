@@ -54,7 +54,133 @@ const createPlaceholderSession = (
 });
 
 export const catSessions: Session[] = [
-    createPlaceholderSession("cat-program", 1, "CAT"),
+    {
+        id: "cat-program-session-1",
+        programId: "cat-program",
+        sessionNumber: 1,
+        title: "Introduction to Criminal and Addictive Thinking",
+        purpose: "Explore how thinking patterns influence behavior in addiction and criminal behavior. Build a shared language regarding 'criminal and addictive thinking'.",
+        objectives: [
+            "Build a shared language for criminal and addictive thinking",
+            "Identify thoughts that precede risky decisions",
+            "Understand how thinking patterns influence behavior",
+            "Introduction to accountability and behavior change"
+        ],
+        facilitatorPrompts: [
+            {
+                id: "cat-1-overview",
+                section: "overview",
+                content: "This session introduces the purpose and structure of the CAT curriculum and establishes group expectations. Participants explore how thinking patterns influence behavior in addiction and criminal behavior. The focus is on accountability: distorted thinking can make harmful choices feel acceptable, reduce responsibility, and keep the cycle going.\n\nThe goal of Session 1 is to build a shared language for “criminal and addictive thinking” and to begin identifying the kinds of thoughts that show up before risky decisions.",
+                suggestedPacing: "5 min"
+            },
+            {
+                id: "cat-1-opening",
+                section: "opening",
+                content: "Begin with a brief greeting and check-in. Allow participants to settle and open the app to Session 1.\n\nIntroduce the session:\n\n“Today we’re starting CAT. This program is about how thinking drives choices and how choices create outcomes.”\n\nOpen the room with discussion prompts:\n\n“What do you think ‘criminal and addictive thinking’ means?”\n“Can a person know something is a bad idea and still talk themselves into it? How?”\n“What are some common statements people tell themselves right before a bad decision?”\n\nAllow each participant an opportunity to respond. Do not correct early answers. Collect them and use them as examples later.",
+                participantContent: "Most people have “self-talk” that explains why a choice makes sense. In addiction and criminal behavior, that self-talk often protects the behavior. It can sound like confidence, logic, or “common sense,” but it usually ends in consequences.\n\nAs we start CAT, think about this:\n\nWhat are the most common things you tell yourself right before a bad decision?",
+                suggestedPacing: "5 min"
+            },
+            {
+                id: "cat-1-review",
+                section: "review",
+                content: "Since this is the first CAT session, use this time to review expectations and set the frame for the group.\n\nReview the working agreements:\n\n• Show up and participate.\n• Respect the group.\n• Stay focused on accountability and change.\n• Use examples from real life when possible.\n\nClarify the purpose of CAT:\n\nThis is a skill-based class. The goal is not to judge people, but to identify thinking that leads to consequences and to practice a different way of responding.",
+                participantContent: "This program is about skill-building and accountability. It is not about judging you as a person. It is about identifying thinking that leads to problems and learning how to respond differently.\n\nIn group, effort matters more than perfect answers.",
+                suggestedPacing: "10 min"
+            },
+            {
+                id: "cat-1-teach",
+                section: "teach",
+                content: "Define criminal and addictive thinking in plain language:\n\nCriminal and addictive thinking is a pattern of distorted thoughts that justifies or excuses harmful behavior. It often shows up as quick “reasons” that make a bad choice feel necessary, normal, or deserved.\n\nExplain why it matters:\n\nIf the thought stays unchallenged, the behavior usually follows. When the thought is noticed and questioned, a person has a chance to choose differently.\n\nIntroduce common categories without going deep:\n\n• Denial: “It’s not a problem.”\n• Minimizing: “It’s not that bad.”\n• Justifying: “I had a reason.”\n• Blaming: “It’s their fault.”\n• Entitlement: “I deserve it.”\n• Avoidance: “I’ll deal with it later.”\n\nConnect to accountability:\n\nAccountability does not mean self-hate. It means owning choices and recognizing patterns so they can be changed.\n\nTeach a simple sequence:\n\nSituation → Thought/Story → Choice → Outcome\n\nReinforce that the group will build tools for interrupting the sequence throughout CAT.",
+                participantContent: "Criminal and addictive thinking is a pattern of distorted thoughts that justifies or excuses harmful behavior. It often shows up fast and sounds reasonable in the moment.\n\nExamples include:\n\n“It’s not that big of a deal.”\n“I deserve this.”\n“They did it to me first.”\n“I’ll deal with it later.”\n“This time will be different.”\n\nThe purpose of noticing these thoughts is simple: if you can spot them, you can slow down and choose differently.",
+                suggestedPacing: "20 min"
+            },
+            {
+                id: "cat-1-activity",
+                section: "activity",
+                content: "Have participants complete the in-session worksheet (below). The focus is on identifying real-life “self-talk” that justified risky choices.\n\nInstructions:\n\nAsk participants to write down three statements they have used to justify a harmful choice (use, lie, avoid, break rules, lash out, or any behavior that created consequences). Then have them connect each statement to the short-term payoff and the long-term cost.\n\nAllow quiet time for completion. Sharing is encouraged but optional.",
+                participantContent: "Think about a recent choice that created consequences. It does not have to be a big event.\n\nWrite down:\n• What happened\n• What you told yourself\n• What that thought allowed you to do\n\nYou will use this to complete today’s worksheet.",
+                suggestedPacing: "15 min"
+            },
+            {
+                id: "cat-1-responses",
+                section: "responses",
+                content: "Invite volunteers to share one statement they wrote and what it allowed them to do.\n\nUse facilitation questions:\n\n“What did that thought make easier?”\n“What did it help you ignore?”\n“What was the payoff in the moment?”\n“What was the cost later?”\n\nNormalize the process:\n\nMany participants will recognize the same categories (justifying, minimizing, blaming). Reinforce that awareness is the first skill in the program.",
+                participantContent: "In discussion, you may be asked:\n\nWhat was the thought that “made it okay”?\nWhat did it help you ignore?\nWhat happened afterward?\n\nFocus on identifying the thinking, not defending the behavior.",
+                suggestedPacing: "5 min"
+            },
+            {
+                id: "cat-1-notes",
+                section: "notes",
+                content: "Common derailment: participants defend the thought as “true.” Redirect to impact.\n\nUse questions that bring it back to behavior:\n\n“Whether it’s true or not, what did that thought lead you to do?”\n“What outcomes does that belief create for you?”\n\nKeep the tone firm and respectful. The goal is a shared language and honest reflection, not argument.",
+                participantContent: "Honesty helps this program work. You do not have to share details you are not comfortable sharing.\n\nThe goal is awareness and change.",
+                suggestedPacing: "5 min"
+            },
+            {
+                id: "cat-1-caseworx",
+                section: "caseworx",
+                content: "Document attendance, engagement, and whether the participant was able to identify examples of criminal/addictive thinking.\n\nLook for:\n\n• Participation in discussion\n• Completion of worksheet\n• Ability to connect thinking → behavior → consequences\n• Willingness to practice accountability language",
+                participantContent: "Your participation and completion of activities may be documented. Personal details are optional. Engagement and effort matter.",
+                suggestedPacing: "5 min"
+            },
+            {
+                id: "cat-1-wrapup",
+                section: "wrapup",
+                content: "Summarize:\n\nCriminal and addictive thinking is the “self-talk” that excuses or justifies harmful behavior. If it stays automatic, it stays powerful. If it is noticed, it can be changed.\n\nBetween sessions, ask participants to notice one thought that shows up before a risky choice and write it down to bring back to group.",
+                participantContent: "Between now and next session, notice one thought that shows up before a risky choice. Write it down if you can. Bringing one real example to group will help you build the skill.",
+                suggestedPacing: "5 min"
+            }
+        ],
+        activityTemplates: [
+            {
+                id: "cat-1-worksheet-1",
+                type: "worksheet",
+                title: "Criminal and Addictive Thinking: My Self-Talk Before Consequences",
+                instructions: "Choose one or more real-life examples. Keep it simple. The goal is to identify the thought that justified the behavior and the outcome that followed. Write three statements you have used to justify a harmful choice.",
+                questions: [
+                    { id: "q-cat-1-s1", text: "Statement #1:", type: "text" },
+                    { id: "q-cat-1-s1-allow", text: "What did this statement allow you to do?", type: "text" },
+                    { id: "q-cat-1-s1-payoff", text: "Short-term payoff:", type: "text" },
+                    { id: "q-cat-1-s1-cost", text: "Long-term cost:", type: "text" },
+
+                    { id: "q-cat-1-s2", text: "Statement #2:", type: "text" },
+                    { id: "q-cat-1-s2-allow", text: "What did this statement allow you to do?", type: "text" },
+                    { id: "q-cat-1-s2-payoff", text: "Short-term payoff:", type: "text" },
+                    { id: "q-cat-1-s2-cost", text: "Long-term cost:", type: "text" },
+
+                    { id: "q-cat-1-s3", text: "Statement #3:", type: "text" },
+                    { id: "q-cat-1-s3-allow", text: "What did this statement allow you to do?", type: "text" },
+                    { id: "q-cat-1-s3-payoff", text: "Short-term payoff:", type: "text" },
+                    { id: "q-cat-1-s3-cost", text: "Long-term cost:", type: "text" },
+
+                    { id: "q-cat-1-accountability", text: "Choose one statement above and rewrite it using accountability language (owning the choice). Accountability version:", type: "text" }
+                ]
+            },
+            {
+                id: "cat-1-scenarios",
+                type: "worksheet",
+                title: "Spot the Thinking: Real-Life Scenarios",
+                instructions: "Read the following scenarios and answer the questions.",
+                questions: [
+                    { id: "q-cat-1-scen-1", text: "Scenario 1\nAfter a stressful day, a person says, “I earned this. I deserve it,” and decides to use.\n\nQuestions:\n• What distorted thinking is present?\n• What is the short-term payoff and long-term cost?\n• What is an accountability thought that could interrupt this?", type: "text" },
+                    { id: "q-cat-1-scen-2", text: "Scenario 2\nA person misses a required appointment. They decide not to call and say, “They’re just trying to control me anyway,” and they avoid contact.\n\nQuestions:\n• What distorted thinking is present?\n• What outcome is likely if the pattern continues?\n• What is one responsible action step?", type: "text" },
+                    { id: "q-cat-1-scen-3", text: "Scenario 3\nA person takes something from a large store and says, “They can afford it,” and “They make plenty of money.”\n\nQuestions:\n• What justification is being used?\n• What does this choice reinforce about the person’s identity?\n• What would accountability look like here?", type: "text" },
+                    { id: "q-cat-1-scen-4", text: "Scenario 4\nA person relapses and says, “It’s my friend’s fault for bringing it around,” and refuses to look at their own choices.\n\nQuestions:\n• What distorted thinking is present?\n• What choice points did the person still have?\n• What is a more responsible way to describe what happened?", type: "text" }
+                ]
+            }
+        ],
+        homeworkTemplate: {
+            id: "cat-1-hw",
+            title: "Observation",
+            steps: [
+                "Notice one thought that shows up before a risky choice.",
+                "Write it down.",
+                "Bring it to the next session."
+            ],
+            dueDescription: "Before Session 2"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "Session Note: Criminal and Addictive Thinking (CAT) – Chapter 1 of 9\nTopic: Introduction to Criminal and Addictive Thinking\nReference: CAT Chapter 1\nDate/Time: ____________________________\n\nSummary:\n• Reviewed the purpose and structure of the CAT curriculum and group expectations.\n• Discussed how thinking patterns influence behavior and decision-making in addiction and criminal behavior.\n• Identified common distorted thinking that supports harmful choices (e.g., denial, minimizing, justification, blaming, entitlement, avoidance).\n• Reinforced that awareness of thinking is the first step toward accountability and behavior change.\n\nParticipant Progress / Skill Use:\nParticipant identified the following example(s) of criminal/addictive thinking: ____________________________.\nParticipant connected thinking to behavior and consequences and practiced an accountability statement: ____________________________.\n\nGroup Dynamics:\nParticipants were engaged and participated in discussion and exercises. The facilitator reinforced accountability, practical skill use, and applying concepts to real-life situations.\n\nCourt Question and Answer:\nQuestion: What is criminal and addictive thinking, and how does it affect behavior?\nAnswer: Criminal and addictive thinking is a pattern of distorted thoughts that justifies or excuses harmful behavior. It affects behavior by making bad choices feel acceptable and preventing accountability.\n\nExplanation for the Team Member:\nAnswers are appropriate if the participant describes distorted thinking (justifying, blaming, minimizing) and connects it to poor choices and consequences."
+    },
     createPlaceholderSession("cat-program", 2, "CAT"),
     createPlaceholderSession("cat-program", 3, "CAT"),
     {

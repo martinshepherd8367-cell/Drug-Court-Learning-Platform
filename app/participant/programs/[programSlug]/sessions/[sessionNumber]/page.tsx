@@ -73,14 +73,35 @@ export default function ParticipantSessionView() {
     ? session?.activityTemplates.find((a) => a.id === activeActivityRun.activityTemplateId)
     : undefined
 
-  if (!program || !session || !enrollment) {
+  if (!program || !session) {
     return (
       <div className="min-h-screen bg-gray-50">
         <RoleNav />
         <main className="container mx-auto px-6 py-8 max-w-2xl">
           <div className="text-center py-12">
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Session Not Found</h1>
-            <p className="text-gray-600 mb-4">This session may not be available to you.</p>
+            <p className="text-gray-600 mb-4">This session does not exist.</p>
+            <Button onClick={() => router.push("/participant")}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Dashboard
+            </Button>
+          </div>
+        </main>
+      </div>
+    )
+  }
+
+  const isDev = process.env.NEXT_PUBLIC_DEV_MODE === "true"
+
+  // If not enrolled and NOT in dev mode, block access
+  if (!enrollment && !isDev) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <RoleNav />
+        <main className="container mx-auto px-6 py-8 max-w-2xl">
+          <div className="text-center py-12">
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Not Enrolled</h1>
+            <p className="text-gray-600 mb-4">You are not enrolled in this program.</p>
             <Button onClick={() => router.push("/participant")}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Dashboard

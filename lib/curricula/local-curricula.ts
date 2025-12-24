@@ -370,8 +370,235 @@ Questions:
         caseworxNoteTemplate: "CAT Session 4: Core Beliefs\n\nAttendance: [Present/Late/Absent]  Check-in time: [HH:MM]\n\nParticipation/Engagement:\nParticipant participated in session content focused on core beliefs and behavior links.\n\nCore Beliefs + Behavior Link:\nParticipant identified core beliefs and connected them to behavior/decision-making. Examples discussed: [INSERT].\n\nWorksheet/Scenario Work:\nParticipant completed or engaged in worksheet and scenario-based activity: [INSERT].\n\nParticipant Takeaways (from app):\n[PASTE TAKEAWAYS HERE]\n\nFacilitator Notes:\n[PASTE FACILITATOR NOTES HERE]\n\n(Use accountability language. Avoid emotional or diagnostic language. Reference 'core beliefs' explicitly.)"
     },
     createPlaceholderSession("cat-program", 5, "CAT"),
-    createPlaceholderSession("cat-program", 6, "CAT"),
-    createPlaceholderSession("cat-program", 7, "CAT"),
+    {
+        id: "cat-program-session-6",
+        programId: "cat-program",
+        sessionNumber: 6,
+        title: "Common Thinking Distortions",
+        purpose: "Identify and label specific thinking errors (distortions) that lead to negative feelings and behaviors.",
+        objectives: [
+            "Define 'Thinking Distortion'",
+            "Identify 4 common distortions: All-or-Nothing, Blaming, Jumping to Conclusions, Emotional Reasoning",
+            "Practice matching thoughts to distortion labels",
+            "Apply labels to personal Thinking Reports"
+        ],
+        facilitatorPrompts: [
+            {
+                id: "cat-6-overview",
+                section: "overview",
+                content: "A Thinking Distortion is a specific pattern of error in our thoughts. It's like a smudge on the camera lens—it makes everything look distorted.\n\nToday we learn the names of these distortions.\n\nNaming a distortion takes away its power. Instead of saying \"I am a failure,\" we can say \"I am using All-or-Nothing thinking.\"",
+                participantContent: "A Thinking Distortion is a specific pattern of error in our thoughts.\n\nNaming a distortion takes away its power.",
+                suggestedPacing: "5 min"
+            },
+            {
+                id: "cat-6-opening",
+                section: "opening",
+                content: "Check-in. Review Thinking Report Mental Practice from Session 5.\n\nAsk:\n“Did anyone catch a 'glitch' thought this week? What was it?”",
+                participantContent: "Did anyone catch a 'glitch' thought this week?",
+                suggestedPacing: "10 min"
+            },
+            {
+                id: "cat-6-review",
+                section: "review",
+                content: "Review the Thinking Report structure (S-T-F-B-C). Remind them that the 'Thought' is where the distortion lives.",
+                participantContent: "The 'Thought' is where the distortion lives.",
+                suggestedPacing: "5 min"
+            },
+            {
+                id: "cat-6-teach",
+                section: "teach",
+                content: "Teach 4 Common Distortions:\n\n1. All-or-Nothing Thinking: Seeing things in black and white categories. If it's not perfect, it's a total failure.\n2. Blaming: Holding other people responsible for our pain/choices. \"He made me do it.\"\n3. Jumping to Conclusions: Mind-reading (thinking we know what others think) or Fortune-telling (predicting things will go bad).\n4. Emotional Reasoning: Assuming that because we FEEL a certain way, it must be true. \"I feel stupid, so I am stupid.\"\n\nGive examples for each.",
+                participantContent: "Common Distortions:\n\n1. All-or-Nothing Thinking (Black & White)\n2. Blaming (It's their fault)\n3. Jumping to Conclusions (Mind reading / Fortune telling)\n4. Emotional Reasoning (I feel it, so it's true)",
+                suggestedPacing: "20 min"
+            },
+            {
+                id: "cat-6-activity",
+                section: "activity",
+                content: "Guide participants to the worksheet: 'Name that Distortion'.\n\nInstructions:\nRead the statement (Thought). Pick the distortion that fits best.\n\nExample:\n\"I relapsed once, so I might as well give up.\" -> All-or-Nothing Thinking.",
+                participantContent: "Activity: Name that Distortion\n\nMatch the thought to the error.",
+                suggestedPacing: "20 min"
+            },
+            {
+                id: "cat-6-responses",
+                section: "responses",
+                content: "Review answers. Ask participants to share which distortion is their 'favorite' (the one they use most often).\n\nDiscussion:\n“Why is Blaming so easy to do?”\n“How does All-or-Nothing thinking set us up for relapse?”",
+                participantContent: "Discussion:\nWhich distortion is your 'favorite'?",
+                suggestedPacing: "10 min"
+            },
+            {
+                id: "cat-6-notes",
+                section: "notes",
+                content: "Facilitator Note:\nHumor helps here. These distortions are universal. \"My Common Distortions\" is about self-recognition, not shame.",
+                participantContent: "We all have favorite distortions.",
+                suggestedPacing: "5 min"
+            },
+            {
+                id: "cat-6-caseworx",
+                section: "caseworx",
+                content: "Document session notes. Did the participant successfully identify distortions?",
+                suggestedPacing: "5 min"
+            },
+            {
+                id: "cat-6-wrapup",
+                section: "wrapup",
+                content: "Close the session.\n\n“This week, try to catch your favorite distortion in action. Say to yourself: 'There I go practicing Blaming again.' naming it breaks the spell.”",
+                participantContent: "Homework:\nCatch your favorite distortion in action.",
+                suggestedPacing: "5 min"
+            }
+        ],
+        activityTemplates: [
+            {
+                id: "cat-6-worksheet-1",
+                type: "worksheet",
+                title: "Name that Distortion",
+                instructions: "Match the thought to the distortion: All-or-Nothing, Blaming, Jumping to Conclusions, Emotional Reasoning.",
+                questions: [
+                    { id: "q-cat-6-1", text: "1. \"If I don't get this job, my life is over.\"", type: "text" },
+                    { id: "q-cat-6-2", text: "2. \"My PO looked at me funny, she is going to violate me.\"", type: "text" },
+                    { id: "q-cat-6-3", text: "3. \"I yelled because you pushed my buttons.\"", type: "text" },
+                    { id: "q-cat-6-4", text: "4. \"I feel guilty, so I must be a bad person.\"", type: "text" },
+                    { id: "q-cat-6-5", text: "5. \"I already messed up my clean time, I might as well get high.\"", type: "text" }
+                ]
+            },
+            {
+                id: "cat-6-worksheet-2",
+                type: "worksheet",
+                title: "My Common Distortions",
+                instructions: "Which distortions do you use most?",
+                questions: [
+                    { id: "q-cat-6-common", text: "Identify your top 2 distortions:", type: "text" },
+                    { id: "q-cat-6-example", text: "Give a recent example of when you used one:", type: "text" }
+                ]
+            }
+        ],
+        homeworkTemplate: {
+            id: "cat-6-hw",
+            title: "Labeling Practice",
+            steps: [
+                "Notice a stressful thought.",
+                "Label the distortion (e.g., 'That is just All-or-Nothing').",
+                "See if the feeling changes."
+            ],
+            dueDescription: "Before Session 7"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "CAT Session 6: Common Thinking Distortions\n\nConcept: Labeling cognitive distortions.\n\nParticipant Progress:\nParticipant identified common distortions: [Yes/No].\nDominant distortion identified: [Insert Distortion].\n\nFacilitator Notes:\n[Insert Notes]"
+    },
+    {
+        id: "cat-program-session-7",
+        programId: "cat-program",
+        sessionNumber: 7,
+        title: "Criminal and Addictive Thinking Patterns",
+        purpose: "Explore deeper character patterns (mollification, entitlement, power orientation) that drive lifestyle choices.",
+        objectives: [
+            "Define 'Thinking Pattern' vs 'Distortion'",
+            "Identify signs of Entitlement, Victim Stance, and Mollification",
+            "Understand how 'Power Orientation' destroys relationships",
+            "Identify personal risk patterns"
+        ],
+        facilitatorPrompts: [
+            {
+                id: "cat-7-overview",
+                section: "overview",
+                content: "In Session 6 we looked at distortions (errors in processing). Today we look at PATTERNS (errors in character/lifestyle).\n\nThese are the 'Big Ones' that defined our addiction or criminal lifestyle. They are harder to see because they feel like 'part of who we are'.",
+                participantContent: "Distortions are errors in processing.\nPatterns are errors in lifestyle.\n\nThese are the 'Big Ones'.",
+                suggestedPacing: "5 min"
+            },
+            {
+                id: "cat-7-opening",
+                section: "opening",
+                content: "Check-in. Review distortion labeling homework.\n\nAsk:\n“What is the difference between making a mistake and having a lifestyle pattern?”",
+                participantContent: "What is the difference between making a mistake and having a lifestyle pattern?",
+                suggestedPacing: "10 min"
+            },
+            {
+                id: "cat-7-review",
+                section: "review",
+                content: "Review Accountability vs. Blaming. These patterns are all sophisticated ways to avoid accountability.",
+                participantContent: "These patterns are sophisticated ways to avoid accountability.",
+                suggestedPacing: "5 min"
+            },
+            {
+                id: "cat-7-teach",
+                section: "teach",
+                content: "Teach 4 Major CAT Patterns:\n\n1. Mollification: Talkinng your way out of things. Making excuses that sound good. \"I was just holding it for a friend.\"\n2. Entitlement: Believing you are special/owed something. \"I don't have to follow the rules.\"\n3. Victim Stance: Poor me. The world is against me. Used to justify retaliation or using.\n4. Power Orientation: Needing to control every situation. Seeing life as 'Weak vs. Strong' instead of right vs wrong.\n\nAsk for examples of each.",
+                participantContent: "Major CAT Patterns:\n\n1. Mollification (Simeon-Says, Justifying)\n2. Entitlement (I deserve it / Rules don't apply)\n3. Victim Stance (Poor me)\n4. Power Orientation (Scanning for control / Weak vs Strong)",
+                suggestedPacing: "20 min"
+            },
+            {
+                id: "cat-7-activity",
+                section: "activity",
+                content: "Guide participants to the worksheet: 'My Pattern Checklist'.\n\nInstructions:\nBe honest. Rate how much you related to each pattern in your active addiction/criminal lifestyle (0-10).\n\nThen, pick ONE that is still a risk today.",
+                participantContent: "Activity: My Pattern Checklist\n\nRate how much you relate to each pattern.",
+                suggestedPacing: "20 min"
+            },
+            {
+                id: "cat-7-responses",
+                section: "responses",
+                content: "Sharing time. This requires vulnerability.\n\nDiscussion:\n“How did Power Orientation affect your family?”\n“How did Entitlement keep you using?”\n\nReinforce that identifying the pattern is the start of changing it.",
+                participantContent: "Discussion:\nHow did these patterns serve you in the past? What did they cost you?",
+                suggestedPacing: "10 min"
+            },
+            {
+                id: "cat-7-notes",
+                section: "notes",
+                content: "Facilitator Note:\nPower Orientation is often the hardest to admit. It looks like bullying or manipulation. Frame it as a survival skill that is no longer working.",
+                participantContent: "These were survival skills. Now they are barriers.",
+                suggestedPacing: "5 min"
+            },
+            {
+                id: "cat-7-caseworx",
+                section: "caseworx",
+                content: "Document session notes. Determine if participant shows insight into their specific patterns.",
+                suggestedPacing: "5 min"
+            },
+            {
+                id: "cat-7-wrapup",
+                section: "wrapup",
+                content: "Close the session.\n\n“These patterns don't disappear overnight. But now you know their names. When you feel Entitlement creep in, you can say 'No, I am not special, I am responsible'.”",
+                participantContent: "Homework:\nWatch for your primary pattern this week.",
+                suggestedPacing: "5 min"
+            }
+        ],
+        activityTemplates: [
+            {
+                id: "cat-7-worksheet-1",
+                type: "worksheet",
+                title: "My Pattern Checklist",
+                instructions: "Rate yourself on a scale of 0 (Never) to 10 (Always) for how these defined your past.",
+                questions: [
+                    { id: "q-cat-7-1", text: "Mollification (Making excuses, smooth talking):", type: "text" },
+                    { id: "q-cat-7-2", text: "Entitlement (Feeling owed, rules don't apply):", type: "text" },
+                    { id: "q-cat-7-3", text: "Victim Stance (Blaming others, feeling picked on):", type: "text" },
+                    { id: "q-cat-7-4", text: "Power Orientation (Needing to be in control, fearing weakness):", type: "text" },
+                    { id: "q-cat-7-risk", text: "Which pattern is the biggest risk for you today?", type: "text" }
+                ]
+            },
+            {
+                id: "cat-7-scenarios",
+                type: "worksheet",
+                title: "Pattern Spotting",
+                instructions: "Name the pattern in the scenario.",
+                questions: [
+                    { id: "q-cat-7-scen-1", text: "1. \"I shouldn't have to wait in line like everyone else.\"", type: "text" },
+                    { id: "q-cat-7-scen-2", text: "2. \"If I don't dominate this conversation, they will think I'm weak.\"", type: "text" },
+                    { id: "q-cat-7-scen-3", text: "3. \"I only sold drugs because society gave me no choice.\"", type: "text" }
+                ]
+            }
+        ],
+        homeworkTemplate: {
+            id: "cat-7-hw",
+            title: "Pattern Watch",
+            steps: [
+                "Pick one pattern (e.g. Entitlement).",
+                "Notice every time it shows up this week.",
+                "Journal one example."
+            ],
+            dueDescription: "Before Session 8"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "CAT Session 7: Criminal and Addictive Thinking Patterns\n\nConcept: Compulsive/Lifestyle patterns (Entitlement, Mollification, etc).\n\nParticipant Progress:\nParticipant rated personal patterns: [Yes/No].\nPrimary pattern identified: [Insert Pattern].\n\nFacilitator Notes:\n[Insert Notes]"
+    },
     createPlaceholderSession("cat-program", 8, "CAT"),
     createPlaceholderSession("cat-program", 9, "CAT"),
 ];

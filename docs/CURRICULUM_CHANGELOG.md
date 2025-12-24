@@ -34,3 +34,6 @@
 ## v1-preaudit-2025-12-23b
 - Date: 2025-12-23
 - Rehydrated curricula sessions into file-based runtime (DBT wired; other sources missing).
+
+## v1-preaudit-2025-12-24-cat-batch2
+- CAT Sessions 6–7 installed (scaffold). Worksheet/scenario headings visible to participants without launch.

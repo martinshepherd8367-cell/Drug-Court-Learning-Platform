@@ -58,6 +58,10 @@ export const catSessions: Session[] = [
     createPlaceholderSession("cat-program", 2, "CAT"),
     createPlaceholderSession("cat-program", 3, "CAT"),
     {
+        // GOLD SESSION — SECTION INTENT IS FIXED.
+        // Do NOT homogenize tone across sections.
+        // Opening/Review are procedural; Teach/Activity allow reflection.
+        // Language is intentionally unpolished to maintain authenticity.
         id: "cat-program-session-4",
         programId: "cat-program",
         sessionNumber: 4,
@@ -73,49 +77,49 @@ export const catSessions: Session[] = [
             {
                 id: "cat-4-overview",
                 section: "overview",
-                content: "Introduction: 'What This Session Is About'.\n\nExplain: Today is a meaningful chance to look 'under the hood' at what drives us. This isn't about blaming ourselves for what we believe, but understanding *why* we believe it and how it steers the ship.\n\nNote: Keep the tone reflective and supportive. Avoid clinical jargon. This is about curiosity, not diagnosis.",
+                content: "Introduction: 'What This Session Is About'.\n\nExplain: We are going to examine the core beliefs that drive our behavior. This is not about judging what you believe, but identifying it so we can see how it influences your actions.\n\nNote: Keep the tone neutral and supportive. We are mapping the territory, not diagnosing the person.",
                 suggestedPacing: "5 min"
             },
             {
                 id: "cat-4-opening",
                 section: "opening",
-                content: "Discussion: 'What Is a Core Belief?'\n\nAsk: 'When we talk about core beliefs, what comes to mind?'\nPrompts: Beliefs about people (are they good/bad?), Fairness (does the world owe me?), Rules (do they apply to me?).\n\nNote: Engage without correction. Get their raw definitions and map the territory.",
+                content: "Discussion: 'What Is a Core Belief?'\n\nAsk: 'When I say Core Belief, what does that mean to you?'\nPrompts: Beliefs about people (trust/distrust), Fairness (the system), Rules (do they apply?).\n\nNote: Do not correct them yet. Just get their definitions on the board.",
                 suggestedPacing: "10 min"
             },
             {
                 id: "cat-4-teach-1",
                 section: "teach",
-                content: "Concept: Beliefs and Behavior.\n\nTeach: Beliefs act as the visible script for our actions. How we interpret 'fairness' or 'respect' changes how we react. If I believe 'I can't change,' I stop trying.\n\nNote: Frame this through accountability. Focus on how the belief *leads* to the behavior.",
+                content: "Concept: Beliefs and Behavior.\n\nTeach: Your beliefs dictate your actions. If you believe 'disrespect must be punished,' you will fight. If you believe 'I can't change,' you won't try. The belief comes *before* the behavior.\n\nNote: Focus on accountability. Connect the thinking directly to the action.",
                 suggestedPacing: "10 min"
             },
             {
                 id: "cat-4-teach-2",
                 section: "teach",
-                content: "Concept: How Core Beliefs Work (The Filter).\n\nMetaphor: Core beliefs are like sunglasses. If you wear green glasses, everything looks green. You forget you're wearing them; you just think the world *is* green. They filter out facts that don't fit and magnify ones that do.\n\nReflection: What color are your glasses today?\n\nNote: Redirect debates about 'truth' back to the *impact* of the belief.",
+                content: "Concept: How Core Beliefs Work (The Filter).\n\nMetaphor: Core beliefs are like sunglasses. If you wear green glasses, everything looks green. You forget you are wearing them and think that's just how the reality is. They filter out facts that don't fit and magnify ones that do.\n\nReflection: what color lenses might you be wearing?\n\nNote: If they argue about what is 'true,' bring it back to the impact of the belief.",
                 suggestedPacing: "10 min"
             },
             {
                 id: "cat-4-activity-1",
                 section: "activity",
-                content: "Activity: Identifying Core Beliefs.\n\nGuide participants to the 'Identifying Core Beliefs' worksheet (Part 1). Ask them to look at the list through the 'Filter' concept. Which one jumps out?\n\nNote: Circulate and observe. Help them connect a specific recent behavior to one of these beliefs.",
+                content: "Activity: Identifying Core Beliefs.\n\nGuide participants to the 'Identifying Core Beliefs' worksheet. Ask them to pick the one that they recognize in themselves.\n\nNote: Walk around and help them link a specific recent behavior to one of these beliefs.",
                 suggestedPacing: "15 min"
             },
             {
                 id: "cat-4-activity-2",
                 section: "activity",
-                content: "Activity: Core Beliefs in Real-Life Situations.\n\nReview Scenarios 1-4. Ask: 'If someone held this belief, how would they likely react here?'\n\nNote: Listen for justifications ('Well he *should* be mad'). Redirect focus to the underlying belief driving that feeling.",
+                content: "Activity: Core Beliefs in Real-Life Situations.\n\nRead Scenarios 1-4. Ask: 'If a person believes [X], how do they react here?'\n\nNote: Watch for justification. Keep the focus on how the belief causes the reaction.",
                 suggestedPacing: "15 min"
             },
             {
                 id: "cat-4-discuss",
                 section: "activity",
-                content: "Group Discussion.\n\nAsk: 'What patterns did you notice? Did you find a belief that shows up in multiple areas (home, work, legal)?'\n\nNote: Reinforce patterns over 'right' answers. Validate the insight.",
+                content: "Group Discussion.\n\nAsk: 'Did you see a pattern? Does one belief show up at home, work, and here?'\n\nNote: Validate the insight. Look for the pattern.",
                 suggestedPacing: "15 min"
             },
             {
                 id: "cat-4-wrapup",
                 section: "wrapup",
-                content: "Looking Ahead.\n\nPrompt: This week, try to catch your 'filter' in action. Just once. Ask yourself: 'Is this the only way to see this thought?' No need to change it yet—just notice it.\n\nNote: Keep the close structured. Avoid reopening the debate.",
+                content: "Looking Ahead.\n\nPrompt: This week, try to catch your 'filter' in action. Just notice it. Ask: 'Is this the only way to see this?'\n\nNote: Keep the close structured. Avoid reopening the debate.",
                 suggestedPacing: "5 min"
             }
         ],

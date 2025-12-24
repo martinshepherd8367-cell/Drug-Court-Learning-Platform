@@ -599,8 +599,227 @@ Questions:
         journalTemplateId: "journal-reflection",
         caseworxNoteTemplate: "CAT Session 7: Criminal and Addictive Thinking Patterns\n\nConcept: Compulsive/Lifestyle patterns (Entitlement, Mollification, etc).\n\nParticipant Progress:\nParticipant rated personal patterns: [Yes/No].\nPrimary pattern identified: [Insert Pattern].\n\nFacilitator Notes:\n[Insert Notes]"
     },
-    createPlaceholderSession("cat-program", 8, "CAT"),
-    createPlaceholderSession("cat-program", 9, "CAT"),
+    {
+        id: "cat-program-session-8",
+        programId: "cat-program",
+        sessionNumber: 8,
+        title: "Criminal and Addictive Tactics",
+        purpose: "Identify behavioral tactics used to avoid accountability, divert attention, or intimidate.",
+        objectives: [
+            "Define 'Tactics' vs 'Thinking Errors'",
+            "Identify common tactics: Diversion, Aggression, Manipulation",
+            "Recognize the 'setup' before the tactic",
+            "Roleplay 'stopping the tactic' and choosing a better option"
+        ],
+        facilitatorPrompts: [
+            {
+                id: "cat-8-overview",
+                section: "overview",
+                content: "Tactics are the BEHAVIORS we use to cover up our thinking or avoid consequences. If Distortions are the thoughts, Tactics are the moves we make.\n\nExamples: Changing the subject (Diversion), Getting loud (Aggression), Playing the expect (Manipulation).\n\nThe goal is to stop the tactic and face the issue.",
+                participantContent: "Tactics are the moves we make to avoid accountability.\n\nThe goal is to stop the tactic and face the issue.",
+                suggestedPacing: "5 min"
+            },
+            {
+                id: "cat-8-opening",
+                section: "opening",
+                content: "Check-in. Review Pattern Watch from Session 7.\n\nAsk:\n“When you get caught doing something wrong, what is your first move?”",
+                participantContent: "When you get caught doing something wrong, what is your first move?",
+                suggestedPacing: "10 min"
+            },
+            {
+                id: "cat-8-review",
+                section: "review",
+                content: "Review Patterns (Entitlement/Power). Tactics are often how we enforce those patterns.",
+                participantContent: "Tactics enforce our patterns.",
+                suggestedPacing: "5 min"
+            },
+            {
+                id: "cat-8-teach",
+                section: "teach",
+                content: "Teach Common Tactics:\n\n1. Diversion: Confusion, changing the subject, answering a question with a question.\n2. Aggression: Getting loud, standing up, threatening, attacking the person not the issue.\n3. Manipulation: Playing the victim, seduction, using 'therapy talk' to hide.\n4. Deception: Lying by omission, vagueness.\n\nDiscuss: Why do we use them? (To protect the addiction/lifestyle).",
+                participantContent: "Common Tactics:\n\n1. Diversion (Changing the subject)\n2. Aggression (Intimidation)\n3. Manipulation (Playing roles)\n4. Deception (Omission/Vagueness)",
+                suggestedPacing: "20 min"
+            },
+            {
+                id: "cat-8-activity",
+                section: "activity",
+                content: "Guide participants to the worksheet: 'My Tactics and Better Options'.\n\nInstructions:\nCheck off the tactics you have used. Then write a 'Better Option' for each.\n\nExample:\nTactic: Getting loud.\nBetter Option: Taking a breath and saying 'I am feeling defensive'.",
+                participantContent: "Activity: My Tactics and Better Options\n\nIdentify your go-to moves.",
+                suggestedPacing: "20 min"
+            },
+            {
+                id: "cat-8-responses",
+                section: "responses",
+                content: "Roleplay (Optional) or Discussion.\n\n“What happens when someone calls you out on a tactic?”\n“How does it feel to drop the tactic and just be real?”",
+                participantContent: "Discussion:\nWhat happens when someone calls you out?",
+                suggestedPacing: "10 min"
+            },
+            {
+                id: "cat-8-notes",
+                section: "notes",
+                content: "Facilitator Note:\nTactics defend the ego. Breaking them requires safety. If a participant uses a tactic IN group (e.g. diverting), gently name it. \"That sounds like a diversion. Can we come back to the question?\"",
+                participantContent: "Safety allows us to drop the mask.",
+                suggestedPacing: "5 min"
+            },
+            {
+                id: "cat-8-caseworx",
+                section: "caseworx",
+                content: "Document session notes. Did participant admit to using tactics?",
+                suggestedPacing: "5 min"
+            },
+            {
+                id: "cat-8-wrapup",
+                section: "wrapup",
+                content: "Close the session.\n\n“Next time you feel the urge to change the subject or get loud, stop. Ask yourself: What am I trying to hide?”",
+                participantContent: "Homework:\nCatch yourself using a tactic.",
+                suggestedPacing: "5 min"
+            }
+        ],
+        activityTemplates: [
+            {
+                id: "cat-8-worksheet-1",
+                type: "worksheet",
+                title: "My Tactics and Better Options",
+                instructions: "Check the tactics you use. Write a better option for each.",
+                questions: [
+                    { id: "q-cat-8-1", text: "Diversion (Changing subject, confusion):", type: "text" },
+                    { id: "q-cat-8-2", text: "Aggression (Loudness, threats, staring down):", type: "text" },
+                    { id: "q-cat-8-3", text: "Manipulation (Therapy talk, victim role):", type: "text" },
+                    { id: "q-cat-8-4", text: "Deception (Lying, leaving out details):", type: "text" },
+                    { id: "q-cat-8-better", text: "Choose one tactic. What is a Better Option?", type: "text" }
+                ]
+            },
+            {
+                id: "cat-8-scenarios",
+                type: "worksheet",
+                title: "Tactic Spotting",
+                instructions: "Name the tactic in the scenario.",
+                questions: [
+                    { id: "q-cat-8-scen-1", text: "1. PO asks about a positive drug screen. Participant says: \"Why are you always picking on me?\"", type: "text" },
+                    { id: "q-cat-8-scen-2", text: "2. Counselor asks a question. Participant starts talking about football.", type: "text" },
+                    { id: "q-cat-8-scen-3", text: "3. Participant says, \"I know I messed up, I'm such a loser, nothing ever works\" (looking for pity).", type: "text" }
+                ]
+            }
+        ],
+        homeworkTemplate: {
+            id: "cat-8-hw",
+            title: "Stop the Tactic",
+            steps: [
+                "Notice when you use a tactic.",
+                "Stop mid-sentence if you can.",
+                "Admit it: \"I was just trying to distract you.\""
+            ],
+            dueDescription: "Before Session 9"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "CAT Session 8: Criminal and Addictive Tactics\n\nConcept: Behavioral tactics (Diversion, Aggression, etc).\n\nParticipant Progress:\nParticipant identified personal tactics: [Yes/No].\nPrimary tactic identified: [Insert Tactic].\n\nFacilitator Notes:\n[Insert Notes]"
+    },
+    {
+        id: "cat-program-session-9",
+        programId: "cat-program",
+        sessionNumber: 9,
+        title: "Practicing Full Thinking Reports",
+        purpose: "Apply the full S-T-F-B-C model to real life situations. Demonstrate proficiency in the CAT model.",
+        objectives: [
+            "Complete a full Thinking Report independently",
+            "Identify the distortions and patterns in the report",
+            "Rewrite the thought/behavior for a better outcome",
+            "Graduation/Completion review"
+        ],
+        facilitatorPrompts: [
+            {
+                id: "cat-9-overview",
+                section: "overview",
+                content: "This is the final session of CAT. We bring it all together.\n\nThinking Report + Distortions + Patterns + Tactics.\n\nThe goal is to show that you can separate the Facts from the Thoughts, catch the Errors, and choose a new Behavior.",
+                participantContent: "Putting it all together.\n\nFacts -> Thoughts -> Behavior.",
+                suggestedPacing: "5 min"
+            },
+            {
+                id: "cat-9-opening",
+                section: "opening",
+                content: "Check-in. Review Tactic Stopping homework.\n\nAsk:\n“Does the CAT model make sense to you now? How has it changed how you see your choices?”",
+                participantContent: "How has CAT changed how you see your choices?",
+                suggestedPacing: "10 min"
+            },
+            {
+                id: "cat-9-review",
+                section: "review",
+                content: "Quick review of the 3 pillars:\n1. Camera Check (Facts vs Thoughts)\n2. Distortions (The errors)\n3. Patterns (The lifestyle)\n\nAll of them lead to the Thinking Report.",
+                participantContent: "1. Camera Check\n2. Distortions\n3. Patterns",
+                suggestedPacing: "5 min"
+            },
+            {
+                id: "cat-9-teach",
+                section: "teach",
+                content: "No new new teaching. Focus on Application.\n\nReview the 'Intervention' point in a Thinking Report.\nWe can intervene at the Thought (Accountability knowing).\nWe can intervene at the Behavior (Stop the tactic).\n\nThe goal is not to be perfect. The goal is to be AWARE.",
+                participantContent: "The goal is not to be perfect. The goal is to be AWARE.",
+                suggestedPacing: "10 min"
+            },
+            {
+                id: "cat-9-activity",
+                section: "activity",
+                content: "Guide participants to the worksheet: 'Full Thinking Report'.\n\nInstructions:\nPick one significant event from this week. Complete the full report.\nThen, underneath, Lable the Distortion and the Pattern.\nFinally, write a 'New Thought' that would have led to a better outcome.",
+                participantContent: "Activity: Full Thinking Report\n\nProve your skills.",
+                suggestedPacing: "30 min"
+            },
+            {
+                id: "cat-9-responses",
+                section: "responses",
+                content: "Review a few reports.\nCelebrate the insights.\n\n\"Look how far you've come from Session 1 where we blamed everyone else.\"",
+                participantContent: "Look how far you've come.",
+                suggestedPacing: "10 min"
+            },
+            {
+                id: "cat-9-notes",
+                section: "notes",
+                content: "Facilitator Note:\nThis is a graduation session. Emphasize progress. Hand out certificates if applicable (or mark completion in app).",
+                participantContent: "Congratulations on completing CAT.",
+                suggestedPacing: "5 min"
+            },
+            {
+                id: "cat-9-caseworx",
+                section: "caseworx",
+                content: "Document completion. Note proficiency level.",
+                suggestedPacing: "5 min"
+            },
+            {
+                id: "cat-9-wrapup",
+                section: "wrapup",
+                content: "Close the program.\n\n“You have the tools. The rest is practice. Keep doing Thinking Reports.”",
+                participantContent: "You have the tools. Keep practicing.",
+                suggestedPacing: "5 min"
+            }
+        ],
+        activityTemplates: [
+            {
+                id: "cat-9-worksheet-1",
+                type: "worksheet",
+                title: "Full Thinking Report",
+                instructions: "Complete the full report for a recent event.",
+                questions: [
+                    { id: "q-cat-9-sit", text: "Situation (Fact):", type: "text" },
+                    { id: "q-cat-9-th", text: "Thought (The Glitch):", type: "text" },
+                    { id: "q-cat-9-feel", text: "Feeling (Emotion):", type: "text" },
+                    { id: "q-cat-9-beh", text: "Behavior (Action/Tactic):", type: "text" },
+                    { id: "q-cat-9-cons", text: "Consequence:", type: "text" },
+                    { id: "q-cat-9-dist", text: "Label the Distortion/Pattern:", type: "text" },
+                    { id: "q-cat-9-new", text: "New Thought (Accountability):", type: "text" },
+                    { id: "q-cat-9-new-beh", text: "New Behavior (Result):", type: "text" }
+                ]
+            }
+        ],
+        homeworkTemplate: {
+            id: "cat-9-hw",
+            title: "Maintenance",
+            steps: [
+                "Run a Thinking Report whenever you get stuck.",
+                "Review your patterns monthly."
+            ],
+            dueDescription: "Ongoing"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "CAT Session 9: Practicing Full Thinking Reports\n\nConcept: Full Application.\n\nParticipant Progress:\nParticipant completed full report: [Yes/No].\nProficiency demonstrated: [Yes/No].\n\nFacilitator Notes:\n[Insert Notes]"
+    },
 ];
 
 export const codaSessions: Session[] = Array.from({ length: 10 }, (_, i) =>

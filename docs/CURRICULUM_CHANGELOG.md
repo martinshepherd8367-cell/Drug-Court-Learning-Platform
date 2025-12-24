@@ -37,3 +37,6 @@
 
 ## v1-preaudit-2025-12-24-cat-batch2
 - CAT Sessions 6–7 installed (scaffold). Worksheet/scenario headings visible to participants without launch.
+
+## v1-preaudit-2025-12-24-cat-batch3
+- CAT Sessions 8–9 installed (scaffold). Worksheet/scenario headings visible to participants without launch.

@@ -98,7 +98,72 @@ export const catSessions: Session[] = [
                 id: "cat-1-activity",
                 section: "activity",
                 content: "Have participants complete the in-session worksheet (below). The focus is on identifying real-life “self-talk” that justified risky choices.\n\nInstructions:\n\nAsk participants to write down three statements they have used to justify a harmful choice (use, lie, avoid, break rules, lash out, or any behavior that created consequences). Then have them connect each statement to the short-term payoff and the long-term cost.\n\nAllow quiet time for completion. Sharing is encouraged but optional.",
-                participantContent: "Think about a recent choice that created consequences. It does not have to be a big event.\n\nWrite down:\n• What happened\n• What you told yourself\n• What that thought allowed you to do\n\nYou will use this to complete today’s worksheet.",
+                participantContent: `Think about a recent choice that created consequences. It does not have to be a big event.
+
+Write down:
+• What happened
+• What you told yourself
+• What that thought allowed you to do
+
+You will use this to complete today’s worksheet.
+
+---------------------------------------------------------
+WORKSHEET (IN-SESSION)
+Title: Criminal and Addictive Thinking: My Self-Talk Before Consequences
+Instructions: Choose one or more real-life examples. Keep it simple. The goal is to identify the thought that justified the behavior and the outcome that followed.
+Prompts:
+1) Write three statements you have used to justify a harmful choice.
+
+Statement #1: ____________________________  
+What did this statement allow you to do? ____________________________  
+Short-term payoff: ____________________________  
+Long-term cost: ____________________________
+
+Statement #2: ____________________________  
+What did this statement allow you to do? ____________________________  
+Short-term payoff: ____________________________  
+Long-term cost: ____________________________
+
+Statement #3: ____________________________  
+What did this statement allow you to do? ____________________________  
+Short-term payoff: ____________________________  
+Long-term cost: ____________________________
+
+2) Choose one statement above and rewrite it using accountability language (owning the choice).
+
+Accountability version: ____________________________
+
+---------------------------------------------------------
+SCENARIO ACTIVITY (AFTER BREAK)
+Title: Spot the Thinking: Real-Life Scenarios
+
+Scenario 1  
+After a stressful day, a person says, “I earned this. I deserve it,” and decides to use.  
+Questions:  
+• What distorted thinking is present?  
+• What is the short-term payoff and long-term cost?  
+• What is an accountability thought that could interrupt this?
+
+Scenario 2  
+A person misses a required appointment. They decide not to call and say, “They’re just trying to control me anyway,” and they avoid contact.  
+Questions:  
+• What distorted thinking is present?  
+• What outcome is likely if the pattern continues?  
+• What is one responsible action step?
+
+Scenario 3  
+A person takes something from a large store and says, “They can afford it,” and “They make plenty of money.”  
+Questions:  
+• What justification is being used?  
+• What does this choice reinforce about the person’s identity?  
+• What would accountability look like here?
+
+Scenario 4  
+A person relapses and says, “It’s my friend’s fault for bringing it around,” and refuses to look at their own choices.  
+Questions:  
+• What distorted thinking is present?  
+• What choice points did the person still have?  
+• What is a more responsible way to describe what happened?`,
                 suggestedPacing: "15 min"
             },
             {

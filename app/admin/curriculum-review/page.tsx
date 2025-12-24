@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { ArrowLeft, ExternalLink, AlertTriangle, CheckCircle } from "lucide-react"
+import { ArrowLeft, ExternalLink, AlertTriangle, CheckCircle, FileText } from "lucide-react"
 import { curriculaPrograms, CURRICULUM_VERSION } from "@/lib/curricula"
 
 export default function CurriculumReviewPage() {
@@ -85,6 +85,15 @@ export default function CurriculumReviewPage() {
                           </td>
                           <td className="py-3 text-right pr-2">
                             <div className="flex items-center justify-end gap-2">
+                              {/* Admin Audit Link */}
+                              <Link
+                                href={`/admin/curriculum-review/${program.slug}/sessions/${session.sessionNumber}`}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800 transition-colors border border-amber-200 text-xs font-medium"
+                              >
+                                Admin Audit
+                                <FileText className="h-3 w-3" />
+                              </Link>
+
                               {/* Participant Link */}
                               <Link
                                 href={`/participant/programs/${program.slug}/sessions/${session.sessionNumber}`}

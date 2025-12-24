@@ -607,7 +607,7 @@ export default function FacilitatorSessionView() {
                     <h2 className="text-xl font-bold">CaseWorx Export</h2>
                     <Button onClick={() => { }} className="bg-green-600 hover:bg-green-700 opacity-50 cursor-not-allowed" disabled>
                       <Copy className="h-4 w-4 mr-2" />
-                      Copy to Clipboard (V2)
+                      Copy Note
                     </Button>
                   </div>
 

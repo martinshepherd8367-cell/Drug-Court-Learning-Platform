@@ -1,3 +1,3 @@
 export { curriculaPrograms } from './programs';
 
-export const CURRICULUM_VERSION = "v1-preaudit-2025-12-24-fulltext";
+export const CURRICULUM_VERSION = "v1-preaudit-2025-12-24c";

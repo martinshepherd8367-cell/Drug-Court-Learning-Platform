@@ -47,6 +47,7 @@ export interface FacilitatorPrompt {
   id: string
   section: "overview" | "opening" | "review" | "teach" | "activity" | "wrapup" | "responses" | "notes" | "caseworx"
   content: string
+  participantContent?: string
   suggestedPacing?: string
 }
 

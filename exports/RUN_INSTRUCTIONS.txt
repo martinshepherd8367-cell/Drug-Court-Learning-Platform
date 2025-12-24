@@ -1,0 +1,15 @@
+V1 Simplified - Run Instructions
+
+1. Unzip the archive:
+   tar -xzf drug-court-v1-simplified-src_YYYYMMDD_HHMMSS.tar.gz
+
+2. Install dependencies:
+   npm install
+
+3. Run in development mode:
+   npm run dev -- --turbo=false --port 3001
+
+4. Build for production:
+   npm run build
+
+Note: This version includes all V1 simplifications (open access sessions, timestamped attendance/takeaways, Admin makeup assignment).

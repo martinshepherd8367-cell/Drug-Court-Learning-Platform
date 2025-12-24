@@ -1,0 +1,844 @@
+"use client"
+
+import { createContext, useContext, useState, useCallback, type ReactNode } from "react"
+import type {
+  User,
+  Program,
+  Session,
+  Enrollment,
+  Attendance,
+  ActivityRun,
+  ParticipantResponse,
+  JournalEntry,
+  HomeworkSubmission,
+  FacilitatorNote,
+  QuickNote,
+  Message,
+  MakeupAssignment,
+  MakeupGroup,
+  ClassQRCode,
+  CheckIn,
+  AttendanceRecord,
+  TakeawaySubmission,
+} from "./types"
+import {
+  mockUsers,
+  mockPrograms,
+  mockEnrollments,
+  mockAttendance,
+  mockActivityRuns,
+  mockParticipantResponses,
+  mockJournalEntries,
+  mockHomeworkSubmissions,
+  mockFacilitatorNotes,
+  mockQuickNotes,
+  mockMessages,
+} from "./mock-data"
+
+const initialMakeupGroup: MakeupGroup = {
+  id: "makeup-1",
+  date: "2025-01-04",
+  time: "10:00 AM",
+  facilitatorId: "fac-1",
+  facilitatorName: "Sarah Johnson",
+  room: "Room 101",
+  qrCode: "MAKEUP-GROUP-2025-01",
+  participants: [],
+}
+
+const initialMakeupAssignments: MakeupAssignment[] = [
+  {
+    id: "ma-1",
+    participantId: "part-1",
+    participantName: "John Smith",
+    missedSessionId: "ps-3",
+    missedProgramId: "prime-solutions",
+    missedProgramName: "Prime Solutions",
+    missedSessionNumber: 3,
+    missedDate: "2024-12-16",
+    makeupDate: "2025-01-04",
+    makeupTime: "10:00 AM",
+    facilitatorId: "fac-1",
+    facilitatorAssigned: false,
+    assignedWorksheets: [],
+    assignedReadings: [],
+    assignedInstructions: "",
+    status: "pending",
+    checkedIn: false,
+  },
+  {
+    id: "ma-2",
+    participantId: "part-2",
+    participantName: "Sarah Johnson",
+    missedSessionId: "ps-5",
+    missedProgramId: "prime-solutions",
+    missedProgramName: "Prime Solutions",
+    missedSessionNumber: 5,
+    missedDate: "2024-12-17",
+    makeupDate: "2025-01-04",
+    makeupTime: "10:00 AM",
+    facilitatorId: "fac-1",
+    facilitatorAssigned: true,
+    assignedWorksheets: ["Thinking Errors Worksheet", "Self-Assessment"],
+    assignedReadings: ["Chapter 5: Cognitive Restructuring"],
+    assignedInstructions: "Complete the thinking errors worksheet and reflect on three situations from the past week.",
+    status: "work_assigned",
+    checkedIn: false,
+  },
+]
+
+interface StoreState {
+  // Data
+  users: User[]
+  programs: Program[]
+  enrollments: Enrollment[]
+  attendance: Attendance[]
+  activityRuns: ActivityRun[]
+  participantResponses: ParticipantResponse[]
+  journalEntries: JournalEntry[]
+  homeworkSubmissions: HomeworkSubmission[]
+  facilitatorNotes: FacilitatorNote[]
+  quickNotes: QuickNote[]
+  messages: Message[]
+  classQRCodes: ClassQRCode[]
+  checkIns: CheckIn[]
+  attendanceRecords: AttendanceRecord[]
+  takeawaySubmissions: TakeawaySubmission[]
+
+  // Current user (for demo)
+  currentUser: User | null
+  setCurrentUser: (user: User | null) => void
+
+  // Actions
+  launchActivity: (sessionId: string, activityTemplateId: string) => ActivityRun
+  closeActivity: (activityRunId: string) => void
+  submitResponse: (activityRunId: string, participantId: string, answers: Record<string, string>) => void
+  endSession: (sessionId: string, participantId: string) => void
+  copyCaseworx: (sessionId: string) => string
+  markMessageRead: (messageId: string) => void
+  addMessage: (message: Omit<Message, "id">) => void
+
+  // CRUD helpers
+  addEnrollment: (enrollment: Omit<Enrollment, "id">) => void
+  updateEnrollment: (id: string, updates: Partial<Enrollment>) => void
+  addJournalEntry: (entry: Omit<JournalEntry, "id">) => void
+  addHomeworkSubmission: (submission: Omit<HomeworkSubmission, "id">) => void
+  updateHomeworkSubmission: (id: string, updates: Partial<HomeworkSubmission>) => void
+  addFacilitatorNote: (note: Omit<FacilitatorNote, "id">) => void
+  addQuickNote: (note: Omit<QuickNote, "id">) => void
+
+  // Program management functions
+  addProgram: (program: Omit<Program, "id">) => void
+  updateProgram: (id: string, updates: Partial<Program>) => void
+  deleteProgram: (id: string) => void
+
+  // Getters
+  getProgramBySlug: (slug: string) => Program | undefined
+  getSessionByNumber: (programSlug: string, sessionNumber: number) => Session | undefined
+  getEnrollmentsByParticipant: (participantId: string) => Enrollment[]
+  getEnrollmentsByProgram: (programId: string) => Enrollment[]
+  getActiveActivityRun: (sessionId: string) => ActivityRun | undefined
+  getResponsesForActivity: (activityRunId: string) => ParticipantResponse[]
+  getMessagesForParticipant: (participantId: string) => Message[]
+  getHomeworkForParticipant: (
+    participantId: string,
+  ) => { program: Program; session: Session; homework: HomeworkSubmission | null }[]
+  getJournalEntriesForParticipant: (participantId: string) => JournalEntry[]
+
+  // Makeup group state and actions
+  makeupGroup: MakeupGroup
+  makeupAssignments: MakeupAssignment[]
+  updateMakeupGroup: (updates: Partial<MakeupGroup>) => void
+  addMakeupAssignment: (assignment: Omit<MakeupAssignment, "id">) => void
+  updateMakeupAssignment: (id: string, updates: Partial<MakeupAssignment>) => void
+  markParticipantAbsent: (
+    participantId: string,
+    participantName: string,
+    sessionId: string,
+    programId: string,
+    programName: string,
+    sessionNumber: number,
+  ) => void
+  assignMakeupWork: (assignmentId: string, worksheets: string[], readings: string[], instructions: string) => void
+  checkInToMakeup: (assignmentId: string) => void
+  completeMakeupAssignment: (assignmentId: string) => void
+  getMakeupAssignmentsForFacilitator: (facilitatorId: string) => MakeupAssignment[]
+  getMakeupAssignmentsForParticipant: (participantId: string) => MakeupAssignment[]
+  getPendingMakeupAssignments: () => MakeupAssignment[]
+
+  // QR Code and Check-in functions
+  generateClassQRCode: (qrCode: Omit<ClassQRCode, "id" | "code" | "generatedAt">) => ClassQRCode
+  getQRCodeForClass: (programId: string, sessionNumber: number, day: string, time: string) => ClassQRCode | undefined
+  validateCheckIn: (
+    participantId: string,
+    qrCode: string,
+    gpsLat: number | null,
+    gpsLng: number | null,
+  ) => { success: boolean; error?: string; isVirtual?: boolean }
+  recordCheckIn: (checkIn: Omit<CheckIn, "id">) => void
+  getCheckInsForSession: (sessionId: string) => CheckIn[]
+  markAbsentAfterClass: (sessionId: string, programId: string, programName: string, sessionNumber: number) => void
+
+  // V1 Functions
+  recordAttendanceCheckIn: (args: Omit<AttendanceRecord, "id">) => void
+  getAttendanceFor: (programId: string, sessionNumber: number) => AttendanceRecord[]
+  submitTakeaways: (participantId: string, programId: string, sessionNumber: number, text: string) => TakeawaySubmission
+  getTakeaways: (programId: string, sessionNumber: number) => TakeawaySubmission[]
+  hasSubmittedTakeaways: (participantId: string, programId: string, sessionNumber: number) => boolean
+  isLate: (checkInIso: string, scheduledTimeStr: string) => boolean
+  assignMakeupFromAdmin: (participantId: string, programId: string, sessionNumber: number) => MakeupAssignment
+}
+
+const StoreContext = createContext<StoreState | null>(null)
+
+export function StoreProvider({ children }: { children: ReactNode }) {
+  const [users] = useState<User[]>(mockUsers)
+  const [programs, setPrograms] = useState<Program[]>(mockPrograms)
+  const [enrollments, setEnrollments] = useState<Enrollment[]>(mockEnrollments)
+  const [attendance, setAttendance] = useState<Attendance[]>(mockAttendance)
+  const [activityRuns, setActivityRuns] = useState<ActivityRun[]>(mockActivityRuns)
+  const [participantResponses, setParticipantResponses] = useState<ParticipantResponse[]>(mockParticipantResponses)
+  const [journalEntries, setJournalEntries] = useState<JournalEntry[]>(mockJournalEntries)
+  const [homeworkSubmissions, setHomeworkSubmissions] = useState<HomeworkSubmission[]>(mockHomeworkSubmissions)
+  const [facilitatorNotes, setFacilitatorNotes] = useState<FacilitatorNote[]>(mockFacilitatorNotes)
+  const [quickNotes, setQuickNotes] = useState<QuickNote[]>(mockQuickNotes)
+  const [messages, setMessages] = useState<Message[]>(mockMessages)
+  const [currentUser, setCurrentUser] = useState<User | null>(mockUsers[3])
+
+  // Added makeup group state
+  const [makeupGroup, setMakeupGroup] = useState<MakeupGroup>(initialMakeupGroup)
+  const [makeupAssignments, setMakeupAssignments] = useState<MakeupAssignment[]>(initialMakeupAssignments)
+
+  const [classQRCodes, setClassQRCodes] = useState<ClassQRCode[]>([])
+  const [checkIns, setCheckIns] = useState<CheckIn[]>([])
+  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([])
+  const [takeawaySubmissions, setTakeawaySubmissions] = useState<TakeawaySubmission[]>([])
+
+  const launchActivity = useCallback((sessionId: string, activityTemplateId: string): ActivityRun => {
+    const newRun: ActivityRun = {
+      id: `run-${Date.now()}`,
+      sessionId,
+      activityTemplateId,
+      status: "live",
+      startedAt: new Date().toISOString(),
+      closedAt: null,
+    }
+    setActivityRuns((prev) => [...prev, newRun])
+    return newRun
+  }, [])
+
+  const closeActivity = useCallback((activityRunId: string) => {
+    setActivityRuns((prev) =>
+      prev.map((run) =>
+        run.id === activityRunId ? { ...run, status: "closed" as const, closedAt: new Date().toISOString() } : run,
+      ),
+    )
+  }, [])
+
+  const submitResponse = useCallback(
+    (activityRunId: string, participantId: string, answers: Record<string, string>) => {
+      const newResponse: ParticipantResponse = {
+        id: `resp-${Date.now()}`,
+        activityRunId,
+        participantId,
+        answers,
+        submittedAt: new Date().toISOString(),
+      }
+      setParticipantResponses((prev) => [...prev, newResponse])
+    },
+    [],
+  )
+
+  const endSession = useCallback(
+    (sessionId: string, programId: string) => {
+      // V1 SIMPLIFICATION: Stop local timer only. Do NOT auto-advance sessions or participants.
+      // Logic removed as per V1 requirements.
+      console.log("Session ended for", sessionId, "in program", programId)
+
+      // We can still mark attendance via existing logic if desired, but strictly no progression enforcement.
+      // Keeping basic attendance log if needed, but primary is now recordAttendanceCheckIn.
+    },
+    [],
+  )
+
+  const copyCaseworx = useCallback(
+    (sessionId: string): string => {
+      const program = programs.find((p) => p.sessions.some((s) => s.id === sessionId))
+      const session = program?.sessions.find((s) => s.id === sessionId)
+      return session?.caseworxNoteTemplate || ""
+    },
+    [programs],
+  )
+
+  const addEnrollment = useCallback((enrollment: Omit<Enrollment, "id">) => {
+    setEnrollments((prev) => [...prev, { ...enrollment, id: `enr-${Date.now()}` }])
+  }, [])
+
+  const updateEnrollment = useCallback((id: string, updates: Partial<Enrollment>) => {
+    setEnrollments((prev) => prev.map((e) => (e.id === id ? { ...e, ...updates } : e)))
+  }, [])
+
+  const addJournalEntry = useCallback((entry: Omit<JournalEntry, "id">) => {
+    setJournalEntries((prev) => [...prev, { ...entry, id: `je-${Date.now()}` }])
+  }, [])
+
+  const addHomeworkSubmission = useCallback((submission: Omit<HomeworkSubmission, "id">) => {
+    setHomeworkSubmissions((prev) => [...prev, { ...submission, id: `hs-${Date.now()}` }])
+  }, [])
+
+  const updateHomeworkSubmission = useCallback((id: string, updates: Partial<HomeworkSubmission>) => {
+    setHomeworkSubmissions((prev) => prev.map((s) => (s.id === id ? { ...s, ...updates } : s)))
+  }, [])
+
+  const addFacilitatorNote = useCallback((note: Omit<FacilitatorNote, "id">) => {
+    setFacilitatorNotes((prev) => [...prev, { ...note, id: `fn-${Date.now()}` }])
+  }, [])
+
+  const addQuickNote = useCallback((note: Omit<QuickNote, "id">) => {
+    setQuickNotes((prev) => [...prev, { ...note, id: `qn-${Date.now()}` }])
+  }, [])
+
+  const markMessageRead = useCallback((messageId: string) => {
+    setMessages((prev) => prev.map((m) => (m.id === messageId ? { ...m, readAt: new Date().toISOString() } : m)))
+  }, [])
+
+  const addMessage = useCallback((message: Omit<Message, "id">) => {
+    setMessages((prev) => [...prev, { ...message, id: `msg-${Date.now()}` }])
+  }, [])
+
+  const getProgramBySlug = useCallback(
+    (slug: string) => {
+      return programs.find((p) => p.slug === slug)
+    },
+    [programs],
+  )
+
+  const getSessionByNumber = useCallback(
+    (programSlug: string, sessionNumber: number) => {
+      const program = programs.find((p) => p.slug === programSlug)
+      return program?.sessions.find((s) => s.sessionNumber === sessionNumber)
+    },
+    [programs],
+  )
+
+  const getEnrollmentsByParticipant = useCallback(
+    (participantId: string) => {
+      return enrollments.filter((e) => e.participantId === participantId)
+    },
+    [enrollments],
+  )
+
+  const getEnrollmentsByProgram = useCallback(
+    (programId: string) => {
+      return enrollments.filter((e) => e.programId === programId)
+    },
+    [enrollments],
+  )
+
+  const getActiveActivityRun = useCallback(
+    (sessionId: string) => {
+      return activityRuns.find((r) => r.sessionId === sessionId && r.status === "live")
+    },
+    [activityRuns],
+  )
+
+  const getResponsesForActivity = useCallback(
+    (activityRunId: string) => {
+      return participantResponses.filter((r) => r.activityRunId === activityRunId)
+    },
+    [participantResponses],
+  )
+
+  const getMessagesForParticipant = useCallback(
+    (participantId: string) => {
+      return messages
+        .filter((m) => m.participantId === participantId)
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    },
+    [messages],
+  )
+
+  const getHomeworkForParticipant = useCallback(
+    (participantId: string) => {
+      const participantEnrollments = enrollments.filter(
+        (e) => e.participantId === participantId && e.status === "active",
+      )
+
+      return participantEnrollments
+        .map((enrollment) => {
+          const program = programs.find((p) => p.id === enrollment.programId)
+          const currentSession = program?.sessions.find((s) => s.sessionNumber === enrollment.currentSessionNumber)
+          const submission = homeworkSubmissions.find(
+            (hs) => hs.participantId === participantId && hs.sessionId === currentSession?.id,
+          )
+
+          return {
+            program: program!,
+            session: currentSession!,
+            homework: submission || null,
+          }
+        })
+        .filter((item) => item.program && item.session && item.session.homeworkTemplate)
+    },
+    [enrollments, programs, homeworkSubmissions],
+  )
+
+  const getJournalEntriesForParticipant = useCallback(
+    (participantId: string) => {
+      return journalEntries
+        .filter((j) => j.participantId === participantId)
+        .sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime())
+    },
+    [journalEntries],
+  )
+
+  const updateMakeupGroup = useCallback((updates: Partial<MakeupGroup>) => {
+    setMakeupGroup((prev) => ({ ...prev, ...updates }))
+  }, [])
+
+  const addMakeupAssignment = useCallback((assignment: Omit<MakeupAssignment, "id">) => {
+    const newAssignment: MakeupAssignment = {
+      ...assignment,
+      id: `ma-${Date.now()}`,
+    }
+    setMakeupAssignments((prev) => [...prev, newAssignment])
+    setMakeupGroup((prev) => ({
+      ...prev,
+      participants: [...prev.participants, assignment.participantId],
+    }))
+  }, [])
+
+  const updateMakeupAssignment = useCallback((id: string, updates: Partial<MakeupAssignment>) => {
+    setMakeupAssignments((prev) => prev.map((a) => (a.id === id ? { ...a, ...updates } : a)))
+  }, [])
+
+  const markParticipantAbsent = useCallback(
+    (
+      participantId: string,
+      participantName: string,
+      sessionId: string,
+      programId: string,
+      programName: string,
+      sessionNumber: number,
+    ) => {
+      // Create makeup assignment
+      const newAssignment: MakeupAssignment = {
+        id: `ma-${Date.now()}`,
+        participantId,
+        participantName,
+        missedSessionId: sessionId,
+        missedProgramId: programId,
+        missedProgramName: programName,
+        missedSessionNumber: sessionNumber,
+        missedDate: new Date().toISOString(),
+        makeupDate: makeupGroup.date,
+        makeupTime: makeupGroup.time,
+        facilitatorId: makeupGroup.facilitatorId,
+        facilitatorAssigned: false,
+        assignedWorksheets: [],
+        assignedReadings: [],
+        assignedInstructions: "",
+        status: "pending",
+        checkedIn: false,
+      }
+
+      setMakeupAssignments((prev) => [...prev, newAssignment])
+      setMakeupGroup((prev) => ({
+        ...prev,
+        participants: [...prev.participants, participantId],
+      }))
+
+      // Send urgent message to participant
+      const participantMessage: Message = {
+        id: `msg-${Date.now()}`,
+        participantId,
+        title: "MAKEUP GROUP REQUIRED",
+        content: `You missed ${programName} Session ${sessionNumber}. You are scheduled for the Makeup Group on ${new Date(makeupGroup.date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })} at ${makeupGroup.time} in ${makeupGroup.room}. Please arrive on time with your phone ready to scan the QR code.`,
+        fromName: "Administration",
+        readAt: null,
+        createdAt: new Date().toISOString(),
+        isUrgent: true,
+      }
+      setMessages((prev) => [...prev, participantMessage])
+
+      // Send message to facilitator
+      const facilitatorMessage: Message = {
+        id: `msg-${Date.now() + 1}`,
+        participantId: makeupGroup.facilitatorId,
+        title: `Makeup Work Needed: ${participantName}`,
+        content: `${participantName} missed ${programName} Session ${sessionNumber} and has been assigned to your Makeup Group on ${new Date(makeupGroup.date).toLocaleDateString()}. Please assign makeup work for this participant.`,
+        fromName: "Administration",
+        readAt: null,
+        createdAt: new Date().toISOString(),
+        isUrgent: false,
+      }
+      setMessages((prev) => [...prev, facilitatorMessage])
+    },
+    [makeupGroup],
+  )
+
+  const assignMakeupWork = useCallback(
+    (assignmentId: string, worksheets: string[], readings: string[], instructions: string) => {
+      setMakeupAssignments((prev) =>
+        prev.map((a) =>
+          a.id === assignmentId
+            ? {
+              ...a,
+              assignedWorksheets: worksheets,
+              assignedReadings: readings,
+              assignedInstructions: instructions,
+              facilitatorAssigned: true,
+              status: "work_assigned" as const,
+            }
+            : a,
+        ),
+      )
+    },
+    [],
+  )
+
+  const checkInToMakeup = useCallback((assignmentId: string) => {
+    setMakeupAssignments((prev) => prev.map((a) => (a.id === assignmentId ? { ...a, checkedIn: true } : a)))
+  }, [])
+
+  const completeMakeupAssignment = useCallback((assignmentId: string) => {
+    setMakeupAssignments((prev) =>
+      prev.map((a) => (a.id === assignmentId ? { ...a, status: "completed" as const } : a)),
+    )
+  }, [])
+
+  const getMakeupAssignmentsForFacilitator = useCallback(
+    (facilitatorId: string) => {
+      return makeupAssignments.filter((a) => a.facilitatorId === facilitatorId && a.status !== "completed")
+    },
+    [makeupAssignments],
+  )
+
+  const getMakeupAssignmentsForParticipant = useCallback(
+    (participantId: string) => {
+      return makeupAssignments.filter((a) => a.participantId === participantId && a.status !== "completed")
+    },
+    [makeupAssignments],
+  )
+
+  const getPendingMakeupAssignments = useCallback(() => {
+    return makeupAssignments.filter((a) => a.status === "pending")
+  }, [makeupAssignments])
+
+  const addProgram = useCallback((program: Omit<Program, "id">) => {
+    const newProgram: Program = {
+      ...program,
+      id: program.slug || `prog-${Date.now()}`,
+    }
+    setPrograms((prev) => [...prev, newProgram])
+  }, [])
+
+  const updateProgram = useCallback((id: string, updates: Partial<Program>) => {
+    setPrograms((prev) => prev.map((p) => (p.id === id ? { ...p, ...updates } : p)))
+  }, [])
+
+  const deleteProgram = useCallback((id: string) => {
+    setPrograms((prev) => prev.filter((p) => p.id !== id))
+  }, [])
+
+  const generateClassQRCode = useCallback(
+    (qrCodeData: Omit<ClassQRCode, "id" | "code" | "generatedAt">): ClassQRCode => {
+      const code = `CLASS-${qrCodeData.programId}-${qrCodeData.sessionNumber}-${Date.now()}`
+      const newQRCode: ClassQRCode = {
+        ...qrCodeData,
+        id: `qr-${Date.now()}`,
+        code,
+        generatedAt: new Date().toISOString(),
+      }
+      setClassQRCodes((prev) => [...prev, newQRCode])
+      return newQRCode
+    },
+    [],
+  )
+
+  const getQRCodeForClass = useCallback(
+    (programId: string, sessionNumber: number, day: string, time: string) => {
+      return classQRCodes.find(
+        (qr) =>
+          qr.programId === programId &&
+          qr.sessionNumber === sessionNumber &&
+          qr.day === day &&
+          qr.time === time &&
+          new Date(qr.expiresAt) > new Date(),
+      )
+    },
+    [classQRCodes],
+  )
+
+  const validateCheckIn = useCallback(
+    (
+      participantId: string,
+      qrCode: string,
+      gpsLat: number | null,
+      gpsLng: number | null,
+    ): { success: boolean; error?: string; isVirtual?: boolean } => {
+      const qrCodeRecord = classQRCodes.find((qr) => qr.code === qrCode)
+
+      if (!qrCodeRecord) {
+        return { success: false, error: "Invalid QR code. Please scan the correct code for this class." }
+      }
+
+      if (new Date(qrCodeRecord.expiresAt) < new Date()) {
+        return { success: false, error: "This QR code has expired. Please ask your facilitator for a new code." }
+      }
+
+      // Virtual class - no GPS check needed
+      if (qrCodeRecord.isVirtual) {
+        return { success: true, isVirtual: true }
+      }
+
+      // In-person class - GPS validation required
+      if (!gpsLat || !gpsLng) {
+        return { success: false, error: "Location access is required. Please enable GPS and try again." }
+      }
+
+      if (!qrCodeRecord.gpsLatitude || !qrCodeRecord.gpsLongitude) {
+        return { success: false, error: "This class location has not been set. Please contact your facilitator." }
+      }
+
+      // Calculate distance using Haversine formula
+      const R = 6371e3 // Earth's radius in meters
+      const φ1 = (gpsLat * Math.PI) / 180
+      const φ2 = (qrCodeRecord.gpsLatitude * Math.PI) / 180
+      const Δφ = ((qrCodeRecord.gpsLatitude - gpsLat) * Math.PI) / 180
+      const Δλ = ((qrCodeRecord.gpsLongitude - gpsLng) * Math.PI) / 180
+
+      const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2)
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+      const distance = R * c // Distance in meters
+
+      if (distance > qrCodeRecord.gpsRadius) {
+        return {
+          success: false,
+          error: `You are too far from the classroom (${Math.round(distance)}m away). Please move closer and try again.`,
+        }
+      }
+
+      return { success: true, isVirtual: false }
+    },
+    [classQRCodes],
+  )
+
+  const recordCheckIn = useCallback((checkIn: Omit<CheckIn, "id">) => {
+    const newCheckIn: CheckIn = {
+      ...checkIn,
+      id: `checkin-${Date.now()}`,
+    }
+    setCheckIns((prev) => [...prev, newCheckIn])
+  }, [])
+
+  const getCheckInsForSession = useCallback(
+    (sessionId: string) => {
+      return checkIns.filter((c) => c.sessionId === sessionId)
+    },
+    [checkIns],
+  )
+
+  const markAbsentAfterClass = useCallback(
+    (sessionId: string, programId: string, programName: string, sessionNumber: number) => {
+      // V1: No longer marks absent automatically.
+      console.log("markAbsentAfterClass called (disabled for V1)", sessionId)
+    },
+    [],
+  )
+
+  // V1 New Implementations
+  const recordAttendanceCheckIn = useCallback((record: Omit<AttendanceRecord, "id">) => {
+    const newRecord: AttendanceRecord = { ...record, id: `ar-${Date.now()}` }
+    setAttendanceRecords(prev => [...prev, newRecord])
+  }, [])
+
+  const getAttendanceFor = useCallback((programId: string, sessionNumber: number) => {
+    return attendanceRecords.filter(r => r.programId === programId && r.sessionNumber === sessionNumber)
+  }, [attendanceRecords])
+
+  const submitTakeaways = useCallback((participantId: string, programId: string, sessionNumber: number, text: string): TakeawaySubmission => {
+    // Upsert logic (allow resubmit)
+    const newSubmission: TakeawaySubmission = {
+      id: `tk-${Date.now()}`,
+      participantId,
+      programId,
+      sessionNumber,
+      submittedAt: new Date().toISOString(),
+      text
+    }
+
+    setTakeawaySubmissions(prev => {
+      // Remove existing for this participant/session if exists
+      const others = prev.filter(s => !(s.participantId === participantId && s.programId === programId && s.sessionNumber === sessionNumber))
+      return [...others, newSubmission]
+    })
+    
+    return newSubmission
+  }, [])
+
+  const getTakeaways = useCallback((programId: string, sessionNumber: number) => {
+    return takeawaySubmissions.filter(s => s.programId === programId && s.sessionNumber === sessionNumber)
+  }, [takeawaySubmissions])
+
+  const hasSubmittedTakeaways = useCallback((participantId: string, programId: string, sessionNumber: number) => {
+    return takeawaySubmissions.some(s => s.participantId === participantId && s.programId === programId && s.sessionNumber === sessionNumber)
+  }, [takeawaySubmissions])
+
+  return (
+    <StoreContext.Provider
+      value={{
+        users,
+        programs,
+        enrollments,
+        attendance,
+        activityRuns,
+        participantResponses,
+        journalEntries,
+        homeworkSubmissions,
+        facilitatorNotes,
+        quickNotes,
+        messages,
+        classQRCodes,
+        checkIns,
+        currentUser,
+        setCurrentUser,
+        launchActivity,
+        closeActivity,
+        submitResponse,
+        endSession,
+        copyCaseworx,
+        markMessageRead,
+        addMessage,
+        addEnrollment,
+        updateEnrollment,
+        addJournalEntry,
+        addHomeworkSubmission,
+        updateHomeworkSubmission,
+        addFacilitatorNote,
+        addQuickNote,
+        getProgramBySlug,
+        getSessionByNumber,
+        getEnrollmentsByParticipant,
+        getEnrollmentsByProgram,
+        getActiveActivityRun,
+        getResponsesForActivity,
+        getMessagesForParticipant,
+        getHomeworkForParticipant,
+        getJournalEntriesForParticipant,
+        makeupGroup,
+        makeupAssignments,
+        updateMakeupGroup,
+        addMakeupAssignment,
+        updateMakeupAssignment,
+        markParticipantAbsent,
+        assignMakeupWork,
+        checkInToMakeup,
+        completeMakeupAssignment,
+        getMakeupAssignmentsForFacilitator,
+        getMakeupAssignmentsForParticipant,
+        getPendingMakeupAssignments,
+        addProgram,
+        updateProgram,
+        deleteProgram,
+        generateClassQRCode,
+        getQRCodeForClass,
+        validateCheckIn,
+        recordCheckIn,
+        getCheckInsForSession,
+        markAbsentAfterClass,
+        attendanceRecords,
+        takeawaySubmissions,
+        recordAttendanceCheckIn,
+        getAttendanceFor,
+        submitTakeaways,
+        getTakeaways,
+        hasSubmittedTakeaways,
+        isLate: (checkInIso, scheduledTimeStr) => {
+          try {
+            const checkIn = new Date(checkInIso)
+            const [time, modifier] = scheduledTimeStr.split(" ")
+            let [hours, minutes] = time.split(":").map(Number)
+            if (modifier === "PM" && hours < 12) hours += 12
+            if (modifier === "AM" && hours === 12) hours = 0
+            
+            const scheduled = new Date(checkIn)
+            scheduled.setHours(hours, minutes, 0, 0)
+            
+            return checkIn > scheduled
+          } catch (e) {
+            return false
+          }
+        },
+        assignMakeupFromAdmin: (participantId: string, programId: string, sessionNumber: number) => {
+          // Idempotency check
+          const existing = makeupAssignments.find(a => 
+            a.participantId === participantId && 
+            a.missedProgramId === programId && 
+            a.missedSessionNumber === sessionNumber && 
+            a.status !== "completed"
+          )
+          
+          if (existing) return existing
+
+          const timestamp = new Date().toISOString()
+          const program = programs.find(p => p.id === programId)
+          const session = program?.sessions.find(s => s.sessionNumber === sessionNumber)
+          const user = users.find(u => u.id === participantId)
+
+          const newAssignment: MakeupAssignment = {
+            id: `ma-${Date.now()}`,
+            participantId,
+            participantName: user?.name || "Unknown Participant",
+            missedSessionId: session?.id || "",
+            missedProgramId: programId,
+            missedProgramName: program?.name || programId,
+            missedSessionNumber: sessionNumber,
+            missedDate: timestamp,
+            assignedAt: timestamp,
+            makeupDate: makeupGroup.date,
+            makeupTime: makeupGroup.time,
+            facilitatorId: makeupGroup.facilitatorId,
+            facilitatorAssigned: false,
+            assignedWorksheets: [],
+            assignedReadings: [],
+            assignedInstructions: "",
+            status: "assigned",
+            checkedIn: false,
+          }
+
+          setMakeupAssignments(prev => [...prev, newAssignment])
+          setMakeupGroup(prev => ({
+            ...prev,
+            participants: [...prev.participants, participantId]
+          }))
+
+          // Urgent Message
+          const message: Message = {
+            id: `msg-${Date.now()}`,
+            participantId,
+            title: "Makeup group assigned",
+            content: `You were marked absent for Session ${sessionNumber}. You have been assigned to the next makeup group. Check the Makeup page for details.`,
+            fromName: "Administration",
+            readAt: null,
+            createdAt: timestamp,
+            isUrgent: true
+          }
+          setMessages(prev => [...prev, message])
+
+          return newAssignment
+        }
+      }}
+    >
+      {children}
+    </StoreContext.Provider>
+  )
+}
+
+export function useStore() {
+  const context = useContext(StoreContext)
+  if (!context) {
+    throw new Error("useStore must be used within a StoreProvider")
+  }
+  return context
+}

@@ -45,7 +45,7 @@ export interface Session {
 
 export interface FacilitatorPrompt {
   id: string
-  section: "overview" | "opening" | "review" | "teach" | "activity" | "wrapup"
+  section: "overview" | "opening" | "review" | "teach" | "activity" | "wrapup" | "responses" | "notes" | "caseworx"
   content: string
   suggestedPacing?: string
 }

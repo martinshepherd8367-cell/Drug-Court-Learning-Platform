@@ -77,49 +77,55 @@ export const catSessions: Session[] = [
             {
                 id: "cat-4-overview",
                 section: "overview",
-                content: "Introduction: 'What This Session Is About'.\n\nExplain: We are going to examine the core beliefs that drive our behavior. This is not about judging what you believe, but identifying it so we can see how it influences your actions.\n\nNote: Keep the tone neutral and supportive. We are mapping the territory, not diagnosing the person.",
+                content: "This session focuses on identifying core beliefs and understanding how they influence behavior. Core beliefs are deeply held assumptions about self, others, and the world that operate automatically. These beliefs often serve as the foundation for criminal and addictive thinking, including entitlement, victim stance, and justification.\n\nThe purpose of this session is not to debate whether beliefs are true or false. The purpose is to examine how beliefs shape behavior and decisions, often without awareness.\n\nFacilitator Notes:\nKeep the tone practical and behavior-focused. Avoid therapy language. Emphasize impact over accuracy. Participants may not understand this concept yet; that is expected.",
                 suggestedPacing: "5 min"
             },
             {
                 id: "cat-4-opening",
                 section: "opening",
-                content: "Discussion: 'What Is a Core Belief?'\n\nAsk: 'When I say Core Belief, what does that mean to you?'\nPrompts: Beliefs about people (trust/distrust), Fairness (the system), Rules (do they apply?).\n\nNote: Do not correct them yet. Just get their definitions on the board.",
+                content: "Begin with brief check-ins and allow participants to get settled. Have participants open their CAT books or navigate to Session 4 in the app.\n\nIntroduce the session clearly:\n\n“Today we are working on Chapter 4, which is about core beliefs.”\n\nOpen the discussion with exploratory questions:\n\n“What do you think a core belief is?”\n“Where do core beliefs come from?”\n\nAllow responses without correction. Expect answers such as rules, values, or slogans. Acknowledge participation and ensure each participant has an opportunity to speak.\n\nFacilitator Notes:\nDo not correct or redefine yet. The goal here is engagement and baseline understanding, not accuracy.",
+                suggestedPacing: "5 min"
+            },
+            {
+                id: "cat-4-review",
+                section: "review",
+                content: "Briefly connect this session to earlier CAT concepts by reinforcing that thinking drives behavior. Clarify that core beliefs operate underneath justifications, entitlement, and victim stance.\n\nExplain the distinction:\n\nRules and opinions are not core beliefs.\nCore beliefs are assumptions that feel automatic and obvious.\n\nTransition into teaching by noting that many people act on beliefs they have never examined.\n\nFacilitator Notes:\nThis is where accountability language fits. Keep the focus on behavior and decision-making, not emotions.",
                 suggestedPacing: "10 min"
             },
             {
-                id: "cat-4-teach-1",
+                id: "cat-4-teach",
                 section: "teach",
-                content: "Concept: Beliefs and Behavior.\n\nTeach: Your beliefs dictate your actions. If you believe 'disrespect must be punished,' you will fight. If you believe 'I can't change,' you won't try. The belief comes *before* the behavior.\n\nNote: Focus on accountability. Connect the thinking directly to the action.",
+                content: "Core beliefs are deep ideas about how the world works, how other people are, and what kind of person someone believes they are. These beliefs act like a filter and shape how situations are interpreted and how decisions are made.\n\nProvide common examples:\n\n“Everyone is out for themselves.”\n“You can’t trust anyone.”\n“There are more bad people than good people.”\n“I always get the short end of the stick.”\n\nInvite reflection:\n\n“Which of these sounds familiar?”\n“Which ones have shown up in your life?”\n\nGo around the room and allow participants to identify a belief that resonates. Some beliefs may be challenged using questions. Others should simply be noted.\n\nExplore behavior links:\n\n“If someone believes everyone is out for themselves, how might that affect how they act?”\n“How could that belief justify dishonesty or selfish decisions?”\n“How does a victim belief make certain choices feel reasonable?”\n\nUse real-world examples to gently challenge extreme beliefs. Focus on observable behavior rather than emotional explanations.\n\nFacilitator Notes:\nParticipants may attempt to defend beliefs as facts. Redirect by asking how the belief affects behavior. Avoid debating truth. Avoid emotional labels such as fear or anxiety.",
+                suggestedPacing: "20 min"
+            },
+            {
+                id: "cat-4-activity",
+                section: "activity",
+                content: "Introduce the activity as individual reflection.\n\nParticipants complete the in-app worksheet with the following prompts:\nIdentify three core beliefs you hold.\nDescribe a situation where each belief influenced your behavior.\nExplain how the belief helped justify that action at the time.\n\nAllow quiet time for completion. Sharing is optional.\n\nFacilitator Notes:\nThis activity often triggers defensiveness. Use questions rather than confrontation. Reinforce that the task is awareness, not judgment.",
+                suggestedPacing: "15 min"
+            },
+            {
+                id: "cat-4-responses",
+                section: "responses",
+                content: "Invite volunteers to share observations or patterns they noticed. Reinforce accountability language and real-life application.\n\nKey points to reinforce verbally:\nCore beliefs are learned, not facts.\nUnexamined beliefs often justify harmful behavior.\nAwareness is the first step toward change.\n\nFacilitator Notes:\nDo not pressure disclosure. Reinforce effort and insight rather than “right answers.”",
                 suggestedPacing: "10 min"
             },
             {
-                id: "cat-4-teach-2",
-                section: "teach",
-                content: "Concept: How Core Beliefs Work (The Filter).\n\nMetaphor: Core beliefs are like sunglasses. If you wear green glasses, everything looks green. You forget you are wearing them and think that's just how the reality is. They filter out facts that don't fit and magnify ones that do.\n\nReflection: what color lenses might you be wearing?\n\nNote: If they argue about what is 'true,' bring it back to the impact of the belief.",
-                suggestedPacing: "10 min"
+                id: "cat-4-notes",
+                section: "notes",
+                content: "Participants may derail by arguing that beliefs are true. Redirect to impact.\nAvoid shaming or moralizing.\nKeep discussion grounded in behavior and outcomes.\nThis session sets groundwork for later distorted thinking material.",
+                suggestedPacing: "5 min"
             },
             {
-                id: "cat-4-activity-1",
-                section: "activity",
-                content: "Activity: Identifying Core Beliefs.\n\nGuide participants to the 'Identifying Core Beliefs' worksheet. Ask them to pick the one that they recognize in themselves.\n\nNote: Walk around and help them link a specific recent behavior to one of these beliefs.",
-                suggestedPacing: "15 min"
-            },
-            {
-                id: "cat-4-activity-2",
-                section: "activity",
-                content: "Activity: Core Beliefs in Real-Life Situations.\n\nRead Scenarios 1-4. Ask: 'If a person believes [X], how do they react here?'\n\nNote: Watch for justification. Keep the focus on how the belief causes the reaction.",
-                suggestedPacing: "15 min"
-            },
-            {
-                id: "cat-4-discuss",
-                section: "activity",
-                content: "Group Discussion.\n\nAsk: 'Did you see a pattern? Does one belief show up at home, work, and here?'\n\nNote: Validate the insight. Look for the pattern.",
-                suggestedPacing: "15 min"
+                id: "cat-4-caseworx",
+                section: "caseworx",
+                content: "Document participation, engagement, and insight related to core beliefs. Note whether the participant identified beliefs and connected them to behavior. Reference “core beliefs” explicitly. Avoid emotional or diagnostic language.",
+                suggestedPacing: "5 min"
             },
             {
                 id: "cat-4-wrapup",
                 section: "wrapup",
-                content: "Looking Ahead.\n\nPrompt: This week, try to catch your 'filter' in action. Just notice it. Ask: 'Is this the only way to see this?'\n\nNote: Keep the close structured. Avoid reopening the debate.",
+                content: "Summarize the session:\nCore beliefs influence thinking, behavior, and decisions. Awareness allows for different choices.\n\nEncourage participants to notice beliefs that appear between sessions, especially those that justify dishonesty, entitlement, or avoidance.\n\nClose the group calmly and transition forward.\n\nFacilitator Notes:\nEnd with clarity and structure. Avoid open-ended debate at close.",
                 suggestedPacing: "5 min"
             }
         ],
@@ -127,23 +133,27 @@ export const catSessions: Session[] = [
             {
                 id: "cat-4-worksheet-1",
                 type: "worksheet",
-                title: "Identifying Core Beliefs",
-                instructions: "Review the list of common core beliefs. Check the ones that feel familiar to you.",
+                title: "Identifying Core Beliefs and Behavior",
+                instructions: "Identify three core beliefs you hold. Describe a situation where each belief influenced your behavior. Explain how the belief helped justify that action at the time.",
                 questions: [
-                    { id: "q-cat-4-1", text: "Do you often feel: 'I must be perfect to be loved'?", type: "text" },
-                    { id: "q-cat-4-2", text: "Do you often feel: 'The world is dangerous and I must protect myself'?", type: "text" },
-                    { id: "q-cat-4-3", text: "Do you often feel: 'I am not good enough'?", type: "text" },
-                    { id: "q-cat-4-4", text: "Select the STRONGEST one. How does this belief affect your daily decisions?", type: "text" }
+                    { id: "q-cat-4-1", text: "Core Belief #1:", type: "text" },
+                    { id: "q-cat-4-2", text: "Core Belief #2:", type: "text" },
+                    { id: "q-cat-4-3", text: "Core Belief #3:", type: "text" },
+                    { id: "q-cat-4-4", text: "How did one of these beliefs influence a recent behavior?", type: "text" },
+                    { id: "q-cat-4-5", text: "(Optional) How did this belief help you justify the action?", type: "text" }
                 ]
             },
             {
                 id: "cat-4-worksheet-2",
                 type: "worksheet",
-                title: "Scenario Practice",
-                instructions: "Read Scenario 1: 'Your boss critiques your work in front of others.'",
+                title: "Core Beliefs in Real-Life Situations",
+                instructions: "Read the following scenarios and answer the questions.",
                 questions: [
-                    { id: "q-cat-4-5", text: "Reaction if you believe 'I am incompetent':", type: "text" },
-                    { id: "q-cat-4-6", text: "Reaction if you believe 'I can learn from mistakes':", type: "text" }
+                    { id: "q-cat-4-scen-1", text: "Scenario 1: Your boss critiques your work in front of others.", type: "text" },
+                    { id: "q-cat-4-scen-2", text: "Scenario 2: A cashier gives you too much change.", type: "text" },
+                    { id: "q-cat-4-scen-3", text: "Scenario 3: Someone cuts you off in traffic.", type: "text" },
+                    { id: "q-cat-4-scen-4", text: "Scenario 4: You are denied a request you felt you deserved.", type: "text" },
+                    { id: "q-cat-4-reflection", text: "Which scenario felt most familiar, and why?", type: "text" }
                 ]
             }
         ],

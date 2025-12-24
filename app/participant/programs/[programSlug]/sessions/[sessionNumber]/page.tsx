@@ -225,7 +225,7 @@ export default function ParticipantSessionView() {
               <div className="space-y-6">
                 <div>
                   <h3 className="font-semibold text-lg mb-2">{activeActivity.title}</h3>
-                  <p className="text-gray-600">{activeActivity.instructions}</p>
+                  <p className="text-gray-600 whitespace-pre-wrap">{activeActivity.instructions}</p>
                 </div>
 
                 <div className="space-y-4">

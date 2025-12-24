@@ -386,7 +386,7 @@ export default function FacilitatorSessionView() {
                   {getSectionPrompts("opening").map((prompt) => (
                     <Card key={prompt.id} className="border-l-4 border-l-green-600">
                       <CardContent className="pt-6">
-                        <p className="text-gray-700">{prompt.content}</p>
+                        <p className="text-gray-700 whitespace-pre-wrap">{prompt.content}</p>
                         {prompt.suggestedPacing && (
                           <p className="text-sm text-gray-500 mt-2">
                             <Clock className="h-4 w-4 inline mr-1" />
@@ -406,7 +406,7 @@ export default function FacilitatorSessionView() {
                   {getSectionPrompts("review").map((prompt) => (
                     <Card key={prompt.id} className="border-l-4 border-l-blue-600">
                       <CardContent className="pt-6">
-                        <p className="text-gray-700">{prompt.content}</p>
+                        <p className="text-gray-700 whitespace-pre-wrap">{prompt.content}</p>
                         {prompt.suggestedPacing && (
                           <p className="text-sm text-gray-500 mt-2">
                             <Clock className="h-4 w-4 inline mr-1" />
@@ -457,7 +457,7 @@ export default function FacilitatorSessionView() {
                   {getSectionPrompts("activity").map((prompt) => (
                     <Card key={prompt.id} className="border-l-4 border-l-orange-600">
                       <CardContent className="pt-6">
-                        <p className="text-gray-700">{prompt.content}</p>
+                        <p className="text-gray-700 whitespace-pre-wrap">{prompt.content}</p>
                       </CardContent>
                     </Card>
                   ))}
@@ -526,6 +526,14 @@ export default function FacilitatorSessionView() {
                 <div className="space-y-6">
                   <h2 className="text-xl font-bold">Participant Responses</h2>
 
+                  {getSectionPrompts("responses").map((prompt) => (
+                    <Card key={prompt.id} className="border-l-4 border-l-blue-600 mb-6">
+                      <CardContent className="pt-6">
+                        <p className="text-gray-700 whitespace-pre-wrap">{prompt.content}</p>
+                      </CardContent>
+                    </Card>
+                  ))}
+
                   {activityResponses.length > 0 ? (
                     <div className="space-y-4">
                       {activityResponses.map((response) => {
@@ -565,6 +573,14 @@ export default function FacilitatorSessionView() {
                 <div className="space-y-6">
                   <h2 className="text-xl font-bold">Facilitator Notes</h2>
 
+                  {getSectionPrompts("notes").map((prompt) => (
+                    <Card key={prompt.id} className="border-l-4 border-l-yellow-600 mb-6">
+                      <CardContent className="pt-6">
+                        <p className="text-gray-700 whitespace-pre-wrap">{prompt.content}</p>
+                      </CardContent>
+                    </Card>
+                  ))}
+
                   <Card>
                     <CardHeader>
                       <CardTitle className="text-lg">Session Notes</CardTitle>
@@ -595,6 +611,14 @@ export default function FacilitatorSessionView() {
                     </Button>
                   </div>
 
+                  {getSectionPrompts("caseworx").map((prompt) => (
+                    <Card key={prompt.id} className="border-l-4 border-l-purple-600 mb-6">
+                      <CardContent className="pt-6">
+                        <p className="text-gray-700 whitespace-pre-wrap">{prompt.content}</p>
+                      </CardContent>
+                    </Card>
+                  ))}
+
                   <Card>
                     <CardHeader>
                       <CardTitle className="text-lg">Note Template</CardTitle>
@@ -620,7 +644,7 @@ export default function FacilitatorSessionView() {
                   {getSectionPrompts("wrapup").map((prompt) => (
                     <Card key={prompt.id} className="border-l-4 border-l-green-600">
                       <CardContent className="pt-6">
-                        <p className="text-gray-700">{prompt.content}</p>
+                        <p className="text-gray-700 whitespace-pre-wrap">{prompt.content}</p>
                       </CardContent>
                     </Card>
                   ))}

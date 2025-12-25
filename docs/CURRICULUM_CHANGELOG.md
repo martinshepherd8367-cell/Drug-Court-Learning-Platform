@@ -40,3 +40,6 @@
 
 ## v1-preaudit-2025-12-24-cat-batch3
 - CAT Sessions 8–9 installed (scaffold). Worksheet/scenario headings visible to participants without launch.
+
+## v1-preaudit-2025-12-25-rp-import1
+- Relapse Prevention Sessions 1–9 imported from RP_S01–RP_S09 markdowns (scaffold).

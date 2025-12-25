@@ -826,9 +826,502 @@ export const codaSessions: Session[] = Array.from({ length: 10 }, (_, i) =>
     createPlaceholderSession("coda", i + 1, "CODA")
 );
 
-export const relapsePreventionSessions: Session[] = Array.from({ length: 9 }, (_, i) =>
-    createPlaceholderSession("relapse-prevention", i + 1, "Relapse Prevention")
-);
+export const relapsePreventionSessions: Session[] = [
+    {
+        id: "rp-program-session-1",
+        programId: "relapse-prevention",
+        sessionNumber: 1,
+        title: "Introduction to Relapse Prevention",
+        purpose: "Relapse Prevention Session 1",
+        objectives: [ "Understand session topics", "Identify personal relevance" ],
+        facilitatorPrompts: [
+            {
+                id: "rp-1-main",
+                section: "content",
+                content: `## FACILITATOR — OVERVIEW (5 min)
+Relapse prevention is a skill-building process that supports long-term recovery. Relapse is often a process that begins before substance use through changes in thinking, mood, and behavior. This session introduces early warning signs and Seemingly Unimportant Decisions (SUDs).
+
+## FACILITATOR — OPENING (5 min)
+Relapse prevention focuses on recognizing risk early and responding before escalation.
+Discussion prompts:
+- What does relapse prevention mean?
+- Does relapse start before using?
+- What small choices quietly increase risk?
+
+## FACILITATOR — REVIEW (10 min)
+Relapse is a process. Early changes in routine, thinking, and behavior matter.
+SUDs are small decisions that quietly raise risk.
+
+## FACILITATOR — TEACH (20 min)
+- Relapse prevention = recognizing warning signs and acting early.
+- Warning signs:
+  - Thoughts: “I’m fine,” “I can handle it.”
+  - Mood: irritability, restlessness, overwhelm.
+  - Behavior: isolation, skipped supports, dishonesty.
+- SUD examples: skipping calls, driving past old spots, isolating.
+Early action beats late intensity.
+
+## FACILITATOR — ACTIVITY (15 min)
+Worksheet: Warning Signs and SUDs.
+
+## FACILITATOR — RESPONSES
+Share one warning sign and one early action.
+
+## FACILITATOR — NOTES
+Redirect “relapse just happens” to process awareness.
+
+## FACILITATOR — CASEWORX GUIDANCE
+Document warning signs, SUDs, and early action steps.
+
+## FACILITATOR — WRAP-UP (5 min)
+Notice one warning sign or SUD this week and respond early.`,
+                participantContent: `Participant content is pending for this session.\\n\\n**WORKSHEET (IN-SESSION):** Pending\\n\\n**SCENARIO ACTIVITY (AFTER BREAK):** Pending`,
+                suggestedPacing: "60 min"
+            }
+        ],
+        activityTemplates: [],
+        homeworkTemplate: {
+             id: "rp-1-hw",
+             title: "Homework",
+             steps: ["Review session materials"],
+             dueDescription: "Next Session"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "Introduction to Relapse Prevention - Session 1\n\nNotes:"
+    },
+    {
+        id: "rp-program-session-2",
+        programId: "relapse-prevention",
+        sessionNumber: 2,
+        title: "Maintaining a Balanced Lifestyle",
+        purpose: "Relapse Prevention Session 2",
+        objectives: [ "Understand session topics", "Identify personal relevance" ],
+        facilitatorPrompts: [
+            {
+                id: "rp-2-main",
+                section: "content",
+                content: `## FACILITATOR — OVERVIEW (5 min)
+Lifestyle balance reduces relapse risk. Imbalance increases stress and vulnerability.
+
+## FACILITATOR — OPENING (5 min)
+Discussion prompts:
+- What happens when life feels out of balance?
+- How do boredom and loneliness affect decisions?
+
+## FACILITATOR — REVIEW (10 min)
+Lifestyle imbalance is an early warning sign.
+
+## FACILITATOR — TEACH (20 min)
+- Wellness domains: physical, emotional, social, spiritual, work/school, recreation.
+- Boredom and loneliness increase impulsivity.
+- Small, consistent changes reduce risk.
+
+## FACILITATOR — ACTIVITY (15 min)
+Worksheet: Wellness Wheel and Balance Plan.
+
+## FACILITATOR — RESPONSES
+Share one area to improve and one action step.
+
+## FACILITATOR — NOTES
+Coach toward small, controllable steps.
+
+## FACILITATOR — CASEWORX GUIDANCE
+Document balance areas and action planning.
+
+## FACILITATOR — WRAP-UP (5 min)
+Follow through on one balance step this week.`,
+                participantContent: `Participant content is pending for this session.\\n\\n**WORKSHEET (IN-SESSION):** Pending\\n\\n**SCENARIO ACTIVITY (AFTER BREAK):** Pending`,
+                suggestedPacing: "60 min"
+            }
+        ],
+        activityTemplates: [],
+        homeworkTemplate: {
+             id: "rp-2-hw",
+             title: "Homework",
+             steps: ["Review session materials"],
+             dueDescription: "Next Session"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "Maintaining a Balanced Lifestyle - Session 2\n\nNotes:"
+    },
+    {
+        id: "rp-program-session-3",
+        programId: "relapse-prevention",
+        sessionNumber: 3,
+        title: "Identifying External Triggers",
+        purpose: "Relapse Prevention Session 3",
+        objectives: [ "Understand session topics", "Identify personal relevance" ],
+        facilitatorPrompts: [
+            {
+                id: "rp-3-main",
+                section: "content",
+                content: `## FACILITATOR — OVERVIEW (5 min)
+External triggers include people, places, situations, and environments linked to past use.
+
+## FACILITATOR — OPENING (5 min)
+Discussion prompts:
+- Which people or places raise risk?
+- What is the difference between avoidance and planning?
+
+## FACILITATOR — REVIEW (10 min)
+External triggers are stronger when routine is weak.
+
+## FACILITATOR — TEACH (20 min)
+- Strategies: avoid high-risk settings, change routines, use support early, plan exits.
+- Safety over proving control.
+
+## FACILITATOR — ACTIVITY (15 min)
+Worksheet: External Trigger Map.
+
+## FACILITATOR — RESPONSES
+Share one trigger and one plan step.
+
+## FACILITATOR — NOTES
+Reframe avoidance as responsibility.
+
+## FACILITATOR — CASEWORX GUIDANCE
+Document triggers and planning steps.
+
+## FACILITATOR — WRAP-UP (5 min)
+Practice one trigger-management step this week.`,
+                participantContent: `Participant content is pending for this session.\\n\\n**WORKSHEET (IN-SESSION):** Pending\\n\\n**SCENARIO ACTIVITY (AFTER BREAK):** Pending`,
+                suggestedPacing: "60 min"
+            }
+        ],
+        activityTemplates: [],
+        homeworkTemplate: {
+             id: "rp-3-hw",
+             title: "Homework",
+             steps: ["Review session materials"],
+             dueDescription: "Next Session"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "Identifying External Triggers - Session 3\n\nNotes:"
+    },
+    {
+        id: "rp-program-session-4",
+        programId: "relapse-prevention",
+        sessionNumber: 4,
+        title: "Identifying Internal Triggers",
+        purpose: "Relapse Prevention Session 4",
+        objectives: [ "Understand session topics", "Identify personal relevance" ],
+        facilitatorPrompts: [
+            {
+                id: "rp-4-main",
+                section: "content",
+                content: `## FACILITATOR — OVERVIEW (5 min)
+Internal triggers include emotions, thoughts, and physical states that increase relapse vulnerability.
+
+## FACILITATOR — OPENING (5 min)
+Discussion prompts:
+- Which feelings raise cravings?
+- Why does timing matter with coping?
+
+## FACILITATOR — REVIEW (10 min)
+Internal triggers build quietly; early recognition helps.
+
+## FACILITATOR — TEACH (20 min)
+- Common triggers: stress, anger, loneliness, boredom, guilt, anxiety, fatigue.
+- Coping: grounding, pausing, journaling, support, routine basics.
+- Use skills early.
+
+## FACILITATOR — ACTIVITY (15 min)
+Worksheet: Internal Trigger and Coping Plan.
+
+## FACILITATOR — RESPONSES
+Share one trigger and one coping tool.
+
+## FACILITATOR — NOTES
+Redirect “coping doesn’t work” to timing.
+
+## FACILITATOR — CASEWORX GUIDANCE
+Document triggers and coping strategies.
+
+## FACILITATOR — WRAP-UP (5 min)
+Practice one coping skill early this week.`,
+                participantContent: `Participant content is pending for this session.\\n\\n**WORKSHEET (IN-SESSION):** Pending\\n\\n**SCENARIO ACTIVITY (AFTER BREAK):** Pending`,
+                suggestedPacing: "60 min"
+            }
+        ],
+        activityTemplates: [],
+        homeworkTemplate: {
+             id: "rp-4-hw",
+             title: "Homework",
+             steps: ["Review session materials"],
+             dueDescription: "Next Session"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "Identifying Internal Triggers - Session 4\n\nNotes:"
+    },
+    {
+        id: "rp-program-session-5",
+        programId: "relapse-prevention",
+        sessionNumber: 5,
+        title: "Coping with Cravings",
+        purpose: "Relapse Prevention Session 5",
+        objectives: [ "Understand session topics", "Identify personal relevance" ],
+        facilitatorPrompts: [
+            {
+                id: "rp-5-main",
+                section: "content",
+                content: `## FACILITATOR — OVERVIEW (5 min)
+Cravings are time-limited urges that can be managed without using.
+
+## FACILITATOR — OPENING (5 min)
+Discussion prompts:
+- What do cravings feel like?
+- What makes them worse or better?
+
+## FACILITATOR — REVIEW (10 min)
+Coping works best early.
+
+## FACILITATOR — TEACH (20 min)
+- Cravings rise and fall like a wave.
+- Tools: delay, distract, ground, contact support, routine basics.
+
+## FACILITATOR — ACTIVITY (15 min)
+Worksheet: Craving Coping Plan.
+
+## FACILITATOR — RESPONSES
+Share one coping tool.
+
+## FACILITATOR — NOTES
+Coach toward simple early actions.
+
+## FACILITATOR — CASEWORX GUIDANCE
+Document cues, coping tools, and plans.
+
+## FACILITATOR — WRAP-UP (5 min)
+Practice a 10–20 minute coping plan.`,
+                participantContent: `Participant content is pending for this session.\\n\\n**WORKSHEET (IN-SESSION):** Pending\\n\\n**SCENARIO ACTIVITY (AFTER BREAK):** Pending`,
+                suggestedPacing: "60 min"
+            }
+        ],
+        activityTemplates: [],
+        homeworkTemplate: {
+             id: "rp-5-hw",
+             title: "Homework",
+             steps: ["Review session materials"],
+             dueDescription: "Next Session"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "Coping with Cravings - Session 5\n\nNotes:"
+    },
+    {
+        id: "rp-program-session-6",
+        programId: "relapse-prevention",
+        sessionNumber: 6,
+        title: "High-Risk Situations and Having a Plan",
+        purpose: "Relapse Prevention Session 6",
+        objectives: [ "Understand session topics", "Identify personal relevance" ],
+        facilitatorPrompts: [
+            {
+                id: "rp-6-main",
+                section: "content",
+                content: `## FACILITATOR — OVERVIEW (5 min)
+High-risk situations require planning to reduce impulsive decisions.
+
+## FACILITATOR — OPENING (5 min)
+Discussion prompts:
+- What situations raise risk fastest?
+- What does planning look like?
+
+## FACILITATOR — REVIEW (10 min)
+Planning reduces last-minute decisions.
+
+## FACILITATOR — TEACH (20 min)
+- Plans include exit, transportation, boundaries, support check-ins, coping tools.
+
+## FACILITATOR — ACTIVITY (15 min)
+Worksheet: High-Risk Situation Plan.
+
+## FACILITATOR — RESPONSES
+Share one plan step.
+
+## FACILITATOR — NOTES
+Plans must be specific and realistic.
+
+## FACILITATOR — CASEWORX GUIDANCE
+Document planning steps.
+
+## FACILITATOR — WRAP-UP (5 min)
+Plan for one upcoming high-risk situation.`,
+                participantContent: `Participant content is pending for this session.\\n\\n**WORKSHEET (IN-SESSION):** Pending\\n\\n**SCENARIO ACTIVITY (AFTER BREAK):** Pending`,
+                suggestedPacing: "60 min"
+            }
+        ],
+        activityTemplates: [],
+        homeworkTemplate: {
+             id: "rp-6-hw",
+             title: "Homework",
+             steps: ["Review session materials"],
+             dueDescription: "Next Session"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "High-Risk Situations and Having a Plan - Session 6\n\nNotes:"
+    },
+    {
+        id: "rp-program-session-7",
+        programId: "relapse-prevention",
+        sessionNumber: 7,
+        title: "Developing a Support Network",
+        purpose: "Relapse Prevention Session 7",
+        objectives: [ "Understand session topics", "Identify personal relevance" ],
+        facilitatorPrompts: [
+            {
+                id: "rp-7-main",
+                section: "content",
+                content: `## FACILITATOR — OVERVIEW (5 min)
+Support reduces isolation and strengthens accountability.
+
+## FACILITATOR — OPENING (5 min)
+Discussion prompts:
+- Who do you contact when struggling?
+- What stops people from reaching out?
+
+## FACILITATOR — REVIEW (10 min)
+Support makes planning realistic.
+
+## FACILITATOR — TEACH (20 min)
+- Supports include peers, sponsor, therapist, spiritual support, family, court/program staff.
+- Use support early and honestly.
+
+## FACILITATOR — ACTIVITY (15 min)
+Worksheet: Support Network Map.
+
+## FACILITATOR — RESPONSES
+Share one support action.
+
+## FACILITATOR — NOTES
+Support is a strategy, not a weakness.
+
+## FACILITATOR — CASEWORX GUIDANCE
+Document support identification and actions.
+
+## FACILITATOR — WRAP-UP (5 min)
+Use support intentionally this week.`,
+                participantContent: `Participant content is pending for this session.\\n\\n**WORKSHEET (IN-SESSION):** Pending\\n\\n**SCENARIO ACTIVITY (AFTER BREAK):** Pending`,
+                suggestedPacing: "60 min"
+            }
+        ],
+        activityTemplates: [],
+        homeworkTemplate: {
+             id: "rp-7-hw",
+             title: "Homework",
+             steps: ["Review session materials"],
+             dueDescription: "Next Session"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "Developing a Support Network - Session 7\n\nNotes:"
+    },
+    {
+        id: "rp-program-session-8",
+        programId: "relapse-prevention",
+        sessionNumber: 8,
+        title: "Creating a Relapse Prevention Plan",
+        purpose: "Relapse Prevention Session 8",
+        objectives: [ "Understand session topics", "Identify personal relevance" ],
+        facilitatorPrompts: [
+            {
+                id: "rp-8-main",
+                section: "content",
+                content: `## FACILITATOR — OVERVIEW (5 min)
+Participants build or update a personal relapse prevention plan.
+
+## FACILITATOR — OPENING (5 min)
+Discussion prompts:
+- What makes a plan work?
+- Why does early action matter?
+
+## FACILITATOR — REVIEW (10 min)
+Combine warning signs, triggers, coping, planning, and support.
+
+## FACILITATOR — TEACH (20 min)
+Plan components: triggers, warning signs, coping tools, supports, avoid/limit areas, replacement routines.
+
+## FACILITATOR — ACTIVITY (15 min)
+Worksheet: Relapse Prevention Plan.
+
+## FACILITATOR — RESPONSES
+Share one plan element.
+
+## FACILITATOR — NOTES
+Coach toward specificity.
+
+## FACILITATOR — CASEWORX GUIDANCE
+Document plan completion and components.
+
+## FACILITATOR — WRAP-UP (5 min)
+Review and use one plan step this week.`,
+                participantContent: `Participant content is pending for this session.\\n\\n**WORKSHEET (IN-SESSION):** Pending\\n\\n**SCENARIO ACTIVITY (AFTER BREAK):** Pending`,
+                suggestedPacing: "60 min"
+            }
+        ],
+        activityTemplates: [],
+        homeworkTemplate: {
+             id: "rp-8-hw",
+             title: "Homework",
+             steps: ["Review session materials"],
+             dueDescription: "Next Session"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "Creating a Relapse Prevention Plan - Session 8\n\nNotes:"
+    },
+    {
+        id: "rp-program-session-9",
+        programId: "relapse-prevention",
+        sessionNumber: 9,
+        title: "Creating an Emergency Plan for Relapse or Major Setbacks",
+        purpose: "Relapse Prevention Session 9",
+        objectives: [ "Understand session topics", "Identify personal relevance" ],
+        facilitatorPrompts: [
+            {
+                id: "rp-9-main",
+                section: "content",
+                content: `## FACILITATOR — OVERVIEW (5 min)
+Emergency planning reduces harm and shortens setbacks.
+
+## FACILITATOR — OPENING (5 min)
+Discussion prompts:
+- What should happen immediately after a setback?
+
+## FACILITATOR — REVIEW (10 min)
+Emergency plans differ from prevention plans.
+
+## FACILITATOR — TEACH (20 min)
+- Steps: stop the slide, get safe, contact support, be honest, re-engage structure.
+- Include major life setbacks.
+
+## FACILITATOR — ACTIVITY (15 min)
+Worksheet: Emergency Plan.
+
+## FACILITATOR — RESPONSES
+Share one emergency step.
+
+## FACILITATOR — NOTES
+Planning reduces harm; it does not cause relapse.
+
+## FACILITATOR — CASEWORX GUIDANCE
+Document emergency planning and re-engagement steps.
+
+## FACILITATOR — WRAP-UP (5 min)
+Keep the emergency plan accessible and review it regularly.`,
+                participantContent: `Participant content is pending for this session.\\n\\n**WORKSHEET (IN-SESSION):** Pending\\n\\n**SCENARIO ACTIVITY (AFTER BREAK):** Pending`,
+                suggestedPacing: "60 min"
+            }
+        ],
+        activityTemplates: [],
+        homeworkTemplate: {
+             id: "rp-9-hw",
+             title: "Homework",
+             steps: ["Review session materials"],
+             dueDescription: "Next Session"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "Creating an Emergency Plan for Relapse or Major Setbacks - Session 9\n\nNotes:"
+    },
+];
+
 
 export const angerManagementSessions: Session[] = Array.from({ length: 12 }, (_, i) =>
     createPlaceholderSession("anger-management", i + 1, "Anger Management")

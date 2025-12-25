@@ -822,9 +822,542 @@ Questions:
     },
 ];
 
-export const codaSessions: Session[] = Array.from({ length: 10 }, (_, i) =>
-    createPlaceholderSession("coda", i + 1, "CODA")
-);
+export const codaSessions: Session[] = [
+    {
+        id: "coda-program-session-1",
+        programId: "coda",
+        sessionNumber: 1,
+        title: "Understanding Codependency (Definition & Cycle)",
+        purpose: "CODA Session 1",
+        objectives: [ "Identify codependent patterns", "Practice detachment" ],
+        facilitatorPrompts: [
+            {
+                id: "coda-1-main",
+                section: "content",
+                content: `## FACILITATOR — OVERVIEW (5 min)
+Codependency is a learned behavioral pattern where self-worth and emotional stability depend on controlling, fixing, or rescuing others. This session introduces codependency as a cycle similar to addiction and emphasizes awareness over guilt.
+
+## FACILITATOR — OPENING (5 min)
+Discussion prompts:
+- What do you think codependency means?
+- How does trying to control or fix others affect you?
+- Where do you notice anxiety when others struggle?
+
+## FACILITATOR — REVIEW (10 min)
+Codependency is not a personality trait but a behavioral pattern. The cycle often begins with anxiety or pain and leads to control, temporary relief, resentment, and guilt.
+
+## FACILITATOR — TEACH (20 min)
+Teach the codependency cycle:
+Pain/Anxiety → Control/Caretaking → Temporary Relief → Resentment/Exhaustion → Guilt → More Control.
+Emphasize the shift from control to connection and from fear to self-respect.
+
+## FACILITATOR — ACTIVITY (15 min)
+Worksheet: Identifying the Codependency Cycle.
+
+## FACILITATOR — RESPONSES
+Participants share one place they recognize the cycle.
+
+## FACILITATOR — NOTES
+Avoid shaming. Reinforce awareness and self-responsibility.
+
+## FACILITATOR — CASEWORX GUIDANCE
+Document understanding of codependency definition and cycle.
+
+## FACILITATOR — WRAP-UP (5 min)
+Notice one moment this week where anxiety pushes you toward control.`,
+                participantContent: `Participant content is pending for this session.\\n\\n**WORKSHEET (IN-SESSION):** Pending\\n\\n**SCENARIO ACTIVITY (AFTER BREAK):** Pending`,
+                suggestedPacing: "60 min"
+            }
+        ],
+        activityTemplates: [],
+        homeworkTemplate: {
+             id: "coda-1-hw",
+             title: "Homework",
+             steps: ["Review codependency patterns"],
+             dueDescription: "Next Session"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "Understanding Codependency (Definition & Cycle) - Session 1\n\nNotes:"
+    },
+    {
+        id: "coda-program-session-2",
+        programId: "coda",
+        sessionNumber: 2,
+        title: "The Fixer Role and Illusion of Control",
+        purpose: "CODA Session 2",
+        objectives: [ "Identify codependent patterns", "Practice detachment" ],
+        facilitatorPrompts: [
+            {
+                id: "coda-2-main",
+                section: "content",
+                content: `## FACILITATOR — OVERVIEW (5 min)
+This session examines the compulsive need to fix or rescue others and the illusion of control that drives it.
+
+## FACILITATOR — OPENING (5 min)
+Discussion prompts:
+- When do you feel responsible for others?
+- What happens when you stop fixing?
+
+## FACILITATOR — REVIEW (10 min)
+Review how fixing creates dependency and self-neglect.
+
+## FACILITATOR — TEACH (20 min)
+Clarify real control (your choices) versus illusion of control (managing others). Discuss burnout and resentment.
+
+## FACILITATOR — ACTIVITY (15 min)
+Worksheet: What Happens When I Stop Fixing?
+
+## FACILITATOR — RESPONSES
+Participants share fears or insights.
+
+## FACILITATOR — NOTES
+Reinforce redirecting energy toward self-care.
+
+## FACILITATOR — CASEWORX GUIDANCE
+Document recognition of fixer patterns.
+
+## FACILITATOR — WRAP-UP (5 min)
+Practice letting others handle one responsibility this week.`,
+                participantContent: `Participant content is pending for this session.\\n\\n**WORKSHEET (IN-SESSION):** Pending\\n\\n**SCENARIO ACTIVITY (AFTER BREAK):** Pending`,
+                suggestedPacing: "60 min"
+            }
+        ],
+        activityTemplates: [],
+        homeworkTemplate: {
+             id: "coda-2-hw",
+             title: "Homework",
+             steps: ["Review codependency patterns"],
+             dueDescription: "Next Session"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "The Fixer Role and Illusion of Control - Session 2\n\nNotes:"
+    },
+    {
+        id: "coda-program-session-3",
+        programId: "coda",
+        sessionNumber: 3,
+        title: "Low Self-Worth and External Validation",
+        purpose: "CODA Session 3",
+        objectives: [ "Identify codependent patterns", "Practice detachment" ],
+        facilitatorPrompts: [
+            {
+                id: "coda-3-main",
+                section: "content",
+                content: `## FACILITATOR — OVERVIEW (5 min)
+Low self-worth drives people-pleasing and overhelping through external validation.
+
+## FACILITATOR — OPENING (5 min)
+Discussion prompts:
+- Where do you seek approval?
+- What makes you feel valuable?
+
+## FACILITATOR — REVIEW (10 min)
+External validation provides short-term relief but reinforces insecurity.
+
+## FACILITATOR — TEACH (20 min)
+Identify beliefs like “I matter when I’m useful.” Introduce internal validation skills.
+
+## FACILITATOR — ACTIVITY (15 min)
+Worksheet: Shifting from External to Internal Validation.
+
+## FACILITATOR — RESPONSES
+Share one validation source and a healthier alternative.
+
+## FACILITATOR — NOTES
+Focus on self-worth building, not perfection.
+
+## FACILITATOR — CASEWORX GUIDANCE
+Document insight into validation patterns.
+
+## FACILITATOR — WRAP-UP (5 min)
+Practice one internal validation skill this week.`,
+                participantContent: `Participant content is pending for this session.\\n\\n**WORKSHEET (IN-SESSION):** Pending\\n\\n**SCENARIO ACTIVITY (AFTER BREAK):** Pending`,
+                suggestedPacing: "60 min"
+            }
+        ],
+        activityTemplates: [],
+        homeworkTemplate: {
+             id: "coda-3-hw",
+             title: "Homework",
+             steps: ["Review codependency patterns"],
+             dueDescription: "Next Session"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "Low Self-Worth and External Validation - Session 3\n\nNotes:"
+    },
+    {
+        id: "coda-program-session-4",
+        programId: "coda",
+        sessionNumber: 4,
+        title: "Fear of Abandonment and Rejection",
+        purpose: "CODA Session 4",
+        objectives: [ "Identify codependent patterns", "Practice detachment" ],
+        facilitatorPrompts: [
+            {
+                id: "coda-4-main",
+                section: "content",
+                content: `## FACILITATOR — OVERVIEW (5 min)
+Fear of abandonment drives control and people-pleasing behaviors.
+
+## FACILITATOR — OPENING (5 min)
+Discussion prompts:
+- What do you fear losing?
+- How does fear affect your choices?
+
+## FACILITATOR — REVIEW (10 min)
+Fear-based behavior leads to self-neglect.
+
+## FACILITATOR — TEACH (20 min)
+Discuss attachment wounds and building security through self-trust.
+
+## FACILITATOR — ACTIVITY (15 min)
+Worksheet: Fear-Based Choices vs Healthy Responses.
+
+## FACILITATOR — RESPONSES
+Participants identify fear-driven behaviors.
+
+## FACILITATOR — NOTES
+Reinforce boundaries as safety.
+
+## FACILITATOR — CASEWORX GUIDANCE
+Document fear-awareness and boundary planning.
+
+## FACILITATOR — WRAP-UP (5 min)
+Use one boundary when fear shows up.`,
+                participantContent: `Participant content is pending for this session.\\n\\n**WORKSHEET (IN-SESSION):** Pending\\n\\n**SCENARIO ACTIVITY (AFTER BREAK):** Pending`,
+                suggestedPacing: "60 min"
+            }
+        ],
+        activityTemplates: [],
+        homeworkTemplate: {
+             id: "coda-4-hw",
+             title: "Homework",
+             steps: ["Review codependency patterns"],
+             dueDescription: "Next Session"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "Fear of Abandonment and Rejection - Session 4\n\nNotes:"
+    },
+    {
+        id: "coda-program-session-5",
+        programId: "coda",
+        sessionNumber: 5,
+        title: "Boundaries and Emotional Fusion",
+        purpose: "CODA Session 5",
+        objectives: [ "Identify codependent patterns", "Practice detachment" ],
+        facilitatorPrompts: [
+            {
+                id: "coda-5-main",
+                section: "content",
+                content: `## FACILITATOR — OVERVIEW (5 min)
+Boundaries protect identity and reduce resentment.
+
+## FACILITATOR — OPENING (5 min)
+Discussion prompts:
+- Where do boundaries feel hardest?
+- What happens when you don’t set them?
+
+## FACILITATOR — REVIEW (10 min)
+Emotional fusion blurs responsibility.
+
+## FACILITATOR — TEACH (20 min)
+Teach types of boundaries and reframe boundaries as self-respect.
+
+## FACILITATOR — ACTIVITY (15 min)
+Worksheet: Identifying and Setting Boundaries.
+
+## FACILITATOR — RESPONSES
+Share one boundary you need.
+
+## FACILITATOR — NOTES
+Normalize guilt when setting boundaries.
+
+## FACILITATOR — CASEWORX GUIDANCE
+Document boundary insight and plans.
+
+## FACILITATOR — WRAP-UP (5 min)
+Practice one small boundary this week.`,
+                participantContent: `Participant content is pending for this session.\\n\\n**WORKSHEET (IN-SESSION):** Pending\\n\\n**SCENARIO ACTIVITY (AFTER BREAK):** Pending`,
+                suggestedPacing: "60 min"
+            }
+        ],
+        activityTemplates: [],
+        homeworkTemplate: {
+             id: "coda-5-hw",
+             title: "Homework",
+             steps: ["Review codependency patterns"],
+             dueDescription: "Next Session"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "Boundaries and Emotional Fusion - Session 5\n\nNotes:"
+    },
+    {
+        id: "coda-program-session-6",
+        programId: "coda",
+        sessionNumber: 6,
+        title: "Enabling vs Supporting",
+        purpose: "CODA Session 6",
+        objectives: [ "Identify codependent patterns", "Practice detachment" ],
+        facilitatorPrompts: [
+            {
+                id: "coda-6-main",
+                section: "content",
+                content: `## FACILITATOR — OVERVIEW (5 min)
+This session clarifies the difference between enabling and supporting.
+
+## FACILITATOR — OPENING (5 min)
+Discussion prompts:
+- When does helping become harmful?
+- What does real support look like?
+
+## FACILITATOR — REVIEW (10 min)
+Enabling removes responsibility; supporting preserves it.
+
+## FACILITATOR — TEACH (20 min)
+Discuss consequences, accountability, and healthy support.
+
+## FACILITATOR — ACTIVITY (15 min)
+Worksheet: Enabling vs Supporting Scenarios.
+
+## FACILITATOR — RESPONSES
+Participants identify healthier responses.
+
+## FACILITATOR — NOTES
+Reinforce allowing natural consequences.
+
+## FACILITATOR — CASEWORX GUIDANCE
+Document understanding of enabling vs supporting.
+
+## FACILITATOR — WRAP-UP (5 min)
+Practice supporting without rescuing.`,
+                participantContent: `Participant content is pending for this session.\\n\\n**WORKSHEET (IN-SESSION):** Pending\\n\\n**SCENARIO ACTIVITY (AFTER BREAK):** Pending`,
+                suggestedPacing: "60 min"
+            }
+        ],
+        activityTemplates: [],
+        homeworkTemplate: {
+             id: "coda-6-hw",
+             title: "Homework",
+             steps: ["Review codependency patterns"],
+             dueDescription: "Next Session"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "Enabling vs Supporting - Session 6\n\nNotes:"
+    },
+    {
+        id: "coda-program-session-7",
+        programId: "coda",
+        sessionNumber: 7,
+        title: "Caretaking–Resentment Cycle",
+        purpose: "CODA Session 7",
+        objectives: [ "Identify codependent patterns", "Practice detachment" ],
+        facilitatorPrompts: [
+            {
+                id: "coda-7-main",
+                section: "content",
+                content: `## FACILITATOR — OVERVIEW (5 min)
+Overgiving leads to resentment and burnout.
+
+## FACILITATOR — OPENING (5 min)
+Discussion prompts:
+- Where do you overgive?
+- What resentment builds?
+
+## FACILITATOR — REVIEW (10 min)
+Resentment signals missing boundaries.
+
+## FACILITATOR — TEACH (20 min)
+Teach difference between helping and caretaking.
+
+## FACILITATOR — ACTIVITY (15 min)
+Worksheet: Saying No When You Want To.
+
+## FACILITATOR — RESPONSES
+Share insights about resentment.
+
+## FACILITATOR — NOTES
+Normalize resentment as information.
+
+## FACILITATOR — CASEWORX GUIDANCE
+Document recognition of caretaking patterns.
+
+## FACILITATOR — WRAP-UP (5 min)
+Replace one “yes” with a healthy “no.”`,
+                participantContent: `Participant content is pending for this session.\\n\\n**WORKSHEET (IN-SESSION):** Pending\\n\\n**SCENARIO ACTIVITY (AFTER BREAK):** Pending`,
+                suggestedPacing: "60 min"
+            }
+        ],
+        activityTemplates: [],
+        homeworkTemplate: {
+             id: "coda-7-hw",
+             title: "Homework",
+             steps: ["Review codependency patterns"],
+             dueDescription: "Next Session"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "Caretaking–Resentment Cycle - Session 7\n\nNotes:"
+    },
+    {
+        id: "coda-program-session-8",
+        programId: "coda",
+        sessionNumber: 8,
+        title: "Dependency Shifts in Recovery",
+        purpose: "CODA Session 8",
+        objectives: [ "Identify codependent patterns", "Practice detachment" ],
+        facilitatorPrompts: [
+            {
+                id: "coda-8-main",
+                section: "content",
+                content: `## FACILITATOR — OVERVIEW (5 min)
+Dependency can shift from substances to people or routines.
+
+## FACILITATOR — OPENING (5 min)
+Discussion prompts:
+- Where has dependency shifted?
+- What feels like emotional reliance?
+
+## FACILITATOR — REVIEW (10 min)
+Healthy support vs unhealthy attachment.
+
+## FACILITATOR — TEACH (20 min)
+Teach emotional independence without isolation.
+
+## FACILITATOR — ACTIVITY (15 min)
+Worksheet: Identifying Dependency Shifts.
+
+## FACILITATOR — RESPONSES
+Participants share one shift noticed.
+
+## FACILITATOR — NOTES
+Reinforce balance between support and autonomy.
+
+## FACILITATOR — CASEWORX GUIDANCE
+Document insight into dependency shifts.
+
+## FACILITATOR — WRAP-UP (5 min)
+Practice self-regulation before reaching out.`,
+                participantContent: `Participant content is pending for this session.\\n\\n**WORKSHEET (IN-SESSION):** Pending\\n\\n**SCENARIO ACTIVITY (AFTER BREAK):** Pending`,
+                suggestedPacing: "60 min"
+            }
+        ],
+        activityTemplates: [],
+        homeworkTemplate: {
+             id: "coda-8-hw",
+             title: "Homework",
+             steps: ["Review codependency patterns"],
+             dueDescription: "Next Session"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "Dependency Shifts in Recovery - Session 8\n\nNotes:"
+    },
+    {
+        id: "coda-program-session-9",
+        programId: "coda",
+        sessionNumber: 9,
+        title: "Assertiveness and Saying “No”",
+        purpose: "CODA Session 9",
+        objectives: [ "Identify codependent patterns", "Practice detachment" ],
+        facilitatorPrompts: [
+            {
+                id: "coda-9-main",
+                section: "content",
+                content: `## FACILITATOR — OVERVIEW (5 min)
+Assertiveness allows honesty without aggression.
+
+## FACILITATOR — OPENING (5 min)
+Discussion prompts:
+- When is it hard to say no?
+- What happens when you don’t?
+
+## FACILITATOR — REVIEW (10 min)
+Fear and guilt block assertiveness.
+
+## FACILITATOR — TEACH (20 min)
+Teach I-statements, clear requests, and boundary language.
+
+## FACILITATOR — ACTIVITY (15 min)
+Worksheet: Practicing Assertive Statements.
+
+## FACILITATOR — RESPONSES
+Share one assertive phrase.
+
+## FACILITATOR — NOTES
+Reinforce assertiveness as self-respect.
+
+## FACILITATOR — CASEWORX GUIDANCE
+Document assertive skill use.
+
+## FACILITATOR — WRAP-UP (5 min)
+Use assertiveness once this week.`,
+                participantContent: `Participant content is pending for this session.\\n\\n**WORKSHEET (IN-SESSION):** Pending\\n\\n**SCENARIO ACTIVITY (AFTER BREAK):** Pending`,
+                suggestedPacing: "60 min"
+            }
+        ],
+        activityTemplates: [],
+        homeworkTemplate: {
+             id: "coda-9-hw",
+             title: "Homework",
+             steps: ["Review codependency patterns"],
+             dueDescription: "Next Session"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "Assertiveness and Saying “No” - Session 9\n\nNotes:"
+    },
+    {
+        id: "coda-program-session-10",
+        programId: "coda",
+        sessionNumber: 10,
+        title: "Healthy Interdependence",
+        purpose: "CODA Session 10",
+        objectives: [ "Identify codependent patterns", "Practice detachment" ],
+        facilitatorPrompts: [
+            {
+                id: "coda-10-main",
+                section: "content",
+                content: `## FACILITATOR — OVERVIEW (5 min)
+Healthy interdependence balances support and autonomy.
+
+## FACILITATOR — OPENING (5 min)
+Discussion prompts:
+- What does a healthy relationship look like?
+- Where is balance needed?
+
+## FACILITATOR — REVIEW (10 min)
+Avoid extremes of isolation and enmeshment.
+
+## FACILITATOR — TEACH (20 min)
+Review boundaries, assertiveness, support, and self-worth.
+
+## FACILITATOR — ACTIVITY (15 min)
+Worksheet: Personal Growth Plan.
+
+## FACILITATOR — RESPONSES
+Participants share one growth goal.
+
+## FACILITATOR — NOTES
+Emphasize continued practice.
+
+## FACILITATOR — CASEWORX GUIDANCE
+Document completion of growth plan.
+
+## FACILITATOR — WRAP-UP (5 min)
+Continue practicing skills beyond group.`,
+                participantContent: `Participant content is pending for this session.\\n\\n**WORKSHEET (IN-SESSION):** Pending\\n\\n**SCENARIO ACTIVITY (AFTER BREAK):** Pending`,
+                suggestedPacing: "60 min"
+            }
+        ],
+        activityTemplates: [],
+        homeworkTemplate: {
+             id: "coda-10-hw",
+             title: "Homework",
+             steps: ["Review codependency patterns"],
+             dueDescription: "Next Session"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "Healthy Interdependence - Session 10\n\nNotes:"
+    },
+];
+
 
 export const relapsePreventionSessions: Session[] = [
     {

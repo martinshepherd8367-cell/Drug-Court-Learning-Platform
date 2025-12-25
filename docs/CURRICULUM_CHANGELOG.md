@@ -46,3 +46,6 @@
 
 ## v1-preaudit-2025-12-25-am-import1
 - Anger Management Sessions 1–12 imported from AM_S01–AM_S12 markdowns (scaffold).
+
+## v1-preaudit-2025-12-25-coda-import1
+- CODA Sessions 1–10 imported from CODA_S01–CODA_S10 markdowns (scaffold).

@@ -1323,6 +1323,618 @@ Keep the emergency plan accessible and review it regularly.`,
 ];
 
 
-export const angerManagementSessions: Session[] = Array.from({ length: 12 }, (_, i) =>
-    createPlaceholderSession("anger-management", i + 1, "Anger Management")
-);
+export const angerManagementSessions: Session[] = [
+    {
+        id: "am-program-session-1",
+        programId: "anger-management",
+        sessionNumber: 1,
+        title: "Anger Management – Chapter 1",
+        purpose: "Anger Management Session 1",
+        objectives: [ "Understand anger triggers", "Practice regulation skills" ],
+        facilitatorPrompts: [
+            {
+                id: "am-1-main",
+                section: "content",
+                content: `## FACILITATOR — OVERVIEW (5 min)
+This session focuses on anger management concepts from Chapter 1. Participants increase awareness of triggers, escalation patterns, and practical skills to manage anger safely and responsibly.
+
+## FACILITATOR — OPENING (5 min)
+Brief check-in and orientation to Session 1. Participants reflect on recent situations where anger showed up.
+
+## FACILITATOR — REVIEW (10 min)
+Review of prior anger management skills and how they apply to current challenges.
+
+## FACILITATOR — TEACH (20 min)
+Key teaching points from Chapter 1, including self-awareness, emotional regulation, communication strategies, and decision-making skills.
+
+## FACILITATOR — ACTIVITY (15 min)
+Participants complete an in-session worksheet aligned with Chapter 1, identifying triggers, escalation cues, and coping tools.
+
+## FACILITATOR — RESPONSES
+Group discussion of insights and real-life application.
+
+## FACILITATOR — NOTES
+Reinforce that anger is a normal emotion; the goal is managing responses, not eliminating anger.
+
+## FACILITATOR — CASEWORX GUIDANCE
+Document participation, insight, and use of anger management skills.
+
+## FACILITATOR — WRAP-UP (5 min)
+Summarize key takeaways and encourage practice of one anger management skill before the next session.`,
+                participantContent: `Participant content is pending for this session.\\n\\n**WORKSHEET (IN-SESSION):** Pending\\n\\n**SCENARIO ACTIVITY (AFTER BREAK):** Pending`,
+                suggestedPacing: "60 min"
+            }
+        ],
+        activityTemplates: [],
+        homeworkTemplate: {
+             id: "am-1-hw",
+             title: "Homework",
+             steps: ["Practice regulation skills"],
+             dueDescription: "Next Session"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "Anger Management – Chapter 1 - Session 1\n\nNotes:"
+    },
+    {
+        id: "am-program-session-2",
+        programId: "anger-management",
+        sessionNumber: 2,
+        title: "Anger Management – Chapter 2",
+        purpose: "Anger Management Session 2",
+        objectives: [ "Understand anger triggers", "Practice regulation skills" ],
+        facilitatorPrompts: [
+            {
+                id: "am-2-main",
+                section: "content",
+                content: `## FACILITATOR — OVERVIEW (5 min)
+This session focuses on anger management concepts from Chapter 2. Participants increase awareness of triggers, escalation patterns, and practical skills to manage anger safely and responsibly.
+
+## FACILITATOR — OPENING (5 min)
+Brief check-in and orientation to Session 2. Participants reflect on recent situations where anger showed up.
+
+## FACILITATOR — REVIEW (10 min)
+Review of prior anger management skills and how they apply to current challenges.
+
+## FACILITATOR — TEACH (20 min)
+Key teaching points from Chapter 2, including self-awareness, emotional regulation, communication strategies, and decision-making skills.
+
+## FACILITATOR — ACTIVITY (15 min)
+Participants complete an in-session worksheet aligned with Chapter 2, identifying triggers, escalation cues, and coping tools.
+
+## FACILITATOR — RESPONSES
+Group discussion of insights and real-life application.
+
+## FACILITATOR — NOTES
+Reinforce that anger is a normal emotion; the goal is managing responses, not eliminating anger.
+
+## FACILITATOR — CASEWORX GUIDANCE
+Document participation, insight, and use of anger management skills.
+
+## FACILITATOR — WRAP-UP (5 min)
+Summarize key takeaways and encourage practice of one anger management skill before the next session.`,
+                participantContent: `Participant content is pending for this session.\\n\\n**WORKSHEET (IN-SESSION):** Pending\\n\\n**SCENARIO ACTIVITY (AFTER BREAK):** Pending`,
+                suggestedPacing: "60 min"
+            }
+        ],
+        activityTemplates: [],
+        homeworkTemplate: {
+             id: "am-2-hw",
+             title: "Homework",
+             steps: ["Practice regulation skills"],
+             dueDescription: "Next Session"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "Anger Management – Chapter 2 - Session 2\n\nNotes:"
+    },
+    {
+        id: "am-program-session-3",
+        programId: "anger-management",
+        sessionNumber: 3,
+        title: "Anger Management – Chapter 3",
+        purpose: "Anger Management Session 3",
+        objectives: [ "Understand anger triggers", "Practice regulation skills" ],
+        facilitatorPrompts: [
+            {
+                id: "am-3-main",
+                section: "content",
+                content: `## FACILITATOR — OVERVIEW (5 min)
+This session focuses on anger management concepts from Chapter 3. Participants increase awareness of triggers, escalation patterns, and practical skills to manage anger safely and responsibly.
+
+## FACILITATOR — OPENING (5 min)
+Brief check-in and orientation to Session 3. Participants reflect on recent situations where anger showed up.
+
+## FACILITATOR — REVIEW (10 min)
+Review of prior anger management skills and how they apply to current challenges.
+
+## FACILITATOR — TEACH (20 min)
+Key teaching points from Chapter 3, including self-awareness, emotional regulation, communication strategies, and decision-making skills.
+
+## FACILITATOR — ACTIVITY (15 min)
+Participants complete an in-session worksheet aligned with Chapter 3, identifying triggers, escalation cues, and coping tools.
+
+## FACILITATOR — RESPONSES
+Group discussion of insights and real-life application.
+
+## FACILITATOR — NOTES
+Reinforce that anger is a normal emotion; the goal is managing responses, not eliminating anger.
+
+## FACILITATOR — CASEWORX GUIDANCE
+Document participation, insight, and use of anger management skills.
+
+## FACILITATOR — WRAP-UP (5 min)
+Summarize key takeaways and encourage practice of one anger management skill before the next session.`,
+                participantContent: `Participant content is pending for this session.\\n\\n**WORKSHEET (IN-SESSION):** Pending\\n\\n**SCENARIO ACTIVITY (AFTER BREAK):** Pending`,
+                suggestedPacing: "60 min"
+            }
+        ],
+        activityTemplates: [],
+        homeworkTemplate: {
+             id: "am-3-hw",
+             title: "Homework",
+             steps: ["Practice regulation skills"],
+             dueDescription: "Next Session"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "Anger Management – Chapter 3 - Session 3\n\nNotes:"
+    },
+    {
+        id: "am-program-session-4",
+        programId: "anger-management",
+        sessionNumber: 4,
+        title: "Anger Management – Chapter 4",
+        purpose: "Anger Management Session 4",
+        objectives: [ "Understand anger triggers", "Practice regulation skills" ],
+        facilitatorPrompts: [
+            {
+                id: "am-4-main",
+                section: "content",
+                content: `## FACILITATOR — OVERVIEW (5 min)
+This session focuses on anger management concepts from Chapter 4. Participants increase awareness of triggers, escalation patterns, and practical skills to manage anger safely and responsibly.
+
+## FACILITATOR — OPENING (5 min)
+Brief check-in and orientation to Session 4. Participants reflect on recent situations where anger showed up.
+
+## FACILITATOR — REVIEW (10 min)
+Review of prior anger management skills and how they apply to current challenges.
+
+## FACILITATOR — TEACH (20 min)
+Key teaching points from Chapter 4, including self-awareness, emotional regulation, communication strategies, and decision-making skills.
+
+## FACILITATOR — ACTIVITY (15 min)
+Participants complete an in-session worksheet aligned with Chapter 4, identifying triggers, escalation cues, and coping tools.
+
+## FACILITATOR — RESPONSES
+Group discussion of insights and real-life application.
+
+## FACILITATOR — NOTES
+Reinforce that anger is a normal emotion; the goal is managing responses, not eliminating anger.
+
+## FACILITATOR — CASEWORX GUIDANCE
+Document participation, insight, and use of anger management skills.
+
+## FACILITATOR — WRAP-UP (5 min)
+Summarize key takeaways and encourage practice of one anger management skill before the next session.`,
+                participantContent: `Participant content is pending for this session.\\n\\n**WORKSHEET (IN-SESSION):** Pending\\n\\n**SCENARIO ACTIVITY (AFTER BREAK):** Pending`,
+                suggestedPacing: "60 min"
+            }
+        ],
+        activityTemplates: [],
+        homeworkTemplate: {
+             id: "am-4-hw",
+             title: "Homework",
+             steps: ["Practice regulation skills"],
+             dueDescription: "Next Session"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "Anger Management – Chapter 4 - Session 4\n\nNotes:"
+    },
+    {
+        id: "am-program-session-5",
+        programId: "anger-management",
+        sessionNumber: 5,
+        title: "Anger Management – Chapter 5",
+        purpose: "Anger Management Session 5",
+        objectives: [ "Understand anger triggers", "Practice regulation skills" ],
+        facilitatorPrompts: [
+            {
+                id: "am-5-main",
+                section: "content",
+                content: `## FACILITATOR — OVERVIEW (5 min)
+This session focuses on anger management concepts from Chapter 5. Participants increase awareness of triggers, escalation patterns, and practical skills to manage anger safely and responsibly.
+
+## FACILITATOR — OPENING (5 min)
+Brief check-in and orientation to Session 5. Participants reflect on recent situations where anger showed up.
+
+## FACILITATOR — REVIEW (10 min)
+Review of prior anger management skills and how they apply to current challenges.
+
+## FACILITATOR — TEACH (20 min)
+Key teaching points from Chapter 5, including self-awareness, emotional regulation, communication strategies, and decision-making skills.
+
+## FACILITATOR — ACTIVITY (15 min)
+Participants complete an in-session worksheet aligned with Chapter 5, identifying triggers, escalation cues, and coping tools.
+
+## FACILITATOR — RESPONSES
+Group discussion of insights and real-life application.
+
+## FACILITATOR — NOTES
+Reinforce that anger is a normal emotion; the goal is managing responses, not eliminating anger.
+
+## FACILITATOR — CASEWORX GUIDANCE
+Document participation, insight, and use of anger management skills.
+
+## FACILITATOR — WRAP-UP (5 min)
+Summarize key takeaways and encourage practice of one anger management skill before the next session.`,
+                participantContent: `Participant content is pending for this session.\\n\\n**WORKSHEET (IN-SESSION):** Pending\\n\\n**SCENARIO ACTIVITY (AFTER BREAK):** Pending`,
+                suggestedPacing: "60 min"
+            }
+        ],
+        activityTemplates: [],
+        homeworkTemplate: {
+             id: "am-5-hw",
+             title: "Homework",
+             steps: ["Practice regulation skills"],
+             dueDescription: "Next Session"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "Anger Management – Chapter 5 - Session 5\n\nNotes:"
+    },
+    {
+        id: "am-program-session-6",
+        programId: "anger-management",
+        sessionNumber: 6,
+        title: "Anger Management – Chapter 6",
+        purpose: "Anger Management Session 6",
+        objectives: [ "Understand anger triggers", "Practice regulation skills" ],
+        facilitatorPrompts: [
+            {
+                id: "am-6-main",
+                section: "content",
+                content: `## FACILITATOR — OVERVIEW (5 min)
+This session focuses on anger management concepts from Chapter 6. Participants increase awareness of triggers, escalation patterns, and practical skills to manage anger safely and responsibly.
+
+## FACILITATOR — OPENING (5 min)
+Brief check-in and orientation to Session 6. Participants reflect on recent situations where anger showed up.
+
+## FACILITATOR — REVIEW (10 min)
+Review of prior anger management skills and how they apply to current challenges.
+
+## FACILITATOR — TEACH (20 min)
+Key teaching points from Chapter 6, including self-awareness, emotional regulation, communication strategies, and decision-making skills.
+
+## FACILITATOR — ACTIVITY (15 min)
+Participants complete an in-session worksheet aligned with Chapter 6, identifying triggers, escalation cues, and coping tools.
+
+## FACILITATOR — RESPONSES
+Group discussion of insights and real-life application.
+
+## FACILITATOR — NOTES
+Reinforce that anger is a normal emotion; the goal is managing responses, not eliminating anger.
+
+## FACILITATOR — CASEWORX GUIDANCE
+Document participation, insight, and use of anger management skills.
+
+## FACILITATOR — WRAP-UP (5 min)
+Summarize key takeaways and encourage practice of one anger management skill before the next session.`,
+                participantContent: `Participant content is pending for this session.\\n\\n**WORKSHEET (IN-SESSION):** Pending\\n\\n**SCENARIO ACTIVITY (AFTER BREAK):** Pending`,
+                suggestedPacing: "60 min"
+            }
+        ],
+        activityTemplates: [],
+        homeworkTemplate: {
+             id: "am-6-hw",
+             title: "Homework",
+             steps: ["Practice regulation skills"],
+             dueDescription: "Next Session"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "Anger Management – Chapter 6 - Session 6\n\nNotes:"
+    },
+    {
+        id: "am-program-session-7",
+        programId: "anger-management",
+        sessionNumber: 7,
+        title: "Anger Management – Chapter 7",
+        purpose: "Anger Management Session 7",
+        objectives: [ "Understand anger triggers", "Practice regulation skills" ],
+        facilitatorPrompts: [
+            {
+                id: "am-7-main",
+                section: "content",
+                content: `## FACILITATOR — OVERVIEW (5 min)
+This session focuses on anger management concepts from Chapter 7. Participants increase awareness of triggers, escalation patterns, and practical skills to manage anger safely and responsibly.
+
+## FACILITATOR — OPENING (5 min)
+Brief check-in and orientation to Session 7. Participants reflect on recent situations where anger showed up.
+
+## FACILITATOR — REVIEW (10 min)
+Review of prior anger management skills and how they apply to current challenges.
+
+## FACILITATOR — TEACH (20 min)
+Key teaching points from Chapter 7, including self-awareness, emotional regulation, communication strategies, and decision-making skills.
+
+## FACILITATOR — ACTIVITY (15 min)
+Participants complete an in-session worksheet aligned with Chapter 7, identifying triggers, escalation cues, and coping tools.
+
+## FACILITATOR — RESPONSES
+Group discussion of insights and real-life application.
+
+## FACILITATOR — NOTES
+Reinforce that anger is a normal emotion; the goal is managing responses, not eliminating anger.
+
+## FACILITATOR — CASEWORX GUIDANCE
+Document participation, insight, and use of anger management skills.
+
+## FACILITATOR — WRAP-UP (5 min)
+Summarize key takeaways and encourage practice of one anger management skill before the next session.`,
+                participantContent: `Participant content is pending for this session.\\n\\n**WORKSHEET (IN-SESSION):** Pending\\n\\n**SCENARIO ACTIVITY (AFTER BREAK):** Pending`,
+                suggestedPacing: "60 min"
+            }
+        ],
+        activityTemplates: [],
+        homeworkTemplate: {
+             id: "am-7-hw",
+             title: "Homework",
+             steps: ["Practice regulation skills"],
+             dueDescription: "Next Session"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "Anger Management – Chapter 7 - Session 7\n\nNotes:"
+    },
+    {
+        id: "am-program-session-8",
+        programId: "anger-management",
+        sessionNumber: 8,
+        title: "Anger Management – Chapter 8",
+        purpose: "Anger Management Session 8",
+        objectives: [ "Understand anger triggers", "Practice regulation skills" ],
+        facilitatorPrompts: [
+            {
+                id: "am-8-main",
+                section: "content",
+                content: `## FACILITATOR — OVERVIEW (5 min)
+This session focuses on anger management concepts from Chapter 8. Participants increase awareness of triggers, escalation patterns, and practical skills to manage anger safely and responsibly.
+
+## FACILITATOR — OPENING (5 min)
+Brief check-in and orientation to Session 8. Participants reflect on recent situations where anger showed up.
+
+## FACILITATOR — REVIEW (10 min)
+Review of prior anger management skills and how they apply to current challenges.
+
+## FACILITATOR — TEACH (20 min)
+Key teaching points from Chapter 8, including self-awareness, emotional regulation, communication strategies, and decision-making skills.
+
+## FACILITATOR — ACTIVITY (15 min)
+Participants complete an in-session worksheet aligned with Chapter 8, identifying triggers, escalation cues, and coping tools.
+
+## FACILITATOR — RESPONSES
+Group discussion of insights and real-life application.
+
+## FACILITATOR — NOTES
+Reinforce that anger is a normal emotion; the goal is managing responses, not eliminating anger.
+
+## FACILITATOR — CASEWORX GUIDANCE
+Document participation, insight, and use of anger management skills.
+
+## FACILITATOR — WRAP-UP (5 min)
+Summarize key takeaways and encourage practice of one anger management skill before the next session.`,
+                participantContent: `Participant content is pending for this session.\\n\\n**WORKSHEET (IN-SESSION):** Pending\\n\\n**SCENARIO ACTIVITY (AFTER BREAK):** Pending`,
+                suggestedPacing: "60 min"
+            }
+        ],
+        activityTemplates: [],
+        homeworkTemplate: {
+             id: "am-8-hw",
+             title: "Homework",
+             steps: ["Practice regulation skills"],
+             dueDescription: "Next Session"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "Anger Management – Chapter 8 - Session 8\n\nNotes:"
+    },
+    {
+        id: "am-program-session-9",
+        programId: "anger-management",
+        sessionNumber: 9,
+        title: "Anger Management – Chapter 9",
+        purpose: "Anger Management Session 9",
+        objectives: [ "Understand anger triggers", "Practice regulation skills" ],
+        facilitatorPrompts: [
+            {
+                id: "am-9-main",
+                section: "content",
+                content: `## FACILITATOR — OVERVIEW (5 min)
+This session focuses on anger management concepts from Chapter 9. Participants increase awareness of triggers, escalation patterns, and practical skills to manage anger safely and responsibly.
+
+## FACILITATOR — OPENING (5 min)
+Brief check-in and orientation to Session 9. Participants reflect on recent situations where anger showed up.
+
+## FACILITATOR — REVIEW (10 min)
+Review of prior anger management skills and how they apply to current challenges.
+
+## FACILITATOR — TEACH (20 min)
+Key teaching points from Chapter 9, including self-awareness, emotional regulation, communication strategies, and decision-making skills.
+
+## FACILITATOR — ACTIVITY (15 min)
+Participants complete an in-session worksheet aligned with Chapter 9, identifying triggers, escalation cues, and coping tools.
+
+## FACILITATOR — RESPONSES
+Group discussion of insights and real-life application.
+
+## FACILITATOR — NOTES
+Reinforce that anger is a normal emotion; the goal is managing responses, not eliminating anger.
+
+## FACILITATOR — CASEWORX GUIDANCE
+Document participation, insight, and use of anger management skills.
+
+## FACILITATOR — WRAP-UP (5 min)
+Summarize key takeaways and encourage practice of one anger management skill before the next session.`,
+                participantContent: `Participant content is pending for this session.\\n\\n**WORKSHEET (IN-SESSION):** Pending\\n\\n**SCENARIO ACTIVITY (AFTER BREAK):** Pending`,
+                suggestedPacing: "60 min"
+            }
+        ],
+        activityTemplates: [],
+        homeworkTemplate: {
+             id: "am-9-hw",
+             title: "Homework",
+             steps: ["Practice regulation skills"],
+             dueDescription: "Next Session"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "Anger Management – Chapter 9 - Session 9\n\nNotes:"
+    },
+    {
+        id: "am-program-session-10",
+        programId: "anger-management",
+        sessionNumber: 10,
+        title: "Anger Management – Chapter 10",
+        purpose: "Anger Management Session 10",
+        objectives: [ "Understand anger triggers", "Practice regulation skills" ],
+        facilitatorPrompts: [
+            {
+                id: "am-10-main",
+                section: "content",
+                content: `## FACILITATOR — OVERVIEW (5 min)
+This session focuses on anger management concepts from Chapter 10. Participants increase awareness of triggers, escalation patterns, and practical skills to manage anger safely and responsibly.
+
+## FACILITATOR — OPENING (5 min)
+Brief check-in and orientation to Session 10. Participants reflect on recent situations where anger showed up.
+
+## FACILITATOR — REVIEW (10 min)
+Review of prior anger management skills and how they apply to current challenges.
+
+## FACILITATOR — TEACH (20 min)
+Key teaching points from Chapter 10, including self-awareness, emotional regulation, communication strategies, and decision-making skills.
+
+## FACILITATOR — ACTIVITY (15 min)
+Participants complete an in-session worksheet aligned with Chapter 10, identifying triggers, escalation cues, and coping tools.
+
+## FACILITATOR — RESPONSES
+Group discussion of insights and real-life application.
+
+## FACILITATOR — NOTES
+Reinforce that anger is a normal emotion; the goal is managing responses, not eliminating anger.
+
+## FACILITATOR — CASEWORX GUIDANCE
+Document participation, insight, and use of anger management skills.
+
+## FACILITATOR — WRAP-UP (5 min)
+Summarize key takeaways and encourage practice of one anger management skill before the next session.`,
+                participantContent: `Participant content is pending for this session.\\n\\n**WORKSHEET (IN-SESSION):** Pending\\n\\n**SCENARIO ACTIVITY (AFTER BREAK):** Pending`,
+                suggestedPacing: "60 min"
+            }
+        ],
+        activityTemplates: [],
+        homeworkTemplate: {
+             id: "am-10-hw",
+             title: "Homework",
+             steps: ["Practice regulation skills"],
+             dueDescription: "Next Session"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "Anger Management – Chapter 10 - Session 10\n\nNotes:"
+    },
+    {
+        id: "am-program-session-11",
+        programId: "anger-management",
+        sessionNumber: 11,
+        title: "Anger Management – Chapter 11",
+        purpose: "Anger Management Session 11",
+        objectives: [ "Understand anger triggers", "Practice regulation skills" ],
+        facilitatorPrompts: [
+            {
+                id: "am-11-main",
+                section: "content",
+                content: `## FACILITATOR — OVERVIEW (5 min)
+This session focuses on anger management concepts from Chapter 11. Participants increase awareness of triggers, escalation patterns, and practical skills to manage anger safely and responsibly.
+
+## FACILITATOR — OPENING (5 min)
+Brief check-in and orientation to Session 11. Participants reflect on recent situations where anger showed up.
+
+## FACILITATOR — REVIEW (10 min)
+Review of prior anger management skills and how they apply to current challenges.
+
+## FACILITATOR — TEACH (20 min)
+Key teaching points from Chapter 11, including self-awareness, emotional regulation, communication strategies, and decision-making skills.
+
+## FACILITATOR — ACTIVITY (15 min)
+Participants complete an in-session worksheet aligned with Chapter 11, identifying triggers, escalation cues, and coping tools.
+
+## FACILITATOR — RESPONSES
+Group discussion of insights and real-life application.
+
+## FACILITATOR — NOTES
+Reinforce that anger is a normal emotion; the goal is managing responses, not eliminating anger.
+
+## FACILITATOR — CASEWORX GUIDANCE
+Document participation, insight, and use of anger management skills.
+
+## FACILITATOR — WRAP-UP (5 min)
+Summarize key takeaways and encourage practice of one anger management skill before the next session.`,
+                participantContent: `Participant content is pending for this session.\\n\\n**WORKSHEET (IN-SESSION):** Pending\\n\\n**SCENARIO ACTIVITY (AFTER BREAK):** Pending`,
+                suggestedPacing: "60 min"
+            }
+        ],
+        activityTemplates: [],
+        homeworkTemplate: {
+             id: "am-11-hw",
+             title: "Homework",
+             steps: ["Practice regulation skills"],
+             dueDescription: "Next Session"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "Anger Management – Chapter 11 - Session 11\n\nNotes:"
+    },
+    {
+        id: "am-program-session-12",
+        programId: "anger-management",
+        sessionNumber: 12,
+        title: "Anger Management – Chapter 12",
+        purpose: "Anger Management Session 12",
+        objectives: [ "Understand anger triggers", "Practice regulation skills" ],
+        facilitatorPrompts: [
+            {
+                id: "am-12-main",
+                section: "content",
+                content: `## FACILITATOR — OVERVIEW (5 min)
+This session focuses on anger management concepts from Chapter 12. Participants increase awareness of triggers, escalation patterns, and practical skills to manage anger safely and responsibly.
+
+## FACILITATOR — OPENING (5 min)
+Brief check-in and orientation to Session 12. Participants reflect on recent situations where anger showed up.
+
+## FACILITATOR — REVIEW (10 min)
+Review of prior anger management skills and how they apply to current challenges.
+
+## FACILITATOR — TEACH (20 min)
+Key teaching points from Chapter 12, including self-awareness, emotional regulation, communication strategies, and decision-making skills.
+
+## FACILITATOR — ACTIVITY (15 min)
+Participants complete an in-session worksheet aligned with Chapter 12, identifying triggers, escalation cues, and coping tools.
+
+## FACILITATOR — RESPONSES
+Group discussion of insights and real-life application.
+
+## FACILITATOR — NOTES
+Reinforce that anger is a normal emotion; the goal is managing responses, not eliminating anger.
+
+## FACILITATOR — CASEWORX GUIDANCE
+Document participation, insight, and use of anger management skills.
+
+## FACILITATOR — WRAP-UP (5 min)
+Summarize key takeaways and encourage practice of one anger management skill before the next session.`,
+                participantContent: `Participant content is pending for this session.\\n\\n**WORKSHEET (IN-SESSION):** Pending\\n\\n**SCENARIO ACTIVITY (AFTER BREAK):** Pending`,
+                suggestedPacing: "60 min"
+            }
+        ],
+        activityTemplates: [],
+        homeworkTemplate: {
+             id: "am-12-hw",
+             title: "Homework",
+             steps: ["Practice regulation skills"],
+             dueDescription: "Next Session"
+        },
+        journalTemplateId: "journal-reflection",
+        caseworxNoteTemplate: "Anger Management – Chapter 12 - Session 12\n\nNotes:"
+    },
+];
+

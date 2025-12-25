@@ -43,3 +43,6 @@
 
 ## v1-preaudit-2025-12-25-rp-import1
 - Relapse Prevention Sessions 1–9 imported from RP_S01–RP_S09 markdowns (scaffold).
+
+## v1-preaudit-2025-12-25-am-import1
+- Anger Management Sessions 1–12 imported from AM_S01–AM_S12 markdowns (scaffold).

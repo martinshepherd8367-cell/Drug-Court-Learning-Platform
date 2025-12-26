@@ -36,3 +36,4 @@ node_modules_old
 backups/
 *.log
 .git.broken*
+data_import/

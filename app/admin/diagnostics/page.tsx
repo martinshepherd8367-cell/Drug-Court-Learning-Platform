@@ -3,6 +3,7 @@ import { db } from "@/lib/firebase-admin"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export const dynamic = "force-dynamic"
+export const runtime = "nodejs"
 
 export default async function DiagnosticsPage() {
   const collectionNames = [
@@ -17,6 +18,12 @@ export default async function DiagnosticsPage() {
   ]
   
   const projectId = process.env.FIREBASE_PROJECT_ID || process.env.GOOGLE_CLOUD_PROJECT || "unknown"
+  const clientEmail = (process.env.FIREBASE_CLIENT_EMAIL || "").split("@")[1] 
+    ? "..." + (process.env.FIREBASE_CLIENT_EMAIL || "").split("@")[1] 
+    : "missing";
+    
+  const pk = process.env.FIREBASE_PRIVATE_KEY || "";
+  const pkStatus = pk.includes("BEGIN") ? "valid-ish (has BEGIN)" : "invalid (no BEGIN)";
 
   const results = await Promise.all(
     collectionNames.map(async (name) => {
@@ -35,7 +42,12 @@ export default async function DiagnosticsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Firestore Diagnostics</CardTitle>
-          <p className="text-sm text-gray-500">Project ID: {projectId}</p>
+          <div className="text-sm text-gray-500 space-y-1">
+             <p>Project ID: {projectId}</p>
+             <p>Client Email Domain: {clientEmail}</p>
+             <p>Private Key Status: {pkStatus}</p>
+             <p>Runtime: Node.js (Forced)</p>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">

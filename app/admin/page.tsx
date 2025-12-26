@@ -3,6 +3,7 @@ import { getProgramsCount, getUsersCount, getEnrollmentsCount } from "@/lib/fire
 import AdminDashboardClient from "./admin-dashboard-client"
 
 export const dynamic = "force-dynamic"
+export const runtime = "nodejs"
 
 export default async function AdminDashboard() {
   const [totalPrograms, totalUsers, activeEnrollments] = await Promise.all([

@@ -138,7 +138,6 @@ export function getFirebaseAdminStatus() {
 export async function getProgramsCount(): Promise<number> {
   try {
     const db = getDb();
-    // CHANGED: programs -> programs_catalog
     const snapshot = await db.collection("programs_catalog").count().get()
     return snapshot.data().count
   } catch (error) {
@@ -183,7 +182,6 @@ export async function getScheduleEventsCount(): Promise<number> {
 export async function getPrograms() {
   try {
     const db = getDb();
-    // CHANGED: programs -> programs_catalog
     const snapshot = await db.collection("programs_catalog").get()
     return snapshot.docs.map(doc => {
        const data = doc.data();
@@ -214,6 +212,23 @@ export async function getUsers() {
       })
     } catch (error) {
       console.error("Error fetching users:", error)
+      return []
+    }
+}
+
+export async function getScheduleEvents() {
+    try {
+      const db = getDb();
+      const snapshot = await db.collection("scheduleEvents").get();
+      return snapshot.docs.map(doc => {
+        const data = doc.data();
+        return { 
+           id: doc.id, 
+           ...data
+        }
+      })
+    } catch (error) {
+      console.error("Error fetching schedule events:", error)
       return []
     }
 }

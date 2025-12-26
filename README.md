@@ -756,24 +756,24 @@ The application has been simplified for the V1 release to prioritize stability a
 
 ## Release & Verification
 
-### Release process (Production)
-- Merge changes into `main` (or commit directly to `main` if working solo).
-- Vercel automatically creates a **Production** deployment for `main`.
+### Production release process
+- Merge changes into `main`.
+- Vercel automatically creates a Production deployment for `main`.
+- Do not use manual **Redeploy** for routine updates.
 
-### Verify deployment truth
+### Verify the deployment (source of truth)
 - Visit `/admin`
-- Confirm the footer build stamp shows the expected:
-  - `sha: <commit>`
-  - `built: <timestamp>`
+- Confirm the footer build stamp shows the expected `sha: <commit>` and `built: <timestamp>`
 
-### Verify Firestore connectivity
-- > **Note**: `/admin/diagnostics` is disabled in Production for security. Use Preview deployments (or local dev) to verify diagnostics.
+### Verify core admin pages
+- `/admin/programs` (shows seeded programs from `programs_catalog`)
+- `/admin/users` (shows seeded users from `users`)
+- `/admin/enrollments` (Firestore-driven; should not use mock data)
+- `/admin/schedule` (Firestore-driven schedule events)
 
-1. Visit `/admin/diagnostics` (Preview/Local only)
-- Confirm:
-   - `Crypto Parse OK: YES`
-  
-  - Expected collection counts (e.g., `users`, `programs_catalog`, `enrollments`, `scheduleEvents`) are non-zero.
+### Diagnostics note (security)
+- `/admin/diagnostics` is intentionally disabled in Production (returns 404).
+- Use Vercel Preview deployments or local development for Firestore diagnostics.
 
 ### Preview process
 - Push to a feature branch.

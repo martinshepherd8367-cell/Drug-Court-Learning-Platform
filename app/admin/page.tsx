@@ -40,7 +40,7 @@ export default function AdminDashboard() {
       title: "Programs",
       description: "Manage programs and sessions",
       icon: BookOpen,
-      href: "/admin/program-catalog",
+      href: "/admin/programs",
       count: stats.totalPrograms,
     },
     {
@@ -68,7 +68,7 @@ export default function AdminDashboard() {
       title: "Reports",
       description: "View reports and analytics",
       icon: FileBarChart,
-      href: "#",
+      href: "/admin/reports",
       count: null,
       disabled: true,
     },

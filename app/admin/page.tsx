@@ -1,6 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { useStore } from "@/lib/store"
 import { RoleNav } from "@/components/role-nav"
 import { AIAssistantButton } from "@/components/ai-assistant"
@@ -200,35 +201,54 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {quickLinks.map((link) => {
                 const Icon = link.icon
-                return (
-                  <Card
-                    key={link.href}
-                    className={`cursor-pointer hover:border-green-500 hover:shadow-md transition-all card-transparent ${link.highlight ? "border-blue-300 bg-blue-50/50" : ""
-                      }`}
-                    onClick={() => !link.disabled && router.push(link.href)}
-                  >
-                    <CardContent className="p-6">
-                      <div className={`flex items-center justify-between ${link.disabled ? "opacity-50" : ""}`}>
-                        <div className="flex items-center gap-4">
-                          <div className={`p-3 rounded-lg ${link.highlight ? "bg-blue-100/80" : "bg-gray-100/80"}`}>
-                            <Icon className={`h-6 w-6 ${link.highlight ? "text-blue-700" : "text-gray-700"}`} />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-lg">
-                              {link.title}
-                              {link.disabled && <span className="text-xs text-gray-500 ml-2">(V2)</span>}
-                            </h3>
-                            <p className="text-sm text-gray-600">{link.description}</p>
-                          </div>
+                const isClickable = !link.disabled
+
+                // Render content
+                const content = (
+                  <CardContent className="p-6">
+                    <div className={`flex items-center justify-between ${link.disabled ? "opacity-50" : ""}`}>
+                      <div className="flex items-center gap-4">
+                        <div className={`p-3 rounded-lg ${link.highlight ? "bg-blue-100/80" : "bg-gray-100/80"}`}>
+                          <Icon className={`h-6 w-6 ${link.highlight ? "text-blue-700" : "text-gray-700"}`} />
                         </div>
-                        <div className="flex items-center gap-2">
-                          {link.count !== null && (
-                            <span className="text-2xl font-bold text-gray-400">{link.count}</span>
-                          )}
-                          <ChevronRight className="h-5 w-5 text-gray-400" />
+                        <div>
+                          <h3 className="font-semibold text-lg">
+                            {link.title}
+                            {link.disabled && <span className="text-xs text-gray-500 ml-2">(Coming Soon)</span>}
+                          </h3>
+                          <p className="text-sm text-gray-600">{link.description}</p>
                         </div>
                       </div>
-                    </CardContent>
+                      <div className="flex items-center gap-2">
+                        {link.count !== null && (
+                          <span className="text-2xl font-bold text-gray-400">{link.count}</span>
+                        )}
+                        {isClickable && <ChevronRight className="h-5 w-5 text-gray-400" />}
+                      </div>
+                    </div>
+                  </CardContent>
+                )
+
+                // If clickable, wrap in Link; otherwise just Card
+                if (isClickable) {
+                  return (
+                    <Link key={link.href} href={link.href} className="block group">
+                      <Card
+                        className={`transition-all card-transparent group-hover:border-green-500 group-hover:shadow-md ${link.highlight ? "border-blue-300 bg-blue-50/50" : ""
+                          }`}
+                      >
+                        {content}
+                      </Card>
+                    </Link>
+                  )
+                }
+
+                return (
+                  <Card
+                    key={link.title}
+                    className={`cursor-not-allowed card-transparent bg-gray-50/50`}
+                  >
+                    {content}
                   </Card>
                 )
               })}

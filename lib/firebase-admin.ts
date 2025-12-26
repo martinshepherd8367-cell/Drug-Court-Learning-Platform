@@ -1,5 +1,6 @@
 import "server-only"
-import * as admin from "firebase-admin"
+import { cert, getApps, initializeApp, App } from "firebase-admin/app"
+import { getFirestore, Firestore } from "firebase-admin/firestore"
 import crypto from 'crypto'
 
 interface AdminConfig {
@@ -33,7 +34,6 @@ function normalizePrivateKey(rawKey: string): string {
   key = key.replace(/\r\n/g, "\n").replace(/\r/g, "\n"); // normalize
 
   // 4. Extract Body between BEGIN and END markers
-  // Supports RSA PRIVATE KEY and PRIVATE KEY
   const match = key.match(/-----BEGIN ?(RSA)? ?PRIVATE KEY-----([\s\S]*)-----END ?(RSA)? ?PRIVATE KEY-----/);
   
   if (match && match[2]) {
@@ -52,7 +52,7 @@ function normalizePrivateKey(rawKey: string): string {
       return `-----BEGIN PRIVATE KEY-----\n${body}\n-----END PRIVATE KEY-----\n`;
   }
 
-  // Return original if regex failed and not obviously raw base64 - crypto check will fail later.
+  // Return original if regex failed - crypto check will fail later if invalid.
   return key; 
 }
 
@@ -65,7 +65,7 @@ function validateKey(key: string) {
     }
 }
 
-function getFirebaseConfig(): AdminConfig | undefined {
+function getFirebaseConfig(): AdminConfig {
   let projectId = process.env.FIREBASE_PROJECT_ID;
   let clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
   let privateKey = process.env.FIREBASE_PRIVATE_KEY;
@@ -79,72 +79,82 @@ function getFirebaseConfig(): AdminConfig | undefined {
      } catch(e) { console.error("FIREBASE_ADMIN: Failed to parse GOOGLE_CREDENTIALS", e); }
   }
 
-  if (projectId && clientEmail && privateKey) {
-    try {
-        const normalizedKey = normalizePrivateKey(privateKey);
-        validateKey(normalizedKey);
-        return { projectId, clientEmail, privateKey: normalizedKey }
-    } catch (e: any) {
-        throw e;
-    }
+  if (!projectId || !clientEmail || !privateKey) {
+      throw new Error("Missing FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, or FIREBASE_PRIVATE_KEY");
   }
+
+  const normalizedKey = normalizePrivateKey(privateKey);
+  validateKey(normalizedKey);
   
-  return undefined
+  return { projectId, clientEmail, privateKey: normalizedKey }
 }
 
-let adminApp: admin.app.App | null = null;
-
-export function initAdmin() {
-  if (adminApp) return admin;
-
-  if (!admin.apps.length) {
+export function getDb(): Firestore {
+  const apps = getApps();
+  if (apps.length === 0) {
     try {
-        const config = getFirebaseConfig();
-        if (config) {
-            adminApp = admin.initializeApp({
-              credential: admin.credential.cert({
-                projectId: config.projectId,
-                clientEmail: config.clientEmail,
-                privateKey: config.privateKey,
-              }),
-            });
-            console.log("FIREBASE_ADMIN: Initialized successfully with project ID:", config.projectId);
-        } else {
-             console.warn("FIREBASE_ADMIN: Missing environment variables.");
-        }
+      const config = getFirebaseConfig();
+      initializeApp({
+        credential: cert({
+            projectId: config.projectId,
+            clientEmail: config.clientEmail,
+            privateKey: config.privateKey,
+        }),
+      });
+      console.log("FIREBASE_ADMIN: Initialized successfully with project ID:", config.projectId);
     } catch (e: any) {
-        console.error("FIREBASE_ADMIN: Initialization failed:", e.message);
+      console.error("FIREBASE_ADMIN: Initialization failed:", e.message);
+      throw e;
     }
-  } else {
-    adminApp = admin.app();
   }
-  return admin;
+  return getFirestore();
 }
 
-let _db: admin.firestore.Firestore | null = null;
-
-export const db = new Proxy({}, {
-    get: (_target, prop) => {
-        if (!_db) {
-            try {
-                const app = initAdmin();
-                if (app && app.apps.length) {
-                    _db = app.firestore();
-                }
-            } catch (e) {
-                console.error("Lazy Init DB Failed", e);
-            }
+export function getFirebaseAdminStatus() {
+    let configError = null;
+    let hasProjectId = false;
+    let hasClientEmail = false;
+    let cryptoParseOk = false;
+    
+    try {
+        // We replicate getFirebaseConfig partial check safely
+        let projectId = process.env.FIREBASE_PROJECT_ID;
+        let clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+        let privateKey = process.env.FIREBASE_PRIVATE_KEY;
+        
+        if ((!projectId || !clientEmail || !privateKey) && process.env.GOOGLE_CREDENTIALS) {
+             const creds = JSON.parse(process.env.GOOGLE_CREDENTIALS);
+             projectId = projectId || creds.project_id;
+             clientEmail = clientEmail || creds.client_email;
+             privateKey = privateKey || creds.private_key;
         }
-        if (!_db) return undefined;
-        // @ts-ignore
-        const val = _db[prop];
-        return typeof val === 'function' ? val.bind(_db) : val;
+        
+        hasProjectId = !!projectId;
+        hasClientEmail = !!clientEmail;
+        
+        if (privateKey) {
+            const norm = normalizePrivateKey(privateKey);
+            validateKey(norm);
+            cryptoParseOk = true;
+        }
+    } catch(e: any) {
+        configError = e.message;
     }
-}) as admin.firestore.Firestore;
+
+    return {
+        appsCount: getApps().length,
+        hasProjectId,
+        hasClientEmail,
+        cryptoParseOk,
+        configError
+    }
+}
+
+// --- Data Fetching Helpers ---
 
 export async function getProgramsCount(): Promise<number> {
-  if (!db.collection) return 0;
   try {
+    const db = getDb();
     const snapshot = await db.collection("programs").count().get()
     return snapshot.data().count
   } catch (error) {
@@ -154,8 +164,8 @@ export async function getProgramsCount(): Promise<number> {
 }
 
 export async function getUsersCount(): Promise<number> {
-  if (!db.collection) return 0;
   try {
+    const db = getDb();
     const snapshot = await db.collection("users").count().get()
     return snapshot.data().count
   } catch (error) {
@@ -165,8 +175,8 @@ export async function getUsersCount(): Promise<number> {
 }
 
 export async function getEnrollmentsCount(): Promise<number> {
-  if (!db.collection) return 0;
   try {
+    const db = getDb();
     const snapshot = await db.collection("enrollments").where("status", "==", "active").count().get()
     return snapshot.data().count
   } catch (error) {
@@ -176,8 +186,8 @@ export async function getEnrollmentsCount(): Promise<number> {
 }
 
 export async function getPrograms() {
-  if (!db.collection) return [];
   try {
+    const db = getDb();
     const snapshot = await db.collection("programs").get()
     return snapshot.docs.map(doc => {
        const data = doc.data();
@@ -195,8 +205,8 @@ export async function getPrograms() {
 }
 
 export async function getUsers() {
-    if (!db.collection) return [];
     try {
+      const db = getDb();
       const snapshot = await db.collection("users").get()
       return snapshot.docs.map(doc => {
         const data = doc.data();

@@ -262,7 +262,7 @@ export default function AdminDashboard() {
         <div className="container mx-auto px-6 text-center text-sm text-gray-600">
           © 2025 DMS Clinical Services. All rights reserved.
         </div>
-        <div className="fixed bottom-2 right-2 text-[10px] text-gray-300 pointer-events-none select-none z-0">
+        <div className="fixed bottom-2 right-2 text-[10px] text-gray-300 pointer-events-none select-none z-50">
           sha: {process.env.NEXT_PUBLIC_BUILD_SHA?.substring(0, 7)} • built: {process.env.NEXT_PUBLIC_BUILD_TIME}
         </div>
       </footer>

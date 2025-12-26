@@ -9,76 +9,67 @@ interface AdminConfig {
 }
 
 /**
- * Robust private key normalization for Vercel/Node environments.
- * Handles escaped newlines, quotes, JSON wrapping, and missing header/footers.
+ * Robustly reconstructs a valid PEM private key from various mangled formats.
+ * Focuses on extracting the Base64 body and rebuilding the headers/footers.
  */
-function normalizePrivateKey(key: string): string {
-  // 1. Trim whitespace and quotes
-  let validKey = key.trim();
-  if (validKey.startsWith('"') && validKey.endsWith('"')) {
-    validKey = validKey.slice(1, -1);
-  } else if (validKey.startsWith("'") && validKey.endsWith("'")) {
-    validKey = validKey.slice(1, -1);
+function normalizePrivateKey(rawKey: string): string {
+  let key = rawKey.trim();
+
+  // 1. Strip surrounding quotes (common in .env files)
+  if ((key.startsWith('"') && key.endsWith('"')) || (key.startsWith("'") && key.endsWith("'"))) {
+    key = key.slice(1, -1);
   }
 
-  // 2. Handle JSON object case (common if full creds pasted)
-  if (validKey.startsWith("{")) {
+  // 2. Handle JSON case
+  if (key.startsWith("{")) {
     try {
-      const parsed = JSON.parse(validKey);
-      if (parsed.private_key) {
-        validKey = parsed.private_key;
-      }
-    } catch (e) {
-      // Not JSON, continue treating as string
-    }
+      const parsed = JSON.parse(key);
+      if (parsed.private_key) key = parsed.private_key;
+    } catch (e) {}
   }
 
-  // 3. Robust Newline Replacement
-  // Replaces double-escaped newlines (e.g. from Vercel env UI as string literal)
-  // then regular newlines.
-  validKey = validKey.replace(/\\r/g, "\r");
-  validKey = validKey.replace(/\\n/g, "\n");
-  validKey = validKey.replace(/\r\n/g, "\n");
-  validKey = validKey.replace(/\n/g, "\n");
+  // 3. Normalize newlines (convert literal \n to real newlines, and CRLF to LF)
+  key = key.replace(/\\n/g, "\n").replace(/\\r/g, "\r"); // unescape literals
+  key = key.replace(/\r\n/g, "\n").replace(/\r/g, "\n"); // normalize
 
-  // 4. Base64 Decode Check
-  if (!validKey.includes("BEGIN PRIVATE KEY") && !validKey.includes("BEGIN RSA PRIVATE KEY")) {
-     try {
-       const decoded = Buffer.from(validKey, 'base64').toString('utf-8');
-       if (decoded.includes("BEGIN")) {
-         validKey = decoded;
-       }
-     } catch(e) { /* ignore */ }
+  // 4. Extract Body between BEGIN and END markers
+  // Supports RSA PRIVATE KEY and PRIVATE KEY
+  const match = key.match(/-----BEGIN ?(RSA)? ?PRIVATE KEY-----([\s\S]*)-----END ?(RSA)? ?PRIVATE KEY-----/);
+  
+  if (match && match[2]) {
+    const rawBody = match[2].replace(/\s/g, ""); // Remove ALL whitespace/newlines from body
+    // Re-chunk into 64-char lines
+    const chunks = rawBody.match(/.{1,64}/g) || [];
+    const body = chunks.join("\n");
+    return `-----BEGIN PRIVATE KEY-----\n${body}\n-----END PRIVATE KEY-----\n`;
   }
 
-  // 5. Ensure Headers exist and are properly separated
-  // Sometimes aggressive trims remove the newline after BEGIN or before END
-  if (validKey.includes("BEGIN PRIVATE KEY") && !validKey.includes("BEGIN PRIVATE KEY\n")) {
-      validKey = validKey.replace("-----BEGIN PRIVATE KEY-----", "-----BEGIN PRIVATE KEY-----\n");
-  }
-  if (validKey.includes("END PRIVATE KEY") && !validKey.includes("\n-----END PRIVATE KEY")) {
-      validKey = validKey.replace("-----END PRIVATE KEY-----", "\n-----END PRIVATE KEY-----");
+  // 5. Fallback: If no headers found, check if it assumes a raw base64 body (unlikely for Google keys but possible)
+  const cleanKey = key.replace(/\s/g, "");
+  if (/^[A-Za-z0-9+/=]+$/.test(cleanKey) && cleanKey.length > 100) {
+      const chunks = cleanKey.match(/.{1,64}/g) || [];
+      const body = chunks.join("\n");
+      return `-----BEGIN PRIVATE KEY-----\n${body}\n-----END PRIVATE KEY-----\n`;
   }
 
-  return validKey;
+  // Return original if regex failed and not obviously raw base64 - crypto check will fail later.
+  return key; 
 }
 
-function validateKeyWithCrypto(key: string) {
+function validateKey(key: string) {
     try {
         crypto.createPrivateKey({ key, format: 'pem' });
-        // If no error, it's valid
+        return true;
     } catch (e: any) {
-        throw new Error(`FIREBASE_PRIVATE_KEY could not be parsed by Node crypto: ${e.message}`);
+        throw new Error(`cryptoParseOk=false: ${e.message}`);
     }
 }
 
 function getFirebaseConfig(): AdminConfig | undefined {
-  // A) Try strict environment variables first
   let projectId = process.env.FIREBASE_PROJECT_ID;
   let clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
   let privateKey = process.env.FIREBASE_PRIVATE_KEY;
 
-  // B) Try Google Cloud Credentials JSON if loaded in specific env var
   if ((!projectId || !clientEmail || !privateKey) && process.env.GOOGLE_CREDENTIALS) {
      try {
        const creds = JSON.parse(process.env.GOOGLE_CREDENTIALS);
@@ -89,66 +80,51 @@ function getFirebaseConfig(): AdminConfig | undefined {
   }
 
   if (projectId && clientEmail && privateKey) {
-    const normalizedKey = normalizePrivateKey(privateKey);
-    // VALIDATE BEFORE RETURNING
-    // This allows us to catch configuration errors at boot time (or first access)
     try {
-        validateKeyWithCrypto(normalizedKey);
+        const normalizedKey = normalizePrivateKey(privateKey);
+        validateKey(normalizedKey);
+        return { projectId, clientEmail, privateKey: normalizedKey }
     } catch (e: any) {
-        console.error("CRITICAL: Firebase Private Key Validation Failed.", e.message);
-    }
-    
-    return {
-      projectId,
-      clientEmail,
-      privateKey: normalizedKey,
+        throw e;
     }
   }
   
   return undefined
 }
 
-// Singleton reference
 let adminApp: admin.app.App | null = null;
 
 export function initAdmin() {
   if (adminApp) return admin;
 
   if (!admin.apps.length) {
-    const config = getFirebaseConfig()
-    if (config) {
-      try {
-        // Double check crypto validity again to be safe before passing to firebase
-        validateKeyWithCrypto(config.privateKey);
-
-        adminApp = admin.initializeApp({
-          credential: admin.credential.cert({
-            projectId: config.projectId,
-            clientEmail: config.clientEmail,
-            privateKey: config.privateKey,
-          }),
-        })
-        console.log("FIREBASE_ADMIN: Initialized successfully with project ID:", config.projectId);
-      } catch(e: any) {
+    try {
+        const config = getFirebaseConfig();
+        if (config) {
+            adminApp = admin.initializeApp({
+              credential: admin.credential.cert({
+                projectId: config.projectId,
+                clientEmail: config.clientEmail,
+                privateKey: config.privateKey,
+              }),
+            });
+            console.log("FIREBASE_ADMIN: Initialized successfully with project ID:", config.projectId);
+        } else {
+             console.warn("FIREBASE_ADMIN: Missing environment variables.");
+        }
+    } catch (e: any) {
         console.error("FIREBASE_ADMIN: Initialization failed:", e.message);
-        // We do NOT throw here to avoid crashing the whole process on import if this is top-level.
-        // But functions depending on db will fail.
-      }
-    } else {
-      console.warn("FIREBASE_ADMIN: Missing environment variables for initialization.")
     }
   } else {
     adminApp = admin.app();
   }
-  return admin
+  return admin;
 }
 
-// Keep db as a lazy getter
 let _db: admin.firestore.Firestore | null = null;
 
 export const db = new Proxy({}, {
     get: (_target, prop) => {
-        // Initialize on first access
         if (!_db) {
             try {
                 const app = initAdmin();
@@ -166,11 +142,7 @@ export const db = new Proxy({}, {
     }
 }) as admin.firestore.Firestore;
 
-
-// --- Data Fetching Helpers ---
-
 export async function getProgramsCount(): Promise<number> {
-  // Accessing db properties triggers the proxy
   if (!db.collection) return 0;
   try {
     const snapshot = await db.collection("programs").count().get()

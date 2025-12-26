@@ -6,9 +6,6 @@ import crypto from 'crypto'
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
 
-/**
- * Duplicate of lib/firebase-admin.ts normalization for diagnostics
- */
 function diagnoseKey(rawKey: string) {
   try {
     if (!rawKey) return { status: "MISSING", details: {} };
@@ -21,7 +18,6 @@ function diagnoseKey(rawKey: string) {
        try { const p = JSON.parse(key); if (p.private_key) key = p.private_key; } catch(e){}
     }
     
-    // Normalize newlines
     key = key.replace(/\\n/g, "\n").replace(/\\r/g, "\r").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
 
     const beginMatch = key.match(/-----BEGIN ?(RSA)? ?PRIVATE KEY-----/);
@@ -41,7 +37,6 @@ function diagnoseKey(rawKey: string) {
           reconstructed = `-----BEGIN PRIVATE KEY-----\n${chunks.join("\n")}\n-----END PRIVATE KEY-----\n`;
        }
     } else {
-       // Check for raw base64 fallback
        const cleanKey = key.replace(/\s/g, "");
        if (/^[A-Za-z0-9+/=]+$/.test(cleanKey) && cleanKey.length > 100) {
           bodyCharCount = cleanKey.length;

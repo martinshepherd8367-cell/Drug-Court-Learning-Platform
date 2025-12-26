@@ -232,3 +232,22 @@ export async function getScheduleEvents() {
       return []
     }
 }
+
+export async function getEnrollments() {
+  try {
+    const db = getDb();
+    const snapshot = await db.collection("enrollments").get();
+    return snapshot.docs.map(doc => {
+       const data = doc.data();
+       return { 
+          id: doc.id, 
+          ...data,
+          startDate: data.startDate?.toDate?.()?.toISOString() || data.startDate || null,
+          endDate: data.endDate?.toDate?.()?.toISOString() || data.endDate || null,
+       }
+    })
+  } catch (error) {
+    console.error("Error fetching enrollments:", error)
+    return []
+  }
+}

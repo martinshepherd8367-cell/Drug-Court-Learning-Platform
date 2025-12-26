@@ -1,12 +1,14 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Calendar, Clock, MapPin, Video } from "lucide-react"
+import { Calendar, Clock, MapPin, Video, User as UserIcon } from "lucide-react"
 
 interface ScheduleEvent {
   id: string
   programId: string
   facilitatorId: string
+  programName?: string
+  facilitatorName?: string
   dayOfWeek: string
   time: string
   location: string
@@ -25,7 +27,7 @@ export default function ScheduleClient({ events, loadError }: { events: Schedule
      )
   }
 
-  // Simple sort by Day?
+  // Simple sort by Day
   const dayOrder:  Record<string, number> = { "Monday": 1, "Tuesday": 2, "Wednesday": 3, "Thursday": 4, "Friday": 5, "Saturday": 6, "Sunday": 7 };
   const sortedEvents = [...events].sort((a, b) => {
     return (dayOrder[a.dayOfWeek] || 99) - (dayOrder[b.dayOfWeek] || 99);
@@ -47,25 +49,34 @@ export default function ScheduleClient({ events, loadError }: { events: Schedule
            sortedEvents.map((event) => (
              <Card key={event.id} className="border-l-4 border-l-blue-500">
                <CardHeader className="pb-2">
-                 <CardTitle className="text-lg flex justify-between items-center">
-                    {event.dayOfWeek}
-                    <span className="text-sm font-normal text-gray-400 bg-gray-100 px-2 py-1 rounded">
+                 <div className="flex justify-between items-start">
+                    <CardTitle className="text-lg">
+                        {event.dayOfWeek}
+                    </CardTitle>
+                    <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded">
                       {event.active ? 'Active' : 'Inactive'}
                     </span>
-                 </CardTitle>
+                 </div>
                  <CardDescription className="flex items-center gap-2 font-mono text-blue-700">
                     <Clock className="w-4 h-4" /> {event.time}
                  </CardDescription>
                </CardHeader>
                <CardContent>
                   <div className="space-y-3">
-                     <div className="flex items-start gap-2 text-sm text-gray-600">
-                        <MapPin className="w-4 h-4 mt-0.5" />
-                        <span>{event.location}</span>
+                     <div className="flex items-start gap-2 text-sm text-gray-800 font-medium">
+                        {/* Program Name */}
+                        <div className="flex-1">{event.programName || "Program Program"}</div>
                      </div>
-                     <div className="text-xs text-gray-400 pt-2 border-t">
-                        <span className="font-medium">Program ID:</span> {event.programId} <br/>
-                        <span className="font-medium">Facilitator ID:</span> {event.facilitatorId}
+                     
+                     <div className="bg-gray-50 p-3 rounded-md space-y-2 mt-2">
+                         <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <MapPin className="w-4 h-4 text-gray-400" />
+                            <span>{event.location}</span>
+                         </div>
+                         <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <UserIcon className="w-4 h-4 text-gray-400" />
+                            <span>{event.facilitatorName || "Facilitator"}</span>
+                         </div>
                      </div>
                   </div>
                </CardContent>

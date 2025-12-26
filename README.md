@@ -767,9 +767,12 @@ The application has been simplified for the V1 release to prioritize stability a
   - `built: <timestamp>`
 
 ### Verify Firestore connectivity
-- Visit `/admin/diagnostics` (Restricted access)
+- > **Note**: `/admin/diagnostics` is disabled in Production for security. Use Preview deployments (or local dev) to verify diagnostics.
+
+1. Visit `/admin/diagnostics` (Preview/Local only)
 - Confirm:
-  - Private Key Parse = YES
+   - `Crypto Parse OK: YES`
+  
   - Expected collection counts (e.g., `users`, `programs_catalog`, `enrollments`, `scheduleEvents`) are non-zero.
 
 ### Preview process

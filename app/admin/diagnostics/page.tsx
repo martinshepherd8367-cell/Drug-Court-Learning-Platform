@@ -1,4 +1,5 @@
 import "server-only"
+import { notFound } from "next/navigation"
 import { getDb, getFirebaseAdminStatus } from "@/lib/firebase-admin"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -6,6 +7,11 @@ export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
 
 export default async function DiagnosticsPage() {
+  // SECURITY: diagnostics must not be publicly accessible in Production
+  if (process.env.VERCEL_ENV === "production") {
+    notFound();
+  }
+
   const collectionNames = [
     "users",
     "programs",

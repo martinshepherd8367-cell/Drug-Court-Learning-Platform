@@ -753,3 +753,26 @@ The application has been simplified for the V1 release to prioritize stability a
     *   Schedule view now displays real-time check-in status (Present/Absent/Late) and takeaway submission status.
 
 **Note**: Previous logic for "Makeup Group" auto-assignment based on "End Session" has been disabled.
+
+## Release & Verification
+
+### Release process (Production)
+- Merge changes into `main` (or commit directly to `main` if working solo).
+- Vercel automatically creates a **Production** deployment for `main`.
+
+### Verify deployment truth
+- Visit `/admin`
+- Confirm the footer build stamp shows the expected:
+  - `sha: <commit>`
+  - `built: <timestamp>`
+
+### Verify Firestore connectivity
+- Visit `/admin/diagnostics` (Restricted access)
+- Confirm:
+  - Private Key Parse = YES
+  - Expected collection counts (e.g., `users`, `programs_catalog`, `enrollments`, `scheduleEvents`) are non-zero.
+
+### Preview process
+- Push to a feature branch.
+- Use the Vercel Preview URL to test.
+- Merge to `main` to ship to Production.

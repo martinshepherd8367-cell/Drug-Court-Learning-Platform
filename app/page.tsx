@@ -8,11 +8,14 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Shield, Users, QrCode, Camera, ArrowLeft } from "lucide-react"
+import { useStore } from "@/lib/store"
+import { mockUsers } from "@/lib/mock-data"
 
-const DEV_MODE = true
+const DEV_MODE = process.env.NEXT_PUBLIC_DEV_MODE === "true"
 
 export default function SignInPage() {
   const router = useRouter()
+  const { setCurrentUser } = useStore()
   const [selectedRole, setSelectedRole] = useState<"admin" | "facilitator" | "participant" | null>(null)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -22,7 +25,25 @@ export default function SignInPage() {
   const [participantEmail, setParticipantEmail] = useState("")
   const [showEmailVerify, setShowEmailVerify] = useState(false)
 
+  const handleDevBypass = (role: "admin" | "facilitator" | "participant") => {
+    let user;
+    if (role === 'admin') user = mockUsers.find(u => u.role === 'admin');
+    else if (role === 'facilitator') user = mockUsers.find(u => u.role === 'facilitator');
+    else user = mockUsers.find(u => u.role === 'participant'); // Default to first participant
+
+    if (user) {
+      setCurrentUser(user);
+      if (role === "admin") router.push("/admin");
+      else if (role === "facilitator") router.push("/facilitator");
+      else router.push("/participant");
+    }
+  }
+
   const handleAdminSignIn = () => {
+    if (DEV_MODE) {
+      handleDevBypass("admin")
+      return
+    }
     if (email === "martin@dmsclinicalservices.com" && password === "Archer123") {
       router.push("/admin")
     } else {
@@ -31,6 +52,10 @@ export default function SignInPage() {
   }
 
   const handleFacilitatorSignIn = () => {
+    if (DEV_MODE) {
+      handleDevBypass("facilitator")
+      return
+    }
     if (email && password) {
       router.push("/facilitator")
     } else {
@@ -48,6 +73,10 @@ export default function SignInPage() {
   }
 
   const handleParticipantEmailSignIn = () => {
+    if (DEV_MODE) {
+      handleDevBypass("participant")
+      return
+    }
     if (participantEmail && participantEmail.includes("@")) {
       router.push("/participant")
     } else {
@@ -62,12 +91,6 @@ export default function SignInPage() {
     setError("")
     setSelectedRole(null)
     setShowEmailVerify(false)
-  }
-
-  const handleDevBypass = (role: "admin" | "facilitator" | "participant") => {
-    if (role === "admin") router.push("/admin")
-    else if (role === "facilitator") router.push("/facilitator")
-    else router.push("/participant")
   }
 
   return (
@@ -96,7 +119,17 @@ export default function SignInPage() {
                 </CardHeader>
                 <CardContent className="text-center space-y-2">
                   <p className="text-sm text-gray-500 mb-4">Manage programs, users, enrollments and reports</p>
-                  <Button className="w-full bg-green-600 hover:bg-green-700">Sign In with Email</Button>
+                  <Button
+                    className="w-full bg-green-600 hover:bg-green-700"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      if (DEV_MODE) handleDevBypass("admin")
+                      else setSelectedRole("admin")
+                    }}
+                    disabled={!DEV_MODE}
+                  >
+                    {DEV_MODE ? "Sign In with Email" : "Sign In with Email (V2)"}
+                  </Button>
                   {DEV_MODE && (
                     <Button
                       variant="outline"
@@ -127,7 +160,17 @@ export default function SignInPage() {
                 </CardHeader>
                 <CardContent className="text-center space-y-2">
                   <p className="text-sm text-gray-500 mb-4">Lead sessions, review homework, manage participants</p>
-                  <Button className="w-full bg-green-600 hover:bg-green-700">Sign In with Email</Button>
+                  <Button
+                    className="w-full bg-green-600 hover:bg-green-700"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      if (DEV_MODE) handleDevBypass("facilitator")
+                      else setSelectedRole("facilitator")
+                    }}
+                    disabled={!DEV_MODE}
+                  >
+                    {DEV_MODE ? "Sign In with Email" : "Sign In with Email (V2)"}
+                  </Button>
                   {DEV_MODE && (
                     <Button
                       variant="outline"

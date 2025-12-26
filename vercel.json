@@ -1,0 +1,9 @@
+{
+  "installCommand": "npm install",
+  "buildCommand": "npm run build",
+  "build": {
+    "env": {
+      "NPM_CONFIG_FROZEN_LOCKFILE": "false"
+    }
+  }
+}

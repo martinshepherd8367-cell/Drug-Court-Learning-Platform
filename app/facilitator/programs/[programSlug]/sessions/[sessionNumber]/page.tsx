@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { useStore } from "@/lib/store"
 import { RoleNav } from "@/components/role-nav"
+import { AuditPanel } from "@/components/audit-panel"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -61,8 +62,11 @@ export default function FacilitatorSessionView() {
     getEnrollmentsByProgram,
     getActiveActivityRun,
     getResponsesForActivity,
+    getTakeaways,
     launchActivity,
     closeActivity,
+    endSession,
+    markAbsentAfterClass,
     users,
     copyCaseworx,
   } = useStore()
@@ -95,6 +99,12 @@ export default function FacilitatorSessionView() {
   // Get active activity run
   const activeActivityRun = session ? getActiveActivityRun(session.id) : undefined
   const activityResponses = activeActivityRun ? getResponsesForActivity(activeActivityRun.id) : []
+
+  // Get takeaways stats
+  const takeaways = program ? getTakeaways(program.id, sessionNumber) : []
+  const uniqueTakeawayParticipants = new Set(takeaways.map(t => t.participantId)).size
+  const totalActiveParticipants = activeEnrollments.length
+
 
   // Timer effect
   useEffect(() => {
@@ -167,6 +177,22 @@ export default function FacilitatorSessionView() {
     setTimeout(() => setCopiedCaseworx(false), 2000)
   }
 
+  // Handle end session
+  const handleEndSession = () => {
+    if (!program || !session) return
+
+    // V1 Simplification: No auto-absent marking.
+    // Call store endSession to stop local timer log only
+    endSession(session.id, program.id)
+
+    // End the session for the current user
+    if (activeActivityRun) {
+      closeActivity(activeActivityRun.id)
+    }
+
+    setSessionEnded(true)
+  }
+
   // Add quick note
   const addQuickNote = () => {
     if (newQuickNote.trim()) {
@@ -183,6 +209,11 @@ export default function FacilitatorSessionView() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <RoleNav />
+
+      {/* Audit Panel (Pre-Audit) */}
+      <div className="px-4 pt-4">
+        <AuditPanel program={program} session={session} />
+      </div>
 
       {/* Session Header - Zone A */}
       <div className="bg-white border-b border-gray-200 px-4 py-3">
@@ -212,6 +243,12 @@ export default function FacilitatorSessionView() {
               <span className="text-sm font-medium">{Math.round(progressPercent)}%</span>
             </div>
 
+            {/* Takeaways Count */}
+            <div className="flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-700 rounded-lg border border-blue-200">
+              <FileText className="h-4 w-4" />
+              <span className="text-sm font-medium">Takeaways: {uniqueTakeawayParticipants} / {totalActiveParticipants}</span>
+            </div>
+
             {/* Timer */}
             <div className="flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-lg">
               <Clock className="h-4 w-4 text-gray-600" />
@@ -225,7 +262,7 @@ export default function FacilitatorSessionView() {
                 Start Session
               </Button>
             ) : !sessionEnded ? (
-              <Button onClick={() => setSessionEnded(true)} variant="destructive">
+              <Button onClick={handleEndSession} variant="destructive">
                 <Square className="h-4 w-4 mr-2" />
                 End Session
               </Button>
@@ -284,9 +321,8 @@ export default function FacilitatorSessionView() {
                 return (
                   <div
                     key={section.id}
-                    className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-all ${
-                      isActive ? "bg-green-100 border border-green-300" : "hover:bg-gray-100"
-                    }`}
+                    className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-all ${isActive ? "bg-green-100 border border-green-300" : "hover:bg-gray-100"
+                      }`}
                     onClick={() => setActiveSection(section.id)}
                   >
                     <Checkbox
@@ -350,7 +386,7 @@ export default function FacilitatorSessionView() {
                   {getSectionPrompts("opening").map((prompt) => (
                     <Card key={prompt.id} className="border-l-4 border-l-green-600">
                       <CardContent className="pt-6">
-                        <p className="text-gray-700">{prompt.content}</p>
+                        <p className="text-gray-700 whitespace-pre-wrap">{prompt.content}</p>
                         {prompt.suggestedPacing && (
                           <p className="text-sm text-gray-500 mt-2">
                             <Clock className="h-4 w-4 inline mr-1" />
@@ -370,7 +406,7 @@ export default function FacilitatorSessionView() {
                   {getSectionPrompts("review").map((prompt) => (
                     <Card key={prompt.id} className="border-l-4 border-l-blue-600">
                       <CardContent className="pt-6">
-                        <p className="text-gray-700">{prompt.content}</p>
+                        <p className="text-gray-700 whitespace-pre-wrap">{prompt.content}</p>
                         {prompt.suggestedPacing && (
                           <p className="text-sm text-gray-500 mt-2">
                             <Clock className="h-4 w-4 inline mr-1" />
@@ -409,19 +445,19 @@ export default function FacilitatorSessionView() {
                   <div className="flex items-center justify-between">
                     <h2 className="text-xl font-bold">Activity</h2>
                     <Button
-                      onClick={() => setShowActivityLauncher(true)}
-                      className="bg-green-600 hover:bg-green-700"
-                      disabled={!sessionStarted || sessionEnded}
+                      onClick={() => { }}
+                      className="bg-green-600 hover:bg-green-700 opacity-50 cursor-not-allowed"
+                      disabled
                     >
                       <Rocket className="h-4 w-4 mr-2" />
-                      Launch Activity
+                      Launch Activity (V2)
                     </Button>
                   </div>
 
                   {getSectionPrompts("activity").map((prompt) => (
                     <Card key={prompt.id} className="border-l-4 border-l-orange-600">
                       <CardContent className="pt-6">
-                        <p className="text-gray-700">{prompt.content}</p>
+                        <p className="text-gray-700 whitespace-pre-wrap">{prompt.content}</p>
                       </CardContent>
                     </Card>
                   ))}
@@ -439,13 +475,13 @@ export default function FacilitatorSessionView() {
                               key={activity.id}
                               className="p-4 border rounded-lg hover:border-green-500 cursor-pointer"
                               onClick={() => {
-                                setSelectedActivity(activity.id)
-                                setShowActivityLauncher(true)
+                                // setSelectedActivity(activity.id)
+                                // setShowActivityLauncher(true)
                               }}
                             >
-                              <div className="flex items-center justify-between">
+                              <div className="flex items-center justify-between opacity-50">
                                 <div>
-                                  <h4 className="font-medium">{activity.title}</h4>
+                                  <h4 className="font-medium">{activity.title} (V2)</h4>
                                   <p className="text-sm text-gray-600">{activity.instructions}</p>
                                   <Badge variant="secondary" className="mt-2">
                                     {activity.type}
@@ -490,6 +526,14 @@ export default function FacilitatorSessionView() {
                 <div className="space-y-6">
                   <h2 className="text-xl font-bold">Participant Responses</h2>
 
+                  {getSectionPrompts("responses").map((prompt) => (
+                    <Card key={prompt.id} className="border-l-4 border-l-blue-600 mb-6">
+                      <CardContent className="pt-6">
+                        <p className="text-gray-700 whitespace-pre-wrap">{prompt.content}</p>
+                      </CardContent>
+                    </Card>
+                  ))}
+
                   {activityResponses.length > 0 ? (
                     <div className="space-y-4">
                       {activityResponses.map((response) => {
@@ -529,6 +573,14 @@ export default function FacilitatorSessionView() {
                 <div className="space-y-6">
                   <h2 className="text-xl font-bold">Facilitator Notes</h2>
 
+                  {getSectionPrompts("notes").map((prompt) => (
+                    <Card key={prompt.id} className="border-l-4 border-l-yellow-600 mb-6">
+                      <CardContent className="pt-6">
+                        <p className="text-gray-700 whitespace-pre-wrap">{prompt.content}</p>
+                      </CardContent>
+                    </Card>
+                  ))}
+
                   <Card>
                     <CardHeader>
                       <CardTitle className="text-lg">Session Notes</CardTitle>
@@ -553,11 +605,19 @@ export default function FacilitatorSessionView() {
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
                     <h2 className="text-xl font-bold">CaseWorx Export</h2>
-                    <Button onClick={handleCopyCaseworx} className="bg-green-600 hover:bg-green-700">
+                    <Button onClick={() => { }} className="bg-green-600 hover:bg-green-700 opacity-50 cursor-not-allowed" disabled>
                       <Copy className="h-4 w-4 mr-2" />
-                      {copiedCaseworx ? "Copied!" : "Copy to Clipboard"}
+                      Copy Note
                     </Button>
                   </div>
+
+                  {getSectionPrompts("caseworx").map((prompt) => (
+                    <Card key={prompt.id} className="border-l-4 border-l-purple-600 mb-6">
+                      <CardContent className="pt-6">
+                        <p className="text-gray-700 whitespace-pre-wrap">{prompt.content}</p>
+                      </CardContent>
+                    </Card>
+                  ))}
 
                   <Card>
                     <CardHeader>
@@ -584,7 +644,7 @@ export default function FacilitatorSessionView() {
                   {getSectionPrompts("wrapup").map((prompt) => (
                     <Card key={prompt.id} className="border-l-4 border-l-green-600">
                       <CardContent className="pt-6">
-                        <p className="text-gray-700">{prompt.content}</p>
+                        <p className="text-gray-700 whitespace-pre-wrap">{prompt.content}</p>
                       </CardContent>
                     </Card>
                   ))}
@@ -749,9 +809,8 @@ export default function FacilitatorSessionView() {
             {session.activityTemplates.map((activity) => (
               <Card
                 key={activity.id}
-                className={`cursor-pointer transition-all ${
-                  selectedActivity === activity.id ? "border-green-500 border-2" : "hover:border-green-300"
-                }`}
+                className={`cursor-pointer transition-all ${selectedActivity === activity.id ? "border-green-500 border-2" : "hover:border-green-300"
+                  }`}
                 onClick={() => setSelectedActivity(activity.id)}
               >
                 <CardContent className="p-4">

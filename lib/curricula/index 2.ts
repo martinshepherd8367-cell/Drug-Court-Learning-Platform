@@ -1,0 +1,1 @@
+export { curriculaPrograms } from './programs';

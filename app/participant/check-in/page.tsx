@@ -16,7 +16,7 @@ export default function CheckInPage() {
   const classDay = searchParams.get("day") || "Monday"
   const sessionId = searchParams.get("sessionId") || ""
 
-  const { validateCheckIn, recordCheckIn, currentUser } = useStore()
+  const { validateCheckIn, recordAttendanceCheckIn, currentUser, getEnrollmentsByParticipant } = useStore()
 
   const [checkInState, setCheckInState] = useState<"ready" | "verifying" | "scanning" | "success" | "error">("ready")
   const [locationVerified, setLocationVerified] = useState(false)
@@ -61,16 +61,25 @@ export default function CheckInPage() {
     if (result.success) {
       setIsVirtualClass(result.isVirtual || false)
 
+      // Find active enrollment to get program/session context
+      const enrollment = currentUser 
+        ? getEnrollmentsByParticipant(currentUser.id).find(e => e.status === "active")
+        : undefined
+      
+      const programId = enrollment?.programId || "prime-solutions" 
+      const sessionNumber = enrollment?.currentSessionNumber || 1
+
       // Record the check-in
-      recordCheckIn({
+      recordAttendanceCheckIn({
         participantId,
-        qrCodeId: code,
-        sessionId,
-        checkedInAt: new Date().toISOString(),
-        gpsLatitude: gpsLat,
-        gpsLongitude: gpsLng,
-        wasVirtual: result.isVirtual || false,
+        programId,
+        sessionNumber,
+        checkInAt: new Date().toISOString(),
+        isVirtual: result.isVirtual || false,
+        gpsLat: gpsLat || undefined,
+        gpsLng: gpsLng || undefined,
         verified: true,
+        qrCodeId: code,
       })
 
       setCheckInState("success")

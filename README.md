@@ -1,5 +1,9 @@
 # Drug Court Learning Platform
 
+> **V1 SIMPLIFICATION (2025-01-08):** Real-time gating removed. Participants have open access. Attendance/Takeaways are the primary metrics. See [V1 Simplification](#v1-simplification) below.
+
+
+
 A role-based web application designed to support accountability court participants and facilitators during structured psychoeducational programs. Built with Next.js 14, TypeScript, and Tailwind CSS.
 
 ## Table of Contents
@@ -730,3 +734,22 @@ For issues or questions about this build, refer to the conversation history in v
 
 **Built with v0 by Vercel**
 **Copyright DMS Clinical Services**
+
+---
+
+## V1 Simplification
+
+The application has been simplified for the V1 release to prioritize stability and ease of access.
+
+**Key Changes:**
+*   **No Real-Time Gating**: Participants can access all sessions in their program without waiting for a facilitator to "unlock" or "start" them.
+*   **Attendance & Takeaways**:
+    *   **Attendance**: Recorded via check-in (QR or manual). Late arrivals (after scheduled start time) are highlighted.
+    *   **In-Class Work**: A dedicated "In-Class Work / Takeaways" input is available on every participant session page. Submissions are timestamped.
+*   **Facilitator Console**:
+    *   "Readiness" counts replaced with "Takeaways Submitted" counts.
+    *   "Start/End Session" buttons only control a local timer and do not lock/unlock participant access.
+*   **Admin Reporting**:
+    *   Schedule view now displays real-time check-in status (Present/Absent/Late) and takeaway submission status.
+
+**Note**: Previous logic for "Makeup Group" auto-assignment based on "End Session" has been disabled.

@@ -45,8 +45,9 @@ export interface Session {
 
 export interface FacilitatorPrompt {
   id: string
-  section: "overview" | "opening" | "review" | "teach" | "activity" | "wrapup"
+  section: "overview" | "opening" | "review" | "teach" | "activity" | "wrapup" | "responses" | "notes" | "caseworx"
   content: string
+  participantContent?: string
   suggestedPacing?: string
 }
 
@@ -169,7 +170,8 @@ export interface MakeupAssignment {
   assignedWorksheets: string[]
   assignedReadings: string[]
   assignedInstructions: string
-  status: "pending" | "work_assigned" | "completed"
+  assignedAt?: string // Added for CP5 admin assignment
+  status: "pending" | "assigned" | "work_assigned" | "completed"
   checkedIn: boolean
 }
 
@@ -213,4 +215,26 @@ export interface CheckIn {
   gpsLongitude: number | null
   wasVirtual: boolean
   verified: boolean
+}
+
+export interface AttendanceRecord {
+  id: string
+  participantId: string
+  programId: string
+  sessionNumber: number
+  checkInAt: string // ISO timestamp
+  isVirtual: boolean // mapped from wasVirtual
+  gpsLat?: number // mapped from gpsLatitude
+  gpsLng?: number // mapped from gpsLongitude
+  verified: boolean
+  qrCodeId?: string
+}
+
+export interface TakeawaySubmission {
+  id: string
+  participantId: string
+  programId: string
+  sessionNumber: number
+  submittedAt: string // ISO timestamp
+  text: string
 }

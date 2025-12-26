@@ -258,9 +258,12 @@ export default function AdminDashboard() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-gray-200/50 py-4 mt-8 footer-transparent">
+      <footer className="border-t border-gray-200/50 py-4 mt-8 footer-transparent relative">
         <div className="container mx-auto px-6 text-center text-sm text-gray-600">
           © 2025 DMS Clinical Services. All rights reserved.
+        </div>
+        <div className="fixed bottom-2 right-2 text-[10px] text-gray-300 pointer-events-none select-none z-0">
+          sha: {process.env.NEXT_PUBLIC_BUILD_SHA?.substring(0, 7)} • built: {process.env.NEXT_PUBLIC_BUILD_TIME}
         </div>
       </footer>
     </div>

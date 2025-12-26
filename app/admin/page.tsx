@@ -78,7 +78,7 @@ export default function AdminDashboard() {
     <div className="min-h-screen">
       <RoleNav />
 
-      <main className="container mx-auto px-8 py-10">
+      <main className="relative z-10 container mx-auto px-8 py-10 pointer-events-auto" onClick={() => console.log("DEBUG: Admin Main Clicked")}>
         {/* Header with AI Assistant button */}
         <div className="mb-8 flex items-center justify-between">
           <div>

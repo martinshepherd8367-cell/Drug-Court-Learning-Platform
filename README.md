@@ -779,3 +779,69 @@ The application has been simplified for the V1 release to prioritize stability a
 - Push to a feature branch.
 - Use the Vercel Preview URL to test.
 - Merge to `main` to ship to Production.
+
+
+## Firestore Data Model
+
+### Collections (current)
+
+#### `users`
+Used for role + identity display in Admin.
+Common fields:
+- `firstName` (string)
+- `lastName` (string)
+- `email` (string)
+- `role` (string; e.g., `admin`, `facilitator`, `participant`)
+
+#### `programs_catalog`
+Authoritative list of programs.
+Common fields:
+- `title` (string)
+- `description` (string)
+- `sessionCount` (number)
+- `active` (boolean)
+
+#### `enrollments`
+Joins participants to programs and tracks progress.
+Common fields:
+- `userId` (string; users doc id)
+- `programId` (string; programs_catalog doc id)
+- `status` (string; e.g., `active`, `paused`, `completed`)
+- `currentSession` (number)
+- `startDate` (string ISO timestamp)
+
+#### `scheduleEvents`
+Program schedule shown on `/admin/schedule`.
+Common fields:
+- `programId` (string)
+- `facilitatorId` (string)
+- `dayOfWeek` (string; e.g., Monday)
+- `time` (string; e.g., 10:00 AM)
+- `location` (string)
+- `active` (boolean)
+
+### Seeded demo data
+This repo includes a dev/demo seed path used to populate:
+- 4 users
+- 4 programs_catalog
+- 2 enrollments
+- 3 scheduleEvents
+Seed data is intended for UI verification and screenshots, not real court data.
+
+## Troubleshooting
+
+### Build stamp doesn’t match your last commit
+- Source of truth is `/admin` footer: `sha: <commit>`
+- Check Vercel → Deployments → Production → Current commit SHA
+
+### Firestore reads failing
+- In Production, `/admin/diagnostics` is intentionally disabled (404).
+- Use Preview deployments or local development for Firestore diagnostics.
+
+### Empty tables / unexpected counts
+- Confirm seeded collections exist in Firestore:
+  - `users`
+  - `programs_catalog`
+  - `enrollments`
+  - `scheduleEvents`
+- Verify `/admin` dashboard tile counts match expected seeded counts.

@@ -1,12 +1,22 @@
 "use client"
 
-import { useRouter } from "next/navigation"
+import {
+  Users,
+  BookOpen,
+  Calendar,
+  FileBarChart,
+  Settings,
+  ShieldAlert,
+  GraduationCap,
+  ClipboardCheck,
+  QrCode,
+  LayoutDashboard,
+  ChevronRight,
+} from "lucide-react"
 import Link from "next/link"
 import { RoleNav } from "@/components/role-nav"
-import { AIAssistantButton } from "@/components/ai-assistant"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Users, BookOpen, UserCheck, FileBarChart, ChevronRight, QrCode, Calendar, ClipboardCheck } from "lucide-react"
 
 interface DashboardStats {
   totalParticipants: number;
@@ -14,40 +24,19 @@ interface DashboardStats {
   totalPrograms: number;
   completionRate: number;
   totalUsers: number;
+  scheduleEvents?: number;
 }
 
 export default function AdminDashboardClient({ stats }: { stats: DashboardStats }) {
-  const router = useRouter()
-  
+
   const quickLinks = [
-    {
-      title: "Weekly Schedule",
-      description: "View all classes by day and time",
-      icon: Calendar,
-      href: "/admin/schedule",
-      count: null,
-      highlight: true,
-    },
-    {
-      title: "Curriculum Review",
-      description: "Audit programs (Pre-Audit)",
-      icon: ClipboardCheck,
-      href: "/admin/curriculum-review",
-      count: null,
-    },
     {
       title: "Programs",
       description: "Manage programs and sessions",
       icon: BookOpen,
       href: "/admin/programs",
       count: stats.totalPrograms,
-    },
-    {
-      title: "Class Schedule",
-      description: "View weekly class schedule grid",
-      icon: Calendar,
-      href: "/admin/schedule",
-      count: null,
+      highlight: true
     },
     {
       title: "Users",
@@ -58,10 +47,24 @@ export default function AdminDashboardClient({ stats }: { stats: DashboardStats 
     },
     {
       title: "Enrollments",
-      description: "Manage participant enrollments",
-      icon: UserCheck,
-      href: "/admin/enrollments",
-      count: stats.activeEnrollments,
+      description: "View active enrollments",
+      icon: GraduationCap,
+      href: "/admin/enrollments", // Updated (Phase 2 fix)
+      count: stats.activeEnrollments, 
+    },
+    {
+      title: "Schedule",
+      description: "Manage class schedule",
+      icon: Calendar,
+      href: "/admin/schedule",
+      count: stats.scheduleEvents ?? null,
+    },
+    {
+      title: "Curriculum Review",
+      description: "Audit curriculum content",
+      icon: ClipboardCheck,
+      href: "/admin/curriculum-review",
+      count: null,
     },
     {
       title: "Reports",
@@ -74,45 +77,34 @@ export default function AdminDashboardClient({ stats }: { stats: DashboardStats 
   ]
 
   return (
-    <div className="min-h-screen">
-      <RoleNav />
+    <div className="min-h-screen font-sans bg-transparent relative">
+      {/* Background with explicit click-through safety */}
+      <div className="absolute inset-0 z-0 opacity-40 bg-[radial-gradient(#2563eb_0.5px,transparent_0.5px)] [background-size:16px_16px] pointer-events-none" />
 
+      <RoleNav role="admin" />
+
+      {/* Main Content with pointer-events-auto */}
       <main className="relative z-10 container mx-auto px-8 py-10 pointer-events-auto">
-        {/* Header with AI Assistant button */}
-        <div className="mb-8 flex items-center justify-between">
+        <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 drop-shadow-sm">Admin Dashboard</h1>
-            <p className="text-gray-700 mt-1 drop-shadow-sm">Manage programs, users, and enrollments</p>
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900">Admin Dashboard</h1>
+            <p className="text-gray-600 mt-2">Manage your organization's programs and users</p>
           </div>
-          <AIAssistantButton role="admin" disabled />
+          <div className="flex gap-2">
+            <Button variant="outline" className="gap-2">
+              <Settings className="h-4 w-4" />
+              Settings
+            </Button>
+            <Button variant="outline" className="gap-2 text-red-600 border-red-200 hover:bg-red-50">
+              <ShieldAlert className="h-4 w-4" />
+              Audit Log
+            </Button>
+          </div>
         </div>
 
-        {/* Prominent Weekly Schedule button */}
-        <Card className="mb-8 border-blue-200 bg-blue-50/80 card-transparent">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="p-4 bg-white/80 rounded-lg border border-blue-200">
-                  <Calendar className="h-12 w-12 text-blue-700" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-lg text-blue-800">Weekly Class Schedule</h3>
-                  <p className="text-sm text-blue-700">
-                    View all classes, facilitators, and enrollment status at a glance
-                  </p>
-                </div>
-              </div>
-              <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => router.push("/admin/schedule")}>
-                <Calendar className="h-4 w-4 mr-2" />
-                View Schedule
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="card-transparent">
+        {/* Stats Grid */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
+          <Card className="border-blue-200 bg-blue-50/50 card-transparent">
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-blue-100/80 rounded-lg">
@@ -120,17 +112,17 @@ export default function AdminDashboardClient({ stats }: { stats: DashboardStats 
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{stats.totalParticipants}</p>
-                  <p className="text-sm text-gray-600">Participants</p>
+                  <p className="text-sm text-gray-600">Total Participants</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="card-transparent">
+          <Card className="border-purple-200 bg-purple-50/50 card-transparent">
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-green-100/80 rounded-lg">
-                  <UserCheck className="h-6 w-6 text-green-700" />
+                <div className="p-3 bg-purple-100/80 rounded-lg">
+                  <GraduationCap className="h-6 w-6 text-purple-700" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{stats.activeEnrollments}</p>
@@ -140,21 +132,21 @@ export default function AdminDashboardClient({ stats }: { stats: DashboardStats 
             </CardContent>
           </Card>
 
-          <Card className="card-transparent">
+          <Card className="border-green-200 bg-green-50/50 card-transparent">
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-purple-100/80 rounded-lg">
-                  <BookOpen className="h-6 w-6 text-purple-700" />
+                <div className="p-3 bg-green-100/80 rounded-lg">
+                  <BookOpen className="h-6 w-6 text-green-700" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{stats.totalPrograms}</p>
-                  <p className="text-sm text-gray-600">Programs</p>
+                  <p className="text-sm text-gray-600">Active Programs</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="card-transparent">
+          <Card className="border-orange-200 bg-orange-50/50 card-transparent">
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-orange-100/80 rounded-lg">
@@ -168,27 +160,6 @@ export default function AdminDashboardClient({ stats }: { stats: DashboardStats 
             </CardContent>
           </Card>
         </div>
-
-        {/* Registration QR Code */}
-        <Card className="mb-8 border-green-200 bg-green-50/80 card-transparent">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="p-4 bg-white/80 rounded-lg border border-green-200">
-                  <QrCode className="h-12 w-12 text-green-700" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-lg text-green-800">Participant Registration QR Code</h3>
-                  <p className="text-sm text-green-700">Share this code for new participants to register</p>
-                </div>
-              </div>
-              <Button className="bg-green-600 hover:bg-green-700 opacity-50 cursor-not-allowed" disabled>
-                <QrCode className="h-4 w-4 mr-2" />
-                View Full QR Code (V2)
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Quick Links */}
         <Card className="card-transparent">

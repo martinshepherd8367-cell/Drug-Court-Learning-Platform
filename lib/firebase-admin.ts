@@ -1,5 +1,5 @@
 import "server-only"
-import { cert, getApps, initializeApp, App } from "firebase-admin/app"
+import { cert, getApps, initializeApp } from "firebase-admin/app"
 import { getFirestore, Firestore } from "firebase-admin/firestore"
 import crypto from 'crypto'
 
@@ -9,50 +9,35 @@ interface AdminConfig {
   privateKey: string;
 }
 
-/**
- * Robustly reconstructs a valid PEM private key from various mangled formats.
- * Focuses on extracting the Base64 body and rebuilding the headers/footers.
- */
 function normalizePrivateKey(rawKey: string): string {
   let key = rawKey.trim();
-
-  // 1. Strip surrounding quotes (common in .env files)
   if ((key.startsWith('"') && key.endsWith('"')) || (key.startsWith("'") && key.endsWith("'"))) {
     key = key.slice(1, -1);
   }
-
-  // 2. Handle JSON case
   if (key.startsWith("{")) {
     try {
       const parsed = JSON.parse(key);
       if (parsed.private_key) key = parsed.private_key;
     } catch (e) {}
   }
+  key = key.replace(/\\n/g, "\n").replace(/\\r/g, "\r");
+  key = key.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
 
-  // 3. Normalize newlines (convert literal \n to real newlines, and CRLF to LF)
-  key = key.replace(/\\n/g, "\n").replace(/\\r/g, "\r"); // unescape literals
-  key = key.replace(/\r\n/g, "\n").replace(/\r/g, "\n"); // normalize
-
-  // 4. Extract Body between BEGIN and END markers
   const match = key.match(/-----BEGIN ?(RSA)? ?PRIVATE KEY-----([\s\S]*)-----END ?(RSA)? ?PRIVATE KEY-----/);
   
   if (match && match[2]) {
-    const rawBody = match[2].replace(/\s/g, ""); // Remove ALL whitespace/newlines from body
-    // Re-chunk into 64-char lines
+    const rawBody = match[2].replace(/\s/g, "");
     const chunks = rawBody.match(/.{1,64}/g) || [];
     const body = chunks.join("\n");
     return `-----BEGIN PRIVATE KEY-----\n${body}\n-----END PRIVATE KEY-----\n`;
   }
 
-  // 5. Fallback: If no headers found, check if it assumes a raw base64 body (unlikely for Google keys but possible)
   const cleanKey = key.replace(/\s/g, "");
   if (/^[A-Za-z0-9+/=]+$/.test(cleanKey) && cleanKey.length > 100) {
       const chunks = cleanKey.match(/.{1,64}/g) || [];
       const body = chunks.join("\n");
       return `-----BEGIN PRIVATE KEY-----\n${body}\n-----END PRIVATE KEY-----\n`;
   }
-
-  // Return original if regex failed - crypto check will fail later if invalid.
   return key; 
 }
 
@@ -101,7 +86,6 @@ export function getDb(): Firestore {
             privateKey: config.privateKey,
         }),
       });
-      console.log("FIREBASE_ADMIN: Initialized successfully with project ID:", config.projectId);
     } catch (e: any) {
       console.error("FIREBASE_ADMIN: Initialization failed:", e.message);
       throw e;
@@ -117,7 +101,6 @@ export function getFirebaseAdminStatus() {
     let cryptoParseOk = false;
     
     try {
-        // We replicate getFirebaseConfig partial check safely
         let projectId = process.env.FIREBASE_PROJECT_ID;
         let clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
         let privateKey = process.env.FIREBASE_PRIVATE_KEY;
@@ -155,7 +138,8 @@ export function getFirebaseAdminStatus() {
 export async function getProgramsCount(): Promise<number> {
   try {
     const db = getDb();
-    const snapshot = await db.collection("programs").count().get()
+    // CHANGED: programs -> programs_catalog
+    const snapshot = await db.collection("programs_catalog").count().get()
     return snapshot.data().count
   } catch (error) {
     console.error("Error fetching programs count:", error)
@@ -185,10 +169,22 @@ export async function getEnrollmentsCount(): Promise<number> {
   }
 }
 
+export async function getScheduleEventsCount(): Promise<number> {
+  try {
+    const db = getDb();
+    const snapshot = await db.collection("scheduleEvents").count().get()
+    return snapshot.data().count
+  } catch (error) {
+    console.error("Error fetching schedule events count:", error)
+    return 0
+  }
+}
+
 export async function getPrograms() {
   try {
     const db = getDb();
-    const snapshot = await db.collection("programs").get()
+    // CHANGED: programs -> programs_catalog
+    const snapshot = await db.collection("programs_catalog").get()
     return snapshot.docs.map(doc => {
        const data = doc.data();
        return { 
@@ -220,4 +216,4 @@ export async function getUsers() {
       console.error("Error fetching users:", error)
       return []
     }
-  }
+}

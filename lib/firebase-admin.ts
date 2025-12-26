@@ -1,5 +1,6 @@
 import "server-only"
 import * as admin from "firebase-admin"
+import crypto from 'crypto'
 
 interface AdminConfig {
   projectId: string;
@@ -7,14 +8,20 @@ interface AdminConfig {
   privateKey: string;
 }
 
+/**
+ * Robust private key normalization for Vercel/Node environments.
+ * Handles escaped newlines, quotes, JSON wrapping, and missing header/footers.
+ */
 function normalizePrivateKey(key: string): string {
   // 1. Trim whitespace and quotes
   let validKey = key.trim();
   if (validKey.startsWith('"') && validKey.endsWith('"')) {
     validKey = validKey.slice(1, -1);
+  } else if (validKey.startsWith("'") && validKey.endsWith("'")) {
+    validKey = validKey.slice(1, -1);
   }
 
-  // 2. Handle JSON object case
+  // 2. Handle JSON object case (common if full creds pasted)
   if (validKey.startsWith("{")) {
     try {
       const parsed = JSON.parse(validKey);
@@ -22,18 +29,19 @@ function normalizePrivateKey(key: string): string {
         validKey = parsed.private_key;
       }
     } catch (e) {
-      console.warn("FIREBASE_ADMIN: Failed to parse private key as JSON");
+      // Not JSON, continue treating as string
     }
   }
 
-  // 3. Replace escaped newlines
-  // Replaces literal "\n" strings with actual newline characters
+  // 3. Robust Newline Replacement
+  // Replaces double-escaped newlines (e.g. from Vercel env UI as string literal)
+  // then regular newlines.
+  validKey = validKey.replace(/\\r/g, "\r");
   validKey = validKey.replace(/\\n/g, "\n");
-  // Also handle Windows style just in case
-  validKey = validKey.replace(/\\r\\n/g, "\n");
+  validKey = validKey.replace(/\r\n/g, "\n");
+  validKey = validKey.replace(/\n/g, "\n");
 
   // 4. Base64 Decode Check
-  // Sometimes keys are base64 encoded to avoid newline issues
   if (!validKey.includes("BEGIN PRIVATE KEY") && !validKey.includes("BEGIN RSA PRIVATE KEY")) {
      try {
        const decoded = Buffer.from(validKey, 'base64').toString('utf-8');
@@ -43,15 +51,25 @@ function normalizePrivateKey(key: string): string {
      } catch(e) { /* ignore */ }
   }
 
-  // 5. Validation
-  // PEM keys must have header/footer
-  if (!validKey.includes("BEGIN") || !validKey.includes("END")) {
-    console.error("FIREBASE_ADMIN: Private Key missing BEGIN/END markers.");
-    // We let it pass to credential.cert which might throw, 
-    // but better to catch early or provide clear error.
+  // 5. Ensure Headers exist and are properly separated
+  // Sometimes aggressive trims remove the newline after BEGIN or before END
+  if (validKey.includes("BEGIN PRIVATE KEY") && !validKey.includes("BEGIN PRIVATE KEY\n")) {
+      validKey = validKey.replace("-----BEGIN PRIVATE KEY-----", "-----BEGIN PRIVATE KEY-----\n");
   }
-  
+  if (validKey.includes("END PRIVATE KEY") && !validKey.includes("\n-----END PRIVATE KEY")) {
+      validKey = validKey.replace("-----END PRIVATE KEY-----", "\n-----END PRIVATE KEY-----");
+  }
+
   return validKey;
+}
+
+function validateKeyWithCrypto(key: string) {
+    try {
+        crypto.createPrivateKey({ key, format: 'pem' });
+        // If no error, it's valid
+    } catch (e: any) {
+        throw new Error(`FIREBASE_PRIVATE_KEY could not be parsed by Node crypto: ${e.message}`);
+    }
 }
 
 function getFirebaseConfig(): AdminConfig | undefined {
@@ -71,22 +89,39 @@ function getFirebaseConfig(): AdminConfig | undefined {
   }
 
   if (projectId && clientEmail && privateKey) {
+    const normalizedKey = normalizePrivateKey(privateKey);
+    // VALIDATE BEFORE RETURNING
+    // This allows us to catch configuration errors at boot time (or first access)
+    try {
+        validateKeyWithCrypto(normalizedKey);
+    } catch (e: any) {
+        console.error("CRITICAL: Firebase Private Key Validation Failed.", e.message);
+    }
+    
     return {
       projectId,
       clientEmail,
-      privateKey: normalizePrivateKey(privateKey),
+      privateKey: normalizedKey,
     }
   }
   
   return undefined
 }
 
+// Singleton reference
+let adminApp: admin.app.App | null = null;
+
 export function initAdmin() {
+  if (adminApp) return admin;
+
   if (!admin.apps.length) {
     const config = getFirebaseConfig()
     if (config) {
       try {
-        admin.initializeApp({
+        // Double check crypto validity again to be safe before passing to firebase
+        validateKeyWithCrypto(config.privateKey);
+
+        adminApp = admin.initializeApp({
           credential: admin.credential.cert({
             projectId: config.projectId,
             clientEmail: config.clientEmail,
@@ -96,31 +131,47 @@ export function initAdmin() {
         console.log("FIREBASE_ADMIN: Initialized successfully with project ID:", config.projectId);
       } catch(e: any) {
         console.error("FIREBASE_ADMIN: Initialization failed:", e.message);
+        // We do NOT throw here to avoid crashing the whole process on import if this is top-level.
+        // But functions depending on db will fail.
       }
     } else {
       console.warn("FIREBASE_ADMIN: Missing environment variables for initialization.")
     }
+  } else {
+    adminApp = admin.app();
   }
   return admin
 }
 
-// Keep db as a lazy getter or handle initialization safety
+// Keep db as a lazy getter
 let _db: admin.firestore.Firestore | null = null;
-try {
-   const app = initAdmin();
-   if (app.apps.length) {
-       _db = app.firestore();
-   }
-} catch (e) {
-    console.error("Failed to init admin firestore", e);
-}
 
-export const db = _db;
+export const db = new Proxy({}, {
+    get: (_target, prop) => {
+        // Initialize on first access
+        if (!_db) {
+            try {
+                const app = initAdmin();
+                if (app && app.apps.length) {
+                    _db = app.firestore();
+                }
+            } catch (e) {
+                console.error("Lazy Init DB Failed", e);
+            }
+        }
+        if (!_db) return undefined;
+        // @ts-ignore
+        const val = _db[prop];
+        return typeof val === 'function' ? val.bind(_db) : val;
+    }
+}) as admin.firestore.Firestore;
+
 
 // --- Data Fetching Helpers ---
 
 export async function getProgramsCount(): Promise<number> {
-  if (!db) return 0
+  // Accessing db properties triggers the proxy
+  if (!db.collection) return 0;
   try {
     const snapshot = await db.collection("programs").count().get()
     return snapshot.data().count
@@ -131,7 +182,7 @@ export async function getProgramsCount(): Promise<number> {
 }
 
 export async function getUsersCount(): Promise<number> {
-  if (!db) return 0
+  if (!db.collection) return 0;
   try {
     const snapshot = await db.collection("users").count().get()
     return snapshot.data().count
@@ -142,7 +193,7 @@ export async function getUsersCount(): Promise<number> {
 }
 
 export async function getEnrollmentsCount(): Promise<number> {
-  if (!db) return 0
+  if (!db.collection) return 0;
   try {
     const snapshot = await db.collection("enrollments").where("status", "==", "active").count().get()
     return snapshot.data().count
@@ -153,7 +204,7 @@ export async function getEnrollmentsCount(): Promise<number> {
 }
 
 export async function getPrograms() {
-  if (!db) return []
+  if (!db.collection) return [];
   try {
     const snapshot = await db.collection("programs").get()
     return snapshot.docs.map(doc => {
@@ -172,7 +223,7 @@ export async function getPrograms() {
 }
 
 export async function getUsers() {
-    if (!db) return []
+    if (!db.collection) return [];
     try {
       const snapshot = await db.collection("users").get()
       return snapshot.docs.map(doc => {

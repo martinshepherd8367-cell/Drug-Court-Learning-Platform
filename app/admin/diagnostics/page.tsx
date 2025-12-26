@@ -1,9 +1,49 @@
 import "server-only"
 import { db } from "@/lib/firebase-admin"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import crypto from 'crypto'
 
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
+
+function getFormattedKeyStatus() {
+  try {
+      let key = process.env.FIREBASE_PRIVATE_KEY || "";
+      // Minimal naive check first
+      if (!key) return "MISSING";
+      
+      // We essentially repeat the normalization logic here to test validitiy for diagnostics
+      // without exposing key
+      let validKey = key.trim();
+      if (validKey.startsWith('"') && validKey.endsWith('"')) validKey = validKey.slice(1, -1);
+      else if (validKey.startsWith("'") && validKey.endsWith("'")) validKey = validKey.slice(1, -1);
+      
+      if (validKey.startsWith("{")) {
+        try { const p = JSON.parse(validKey); if(p.private_key) validKey = p.private_key; } catch(e){}
+      }
+      
+      validKey = validKey.replace(/\\r/g, "\r").replace(/\\n/g, "\n").replace(/\r\n/g, "\n").replace(/\n/g, "\n");
+      
+      if (!validKey.includes("BEGIN PRIVATE KEY") && !validKey.includes("BEGIN RSA PRIVATE KEY")) {
+         try {
+           const decoded = Buffer.from(validKey, 'base64').toString('utf-8');
+           if (decoded.includes("BEGIN")) validKey = decoded;
+         } catch(e) {}
+      }
+      
+      if (validKey.includes("BEGIN PRIVATE KEY") && !validKey.includes("BEGIN PRIVATE KEY\n")) {
+          validKey = validKey.replace("-----BEGIN PRIVATE KEY-----", "-----BEGIN PRIVATE KEY-----\n");
+      }
+      if (validKey.includes("END PRIVATE KEY") && !validKey.includes("\n-----END PRIVATE KEY")) {
+          validKey = validKey.replace("-----END PRIVATE KEY-----", "\n-----END PRIVATE KEY-----");
+      }
+
+      crypto.createPrivateKey({ key: validKey, format: 'pem' });
+      return "VALID (Crypto check passed)";
+  } catch(e: any) {
+      return "INVALID: " + e.message;
+  }
+}
 
 export default async function DiagnosticsPage() {
   const collectionNames = [
@@ -22,12 +62,12 @@ export default async function DiagnosticsPage() {
     ? "..." + (process.env.FIREBASE_CLIENT_EMAIL || "").split("@")[1] 
     : "missing";
     
-  const pk = process.env.FIREBASE_PRIVATE_KEY || "";
-  const pkStatus = pk.includes("BEGIN") ? "valid-ish (has BEGIN)" : "invalid (no BEGIN)";
+  const keyStatus = getFormattedKeyStatus();
 
   const results = await Promise.all(
     collectionNames.map(async (name) => {
-      if (!db) return { name, count: null, error: "DB not initialized" }
+      // @ts-ignore
+      if (!db.collection) return { name, count: null, error: "DB not initialized" }
       try {
         const snapshot = await db.collection(name).count().get()
         return { name, count: snapshot.data().count, error: null }
@@ -45,7 +85,7 @@ export default async function DiagnosticsPage() {
           <div className="text-sm text-gray-500 space-y-1">
              <p>Project ID: {projectId}</p>
              <p>Client Email Domain: {clientEmail}</p>
-             <p>Private Key Status: {pkStatus}</p>
+             <p>Key Status: {keyStatus}</p>
              <p>Runtime: Node.js (Forced)</p>
           </div>
         </CardHeader>

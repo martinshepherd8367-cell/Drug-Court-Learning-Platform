@@ -6,42 +6,76 @@ import crypto from 'crypto'
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
 
-function getFormattedKeyStatus() {
+/**
+ * Duplicate of lib/firebase-admin.ts normalization for diagnostics
+ */
+function diagnoseKey(rawKey: string) {
   try {
-      let key = process.env.FIREBASE_PRIVATE_KEY || "";
-      // Minimal naive check first
-      if (!key) return "MISSING";
-      
-      // We essentially repeat the normalization logic here to test validitiy for diagnostics
-      // without exposing key
-      let validKey = key.trim();
-      if (validKey.startsWith('"') && validKey.endsWith('"')) validKey = validKey.slice(1, -1);
-      else if (validKey.startsWith("'") && validKey.endsWith("'")) validKey = validKey.slice(1, -1);
-      
-      if (validKey.startsWith("{")) {
-        try { const p = JSON.parse(validKey); if(p.private_key) validKey = p.private_key; } catch(e){}
-      }
-      
-      validKey = validKey.replace(/\\r/g, "\r").replace(/\\n/g, "\n").replace(/\r\n/g, "\n").replace(/\n/g, "\n");
-      
-      if (!validKey.includes("BEGIN PRIVATE KEY") && !validKey.includes("BEGIN RSA PRIVATE KEY")) {
-         try {
-           const decoded = Buffer.from(validKey, 'base64').toString('utf-8');
-           if (decoded.includes("BEGIN")) validKey = decoded;
-         } catch(e) {}
-      }
-      
-      if (validKey.includes("BEGIN PRIVATE KEY") && !validKey.includes("BEGIN PRIVATE KEY\n")) {
-          validKey = validKey.replace("-----BEGIN PRIVATE KEY-----", "-----BEGIN PRIVATE KEY-----\n");
-      }
-      if (validKey.includes("END PRIVATE KEY") && !validKey.includes("\n-----END PRIVATE KEY")) {
-          validKey = validKey.replace("-----END PRIVATE KEY-----", "\n-----END PRIVATE KEY-----");
-      }
+    if (!rawKey) return { status: "MISSING", details: {} };
 
-      crypto.createPrivateKey({ key: validKey, format: 'pem' });
-      return "VALID (Crypto check passed)";
-  } catch(e: any) {
-      return "INVALID: " + e.message;
+    let key = rawKey.trim();
+    if ((key.startsWith('"') && key.endsWith('"')) || (key.startsWith("'") && key.endsWith("'"))) {
+      key = key.slice(1, -1);
+    }
+    if (key.startsWith("{")) {
+       try { const p = JSON.parse(key); if (p.private_key) key = p.private_key; } catch(e){}
+    }
+    
+    // Normalize newlines
+    key = key.replace(/\\n/g, "\n").replace(/\\r/g, "\r").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+
+    const beginMatch = key.match(/-----BEGIN ?(RSA)? ?PRIVATE KEY-----/);
+    const endMatch = key.match(/-----END ?(RSA)? ?PRIVATE KEY-----/);
+    const hasBegin = !!beginMatch;
+    const hasEnd = !!endMatch;
+
+    let bodyCharCount = 0;
+    let reconstructed = "";
+    
+    if (hasBegin && hasEnd) {
+       const match = key.match(/-----BEGIN ?(RSA)? ?PRIVATE KEY-----([\s\S]*)-----END ?(RSA)? ?PRIVATE KEY-----/);
+       if (match && match[2]) {
+          const rawBody = match[2].replace(/\s/g, "");
+          bodyCharCount = rawBody.length;
+          const chunks = rawBody.match(/.{1,64}/g) || [];
+          reconstructed = `-----BEGIN PRIVATE KEY-----\n${chunks.join("\n")}\n-----END PRIVATE KEY-----\n`;
+       }
+    } else {
+       // Check for raw base64 fallback
+       const cleanKey = key.replace(/\s/g, "");
+       if (/^[A-Za-z0-9+/=]+$/.test(cleanKey) && cleanKey.length > 100) {
+          bodyCharCount = cleanKey.length;
+          const chunks = cleanKey.match(/.{1,64}/g) || [];
+          reconstructed = `-----BEGIN PRIVATE KEY-----\n${chunks.join("\n")}\n-----END PRIVATE KEY-----\n`;
+       }
+    }
+
+    let cryptoParseOk = false;
+    let cryptoError = null;
+    if (reconstructed) {
+       try {
+          crypto.createPrivateKey({ key: reconstructed, format: 'pem' });
+          cryptoParseOk = true;
+       } catch (e: any) {
+          cryptoError = e.message;
+       }
+    } else {
+       cryptoError = "Could not reconstruct PEM (missing headers or invalid format)";
+    }
+
+    return {
+       status: "PRESENT",
+       details: {
+          hasBegin,
+          hasEnd,
+          bodyCharCount,
+          cryptoParseOk,
+          cryptoError
+       }
+    };
+
+  } catch (e: any) {
+    return { status: "ERROR", details: { error: e.message } };
   }
 }
 
@@ -62,7 +96,7 @@ export default async function DiagnosticsPage() {
     ? "..." + (process.env.FIREBASE_CLIENT_EMAIL || "").split("@")[1] 
     : "missing";
     
-  const keyStatus = getFormattedKeyStatus();
+  const keyInfo = diagnoseKey(process.env.FIREBASE_PRIVATE_KEY || "");
 
   const results = await Promise.all(
     collectionNames.map(async (name) => {
@@ -85,8 +119,35 @@ export default async function DiagnosticsPage() {
           <div className="text-sm text-gray-500 space-y-1">
              <p>Project ID: {projectId}</p>
              <p>Client Email Domain: {clientEmail}</p>
-             <p>Key Status: {keyStatus}</p>
              <p>Runtime: Node.js (Forced)</p>
+             
+             <div className="mt-2 p-2 bg-slate-100 rounded">
+                <p className="font-semibold">Private Key Diagnosis:</p>
+                <p>Status: {keyInfo.status}</p>
+                {keyInfo.status === "PRESENT" && (
+                   <div className="ml-2 grid grid-cols-2 gap-x-4 gap-y-1">
+                      <span>Has BEGIN header:</span>
+                      <span>{keyInfo.details.hasBegin ? "Yes" : "No"}</span>
+                      
+                      <span>Has END footer:</span>
+                      <span>{keyInfo.details.hasEnd ? "Yes" : "No"}</span>
+                      
+                      <span>Body Char Count:</span>
+                      <span>{keyInfo.details.bodyCharCount}</span>
+                      
+                      <span>Crypto Parse OK:</span>
+                      <span className={keyInfo.details.cryptoParseOk ? "text-green-600 font-bold" : "text-red-500 font-bold"}>
+                        {keyInfo.details.cryptoParseOk ? "YES" : "NO"}
+                      </span>
+                      
+                      {!keyInfo.details.cryptoParseOk && (
+                        <div className="col-span-2 text-red-500 text-xs mt-1">
+                           Error: {keyInfo.details.cryptoError}
+                        </div>
+                      )}
+                   </div>
+                )}
+             </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -101,12 +162,6 @@ export default async function DiagnosticsPage() {
                  )}
               </div>
             ))}
-            
-            <div className="mt-8 p-4 bg-gray-100 rounded text-xs font-mono">
-               <p>Environment Check:</p>
-               <p>NODE_ENV: {process.env.NODE_ENV}</p>
-               <p>Has Creds: {!!process.env.FIREBASE_PRIVATE_KEY || !!process.env.GOOGLE_CREDENTIALS ? "Yes" : "No"}</p>
-            </div>
           </div>
         </CardContent>
       </Card>

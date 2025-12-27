@@ -1,6 +1,7 @@
 import "server-only"
 import { getEnrollments, getUsers, getPrograms } from "@/lib/firebase-admin"
 import EnrollmentsClient from "./enrollments-client"
+import AdminCreateEnrollment from "@/components/admin-create-enrollment"
 
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
@@ -26,6 +27,8 @@ export default async function EnrollmentManagement() {
          phone: user.phone,
          ...user 
      }))
+     
+     const participants = users.filter(u => u.role === "participant")
 
      programs = p.map(prog => ({
          id: prog.id,
@@ -45,16 +48,29 @@ export default async function EnrollmentManagement() {
            status: enrol.status || "active",
            currentSession: enrol.currentSession || 1,
            progress: enrol.progress || 0,
-           // Resolve names
            participantName: user ? user.name : null,
            programName: program ? program.title : null,
            totalSessions: program ? program.totalSessions : null
         }
      })
+     
+     return (
+        <div className="min-h-screen">
+           {/* Wrap client parts with data */}
+           <div className="container mx-auto px-6 pt-8 flex justify-end">
+              <AdminCreateEnrollment programs={programs} participants={participants} />
+           </div>
+           
+           <EnrollmentsClient 
+              initialEnrollments={enrollments} 
+              allUsers={users} 
+              allPrograms={programs} 
+              loadError={errorMsg} 
+           />
+        </div>
+     )
   } catch (e: any) {
     console.error("Failed to load enrollments data:", e)
-    errorMsg = e.message
+    return <EnrollmentsClient initialEnrollments={[]} allUsers={[]} allPrograms={[]} loadError={e.message} />
   }
-  
-  return <EnrollmentsClient initialEnrollments={enrollments} allUsers={users} allPrograms={programs} loadError={errorMsg} />
 }

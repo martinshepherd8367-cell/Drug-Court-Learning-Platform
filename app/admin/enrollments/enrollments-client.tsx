@@ -156,11 +156,6 @@ export default function EnrollmentsClient({ initialEnrollments, allUsers, allPro
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Enrollment Management</h1>
               <p className="text-gray-600 mt-1">Manage participant enrollments and progress</p>
-            </div>
-            <Button onClick={() => setShowEnroll(true)} className="bg-green-600 hover:bg-green-700">
-              <Plus className="h-4 w-4 mr-2" />
-              Enroll Participant
-            </Button>
           </div>
         </div>
 

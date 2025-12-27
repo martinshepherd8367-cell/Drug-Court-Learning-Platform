@@ -30,11 +30,14 @@ export default async function ParticipantDashboard({ searchParams }: { searchPar
 
   // C) My Enrollments
   const myEnrollments = allEnrollments.filter(e => e.userId === selectedParticipantId)
-  const myProgramIds = myEnrollments.map(e => e.programId)
-
+  
   // D) My Schedule
-  // Show events for programs I am enrolled in
-  const myEvents = allEvents.filter(e => myProgramIds.includes(e.programId) && e.active !== false)
+  // Filter strictly by scheduleEventId assigned in enrollment
+  const myScheduleEventIds = myEnrollments
+    .map(e => e.scheduleEventId)
+    .filter((id): id is string => !!id)
+
+  const myEvents = allEvents.filter(e => myScheduleEventIds.includes(e.id))
 
   // Sort events by day
   const dayOrder:  Record<string, number> = { "Monday": 1, "Tuesday": 2, "Wednesday": 3, "Thursday": 4, "Friday": 5, "Saturday": 6, "Sunday": 7 };
@@ -97,7 +100,7 @@ export default async function ParticipantDashboard({ searchParams }: { searchPar
                     </h2>
                     <div className="space-y-3">
                        {myEvents.length === 0 ? (
-                           <p className="text-gray-500 italic">No upcoming classes found.</p>
+                           <p className="text-gray-500 italic">No scheduled classes yet.</p>
                        ) : (
                            myEvents.map(event => {
                                const prog = allPrograms.find(p => p.id === event.programId)

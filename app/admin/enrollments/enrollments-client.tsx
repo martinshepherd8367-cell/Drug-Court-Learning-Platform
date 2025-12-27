@@ -1,5 +1,6 @@
 "use client"
 
+import AdminCreateEnrollment from "@/components/admin-create-enrollment"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { RoleNav } from "@/components/role-nav"
@@ -141,5 +142,106 @@ export default function EnrollmentsClient({ initialEnrollments, allUsers, allPro
      return <div className="p-8 text-red-600">Error: {loadError}</div>
   }
 
-  return <div className="p-4">Enrollments Temporarily Disabled</div>
+  return (
+    <div className="min-h-screen">
+      <RoleNav />
+      <main className="container mx-auto px-6 py-8">
+        <div className="mb-8">
+          <Button variant="ghost" onClick={() => router.push("/admin")} className="mb-4">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Dashboard
+          </Button>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Enrollment Management</h1>
+              <p className="text-gray-600 mt-1">Manage participant enrollments and progress</p>
+            </div>
+            <div>
+               <AdminCreateEnrollment onEnrollmentCreated={console.log} />
+            </div>
+          </div>
+        </div>
+        {/* Enrollments Table */}
+        <Card className="card-transparent">
+          <CardHeader>
+            <CardTitle>All Enrollments</CardTitle>
+            <CardDescription>{enrollments.length} total enrollments</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {enrollments.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Participant</TableHead>
+                    <TableHead>Program</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Progress</TableHead>
+                    <TableHead>Next Session</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {enrollments.map((enrollment) => (
+                    <TableRow key={enrollment.id}>
+                      <TableCell className="font-medium">
+                        <button 
+                          onClick={() => handleParticipantClick({ id: enrollment.userId, name: enrollment.participantName || "Unknown", email: "user@example.com", role: "participant", createdAt: new Date(), lastLogin: new Date() } as any)} 
+                          className="hover:underline text-left"
+                        >
+                          {enrollment.participantName || enrollment.userId}
+                        </button>
+                      </TableCell>
+                      <TableCell>{enrollment.programName || enrollment.programId}</TableCell>
+                      <TableCell>{getStatusBadge(enrollment.status)}</TableCell>
+                      <TableCell>
+                        <div className="w-[100px]">
+                          <div className="flex justify-between mb-1 text-xs">
+                            <span>{enrollment.progress}%</span>
+                          </div>
+                          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-green-500 rounded-full"
+                              style={{ width: `${enrollment.progress}%` }}
+                            />
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>{enrollment.currentSession}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          {enrollment.status === "active" ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleToggleStatus(enrollment.id, "paused")}
+                            >
+                              <Pause className="h-4 w-4" />
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleToggleStatus(enrollment.id, "active")}
+                            >
+                              <Play className="h-4 w-4" />
+                            </Button>
+                          )}
+                          {/* More actions can go here */}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <div className="text-center py-12 text-gray-500">
+                <p>No enrollments yet.</p>
+                <p className="text-sm">Enroll participants in programs to get started.</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </main>
+    </div>
+  )
 }

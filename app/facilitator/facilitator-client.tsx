@@ -73,7 +73,7 @@ export default function FacilitatorDashboard({ scheduleEvents }: { scheduleEvent
   const [makeupAssignButtonState, setMakeupAssignButtonState] = useState<Record<string, boolean>>({})
 
   // Use passed schedule events
-  const scheduleClasses = scheduleEvents || []
+
   const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
   const timeSlots = [
     "9:00 AM",
@@ -284,5 +284,11 @@ export default function FacilitatorDashboard({ scheduleEvents }: { scheduleEvent
     }
   }
 
-  return <div className="p-4">Facilitator Dashboard Temporarily Disabled</div>
+  return (
+    <div className="min-h-screen flex flex-col">
+       <div className="p-8 text-center text-gray-500">
+           Dashboard content goes here (Restoration in progress)
+       </div>
+    </div>
+  )
 }

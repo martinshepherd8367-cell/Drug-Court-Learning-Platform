@@ -29,11 +29,11 @@ interface MessageDisplay {
   fromId?: string
 }
 
-export default function ParticipantDashboard() {
-  const router = useRouter()
 export default function ParticipantDashboard({ scheduleEvents }: { scheduleEvents: any[] }) {
   const router = useRouter()
   const {
+    programs,
+    enrollments,
     journalEntries,
     addJournalEntry,
     currentUser,
@@ -123,14 +123,6 @@ export default function ParticipantDashboard({ scheduleEvents }: { scheduleEvent
            programSlug: e.programSlug || "unknown" 
        } 
   }) 
-
-  const getClassForSlot = (day: string, time: string) => {
-    return participantSchedule[day]?.[time]
-  }
-      session: assignment.missedSessionNumber,
-      programSlug: "makeup",
-    }
-  })
 
   const getClassForSlot = (day: string, time: string) => {
     return participantSchedule[day]?.[time]

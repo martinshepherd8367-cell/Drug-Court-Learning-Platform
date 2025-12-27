@@ -74,70 +74,6 @@ export default function FacilitatorDashboard({ scheduleEvents }: { scheduleEvent
 
   // Use passed schedule events
   const scheduleClasses = scheduleEvents || []
-      time: "2:00 PM",
-      program: "Prime Solutions",
-      session: 2,
-      location: "Room A",
-      facilitator: "Martin",
-      enrolled: 6,
-    },
-    {
-      id: "3",
-      name: "CAT",
-      day: "Tuesday",
-      time: "10:00 AM",
-      program: "CAT",
-      session: 1,
-      location: "Room B",
-      facilitator: "Martin",
-      enrolled: 5,
-    },
-    {
-      id: "4",
-      name: "Prime Solutions",
-      day: "Wednesday",
-      time: "10:00 AM",
-      program: "Prime Solutions",
-      session: 3,
-      location: "Room A",
-      facilitator: "Martin",
-      enrolled: 8,
-    },
-    {
-      id: "5",
-      name: "Relapse Prevention",
-      day: "Wednesday",
-      time: "2:00 PM",
-      program: "Relapse Prevention",
-      session: 1,
-      location: "Room C",
-      facilitator: "Martin",
-      enrolled: 4,
-    },
-    {
-      id: "6",
-      name: "Prime Solutions",
-      day: "Thursday",
-      time: "10:00 AM",
-      program: "Prime Solutions",
-      session: 4,
-      location: "Room A",
-      facilitator: "Martin",
-      enrolled: 7,
-    },
-    {
-      id: "7",
-      name: "DBT Skills",
-      day: "Friday",
-      time: "10:00 AM",
-      program: "DBT Skills",
-      session: 1,
-      location: "Room B",
-      facilitator: "Martin",
-      enrolled: 6,
-    },
-  ]
-
   const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
   const timeSlots = [
     "9:00 AM",
@@ -350,7 +286,6 @@ export default function FacilitatorDashboard({ scheduleEvents }: { scheduleEvent
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Header */}
       <header className="border-b border-gray-200/50 header-transparent sticky top-0 z-40">
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">

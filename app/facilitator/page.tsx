@@ -59,7 +59,16 @@ export default async function FacilitatorDashboard({ searchParams }: { searchPar
                     <div className="grid gap-4 md:grid-cols-2">
                        {myEvents.map(event => {
                           const program = allPrograms.find(p => p.id === event.programId)
-                          const enrolledCount = allEnrollments.filter(e => e.programId === event.programId && e.status === 'active').length
+                          
+                          // Filter participants strictly by scheduleEventId
+                          const eventEnrollments = allEnrollments.filter(e => e.scheduleEventId === event.id)
+                          
+                          const participantNames = eventEnrollments.map(e => {
+                              const user = allUsers.find(u => u.id === e.userId)
+                              return user ? user.name : "Unknown User"
+                          })
+
+                          const enrolledCount = eventEnrollments.length
                           
                           return (
                              <Card key={event.id} className="border-l-4 border-l-blue-600">
@@ -84,6 +93,17 @@ export default async function FacilitatorDashboard({ searchParams }: { searchPar
                                       <div className="flex items-center gap-2">
                                          <Users className="w-4 h-4" /> {enrolledCount} Participants
                                       </div>
+                                      {/* Roster List */}
+                                      {enrolledCount > 0 && (
+                                         <div className="mt-3 pt-3 border-t border-gray-100">
+                                            <p className="text-xs font-semibold text-gray-500 mb-1">Roster:</p>
+                                            <ul className="text-sm text-gray-700 space-y-0.5">
+                                               {participantNames.map((name, i) => (
+                                                  <li key={i}>• {name}</li>
+                                               ))}
+                                            </ul>
+                                         </div>
+                                      )}
                                    </div>
                                 </CardContent>
                              </Card>

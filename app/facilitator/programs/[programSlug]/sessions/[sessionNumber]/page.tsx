@@ -697,10 +697,10 @@ export default function FacilitatorSessionView() {
               <ScrollArea className="h-[calc(100vh-260px)]">
                 <div className="space-y-4">
                   {/* Takeaways Section */}
-                  {takeaways.filter(t => t.sessionId === session.id).length > 0 && (
+                  {takeaways.filter(t => t.sessionId === `${program.id}-${session.sessionNumber}`).length > 0 && (
                     <div className="space-y-2">
                       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-1">Takeaways</p>
-                      {takeaways.filter(t => t.sessionId === session.id).map((t) => {
+                      {takeaways.filter(t => t.sessionId === `${program.id}-${session.sessionNumber}`).map((t) => {
                         const participant = users.find((u) => u.id === t.participantId)
                         return (
                           <Card key={t.id} className="bg-blue-50 border-blue-100">
@@ -879,33 +879,28 @@ export default function FacilitatorSessionView() {
               onClick={async () => {
                 setIsEnding(true);
                 try {
-                  // 1. Save Takeaways
-                  const takeawayPromises = Object.entries(sessionTakeaways)
+                  // Prepare takeaways data
+                  const takeaways = Object.entries(sessionTakeaways)
                     .filter(([pId, content]) => content.trim() !== "" && sessionAttendance[pId] === "present")
-                    .map(([pId, content]) => {
-                      return addTakeaway({
-                        participantId: pId,
-                        sessionId: session.id,
-                        classId: classId || "individual",
-                        content: content.trim(),
-                        createdBy: currentUser?.id || "unknown",
-                        createdAt: new Date().toISOString()
-                      });
-                    });
+                    .map(([pId, content]) => ({
+                      participantId: pId,
+                      content: content.trim()
+                    }));
 
-                  await Promise.all(takeawayPromises);
-
-                  // 2. Complete Session
-                  await completeSession({
+                  // Atomic Completion Call
+                  const result = await completeSession({
                     classId: classId || "generic",
                     programId: program.id,
                     sessionNumber: session.sessionNumber,
                     facilitatorId: currentUser?.id || "unknown",
-                    attendance: sessionAttendance
+                    attendance: sessionAttendance,
+                    takeaways
                   });
 
-                  setSessionEnded(true);
-                  setShowEndSessionDialog(false);
+                  if (result.success) {
+                    setSessionEnded(true);
+                    setShowEndSessionDialog(false);
+                  }
                 } catch (e) {
                   console.error(e);
                 } finally {

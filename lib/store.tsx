@@ -123,7 +123,8 @@ interface StoreState {
     programId: string,
     sessionNumber: number,
     facilitatorId: string,
-    attendance: Record<string, "present" | "absent" | "excused">
+    attendance: Record<string, "present" | "absent" | "excused">,
+    takeaways?: { participantId: string, content: string }[]
   }) => Promise<any>
 
   // CRUD helpers
@@ -314,16 +315,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     programId: string,
     sessionNumber: number,
     facilitatorId: string,
-    attendance: Record<string, "present" | "absent" | "excused">
+    attendance: Record<string, "present" | "absent" | "excused">,
+    takeaways?: { participantId: string, content: string }[]
   }) => {
     try {
       const res = await fetch("/api/facilitator/session/complete", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
       });
       const result = await res.json();
       if (result.success) {
-        // Optimistic update of completedSessions
+        // Only update local state if backend confirms success
+        const sessionId = `${data.programId}-${data.sessionNumber}`;
         const newCompleted: CompletedSession = {
           id: result.id,
           classId: data.classId,
@@ -337,12 +341,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         };
         setCompletedSessions(prev => [...prev, newCompleted]);
 
-        // Optimistic update of attendance
+        // attendance update
         setAttendance(prev => {
           const newRecords: Attendance[] = Object.entries(data.attendance).map(([pId, status]) => ({
             id: `att-${Date.now()}-${pId}`,
             participantId: pId,
-            sessionId: `${data.programId}-${data.sessionNumber}`,
+            sessionId: sessionId,
             classId: data.classId,
             attended: status === "present",
             status: status as any,
@@ -350,6 +354,22 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           }));
           return [...prev, ...newRecords];
         });
+
+        // takeaways update
+        if (data.takeaways) {
+          setTakeaways(prev => {
+            const newTs: Takeaway[] = data.takeaways!.map((t, idx) => ({
+              id: `tk-${Date.now()}-${idx}`,
+              participantId: t.participantId,
+              sessionId: sessionId,
+              classId: data.classId,
+              content: t.content,
+              createdBy: data.facilitatorId,
+              createdAt: new Date().toISOString()
+            }));
+            return [...prev, ...newTs];
+          });
+        }
       }
       return result;
     } catch (e) {

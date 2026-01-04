@@ -234,10 +234,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         if (data.journalEntries?.length) setJournalEntries(data.journalEntries);
         if (data.homeworkSubmissions?.length) setHomeworkSubmissions(data.homeworkSubmissions);
         if (data.attendance?.length) setAttendance(data.attendance);
+        if (data.messages?.length) setMessages(data.messages);
         if (data.completedSessions?.length) setCompletedSessions(data.completedSessions);
         if (data.takeaways?.length) setTakeaways(data.takeaways);
 
-        console.log(`Hydrated: ${data.users?.length} users, ${data.completedSessions?.length} completed sessions, ${data.takeaways?.length} takeaways, ${data.attendance?.length} attendance records`);
+        console.log(`Hydrated: ${data.users?.length} users, ${data.messages?.length} messages, ${data.completedSessions?.length} completed sessions, ${data.takeaways?.length} takeaways, ${data.attendance?.length} attendance records`);
         setIsHydrated(true);
       } catch (e) {
         console.error("Hydration failed, falling back to mock:", e);

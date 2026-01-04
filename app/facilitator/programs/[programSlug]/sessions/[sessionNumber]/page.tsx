@@ -75,6 +75,7 @@ export default function FacilitatorSessionView() {
     addTakeaway,
     takeaways,
     completedSessions,
+    attendance,
     currentUser
   } = useStore()
 
@@ -112,10 +113,11 @@ export default function FacilitatorSessionView() {
         const eKey = `${e.programId}-${e.schedule.day}-${e.schedule.time}-${e.schedule.room}`
         return eKey === classId
       }
-      return true
+      // If no specific classId context, only show participants assigned to this facilitator
+      return e.schedule?.facilitatorId === currentUser?.id
     })
     return activeEnrollments.map((e) => users.find((u) => u.id === e.participantId)).filter(Boolean) as any[]
-  }, [program, getEnrollmentsByProgram, classId, users])
+  }, [program, getEnrollmentsByProgram, classId, users, currentUser])
 
   // Check if session is already completed
   const isCompleted = useMemo(() => {
@@ -127,18 +129,40 @@ export default function FacilitatorSessionView() {
     )
   }, [completedSessions, classId, program, session])
 
-  // Initialize attendance when participants load
+  // Initialize attendance when participants or attendance data changes
   useEffect(() => {
+    if (!program || !session) return
+    const sessionId = `${program.id}-${session.sessionNumber}`
+    const existingAttendance = attendance.filter(a => a.sessionId === sessionId && (a.classId === classId || !classId))
+
     const initialAttendance: Record<string, "present" | "absent" | "excused"> = {}
     participants.forEach(p => {
-      initialAttendance[p.id] = "present"
+      const record = existingAttendance.find(r => r.participantId === p.id)
+      initialAttendance[p.id] = record ? record.status : "present"
     })
     setSessionAttendance(initialAttendance)
-  }, [participants])
+    // Initialize takeaways
+    const initialTakeaways: Record<string, string> = {}
+    const existingTakeaways = takeaways.filter(t => t.sessionId === sessionId && (t.classId === classId || !classId))
+    existingTakeaways.forEach(t => {
+      initialTakeaways[t.participantId] = t.content
+    })
+    setSessionTakeaways(initialTakeaways)
+  }, [participants, attendance, takeaways, program, session, classId])
 
   // Get active activity run
   const activeActivityRun = session ? getActiveActivityRun(session.id) : undefined
   const activityResponses = activeActivityRun ? getResponsesForActivity(activeActivityRun.id) : []
+
+  // Initialize sessionStarted if there's an active run or it's already completed
+  useEffect(() => {
+    if (activeActivityRun || isCompleted) {
+      setSessionStarted(true)
+    }
+    if (isCompleted) {
+      setSessionEnded(true)
+    }
+  }, [activeActivityRun, isCompleted])
 
   // Timer effect
   useEffect(() => {

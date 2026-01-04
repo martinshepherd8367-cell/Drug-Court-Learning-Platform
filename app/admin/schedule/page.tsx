@@ -9,12 +9,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, Users, Calendar, Clock, MapPin, Plus, Settings, QrCode } from "lucide-react"
+import { ArrowLeft, Users, Calendar, Clock, MapPin, Plus, Settings, QrCode, CheckCircle } from "lucide-react"
 import { useStore } from "@/lib/store"
 
 export default function AdminSchedulePage() {
   const router = useRouter()
-  const { users, programs, enrollments, makeupGroup, makeupAssignments, updateMakeupGroup } = useStore()
+  const { users, programs, enrollments, makeupGroup, makeupAssignments, updateMakeupGroup, completedSessions } = useStore()
 
   const [showClassDetail, setShowClassDetail] = useState(false)
   const [showParticipantList, setShowParticipantList] = useState(false)
@@ -71,6 +71,12 @@ export default function AdminSchedulePage() {
     let classEntry = acc[day][time].find((c: any) => c.programId === enrollment.programId && c.room === room);
 
     if (!classEntry) {
+      const isCompleted = completedSessions.some(cs =>
+        cs.classId === `${enrollment.programId}-${day}-${time}-${room}` &&
+        cs.programId === enrollment.programId &&
+        cs.sessionNumber === enrollment.currentSessionNumber
+      );
+
       classEntry = {
         programId: enrollment.programId,
         program: program?.name || "Unknown Program",
@@ -81,13 +87,14 @@ export default function AdminSchedulePage() {
         room: room,
         day: day,
         time: time,
-        participants: []
+        participants: [],
+        isCompleted
       };
       acc[day][time].push(classEntry);
     }
 
-    classEntry.enrolled++;
     classEntry.participants.push(enrollment.participantId);
+    classEntry.enrolled = classEntry.participants.length;
 
     return acc;
   }, {} as Record<string, Record<string, any[]>>);
@@ -172,11 +179,17 @@ export default function AdminSchedulePage() {
                                 setSelectedClass({ ...cls, day, time, room: cls.room })
                                 setShowClassDetail(true)
                               }}
-                              className={`p-1 rounded text-left text-xs border-2 hover:opacity-80 transition-opacity ${getProgressColor(cls.session, cls.totalSessions)}`}
+                              className={`p-1 rounded text-left text-xs border-2 hover:opacity-80 transition-opacity ${cls.isCompleted ? "bg-gray-100 border-gray-300 text-gray-500" : getProgressColor(cls.session, cls.totalSessions)}`}
                             >
-                              <div className="font-semibold truncate">{cls.program}</div>
+                              <div className="flex items-center justify-between">
+                                <div className="font-semibold truncate">{cls.program}</div>
+                                {cls.isCompleted && <CheckCircle className="h-3 w-3" />}
+                              </div>
                               <div className="truncate">{cls.facilitator.split(" ")[0]}</div>
-                              <div>{cls.enrolled} enrolled</div>
+                              <div className="flex items-center justify-between">
+                                <span>{cls.enrolled} enrolled</span>
+                                {cls.isCompleted && <span className="text-[10px] uppercase font-bold">Done</span>}
+                              </div>
                             </button>
                           ))}
                         </div>
@@ -225,11 +238,17 @@ export default function AdminSchedulePage() {
                                 setSelectedClass({ ...cls, day, time, room: cls.room })
                                 setShowClassDetail(true)
                               }}
-                              className={`p-1 rounded text-left text-xs border-2 hover:opacity-80 transition-opacity ${getProgressColor(cls.session, cls.totalSessions)}`}
+                              className={`p-1 rounded text-left text-xs border-2 hover:opacity-80 transition-opacity ${cls.isCompleted ? "bg-gray-100 border-gray-300 text-gray-500" : getProgressColor(cls.session, cls.totalSessions)}`}
                             >
-                              <div className="font-semibold truncate">{cls.program}</div>
+                              <div className="flex items-center justify-between">
+                                <div className="font-semibold truncate">{cls.program}</div>
+                                {cls.isCompleted && <CheckCircle className="h-3 w-3" />}
+                              </div>
                               <div className="truncate">{cls.facilitator.split(" ")[0]}</div>
-                              <div>{cls.enrolled} enrolled</div>
+                              <div className="flex items-center justify-between">
+                                <span>{cls.enrolled} enrolled</span>
+                                {cls.isCompleted && <span className="text-[10px] uppercase font-bold">Done</span>}
+                              </div>
                             </button>
                           ))}
                         </div>

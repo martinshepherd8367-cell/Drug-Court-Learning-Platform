@@ -56,21 +56,8 @@ export default function FacilitatorDashboard() {
     assignMakeupWork,
     addMessage,
     generateClassQRCode,
+    completedSessions,
   } = useStore()
-
-  const classes = useMemo(() => {
-    return programs.flatMap((program) =>
-      program.sessions.map((session, idx) => ({
-        id: `${program.id}-session-${session.sessionNumber}`,
-        name: program.name,
-        session: session.sessionNumber,
-        day: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"][idx % 5],
-        time: ["9:00 AM", "10:30 AM", "12:00 PM", "1:00 PM", "4:00 PM", "5:30 PM"][idx % 6],
-        location: `Room ${100 + (idx % 5)}`,
-        enrolled: enrollments.filter((e) => e.programId === program.id).length,
-      })),
-    )
-  }, [programs, enrollments])
 
   // Modal states
   const [showViewParticipants, setShowViewParticipants] = useState(false)
@@ -83,8 +70,8 @@ export default function FacilitatorDashboard() {
   const [selectedClass, setSelectedClass] = useState<any>(null)
   const [selectedParticipant, setSelectedParticipant] = useState<any>(null)
   const [showMessageCompose, setShowMessageCompose] = useState(false)
-  const [composeToRole, setComposeToRole] = useState<UserRole | "">("")
   const [composeToId, setComposeToId] = useState("")
+  const [composeToRole, setComposeToRole] = useState<UserRole | "">("")
   const [composeSearch, setComposeSearch] = useState("")
   const [messageText, setMessageText] = useState("")
   const [messageRecipient, setMessageRecipient] = useState("")
@@ -92,7 +79,7 @@ export default function FacilitatorDashboard() {
   const [selectedClassForParticipants, setSelectedClassForParticipants] = useState<string | null>(null)
   const [selectedHomework, setSelectedHomework] = useState<any | null>(null)
   const [feedbackText, setFeedbackText] = useState("")
-  const [showStartClass, setShowStartClass] = useState(false) // Add state for start class modal
+  const [showStartClass, setShowStartClass] = useState(false)
   const [messageError, setMessageError] = useState<string | null>(null)
   const [isSending, setIsSending] = useState(false)
 
@@ -117,7 +104,7 @@ export default function FacilitatorDashboard() {
   const [qrGpsSet, setQrGpsSet] = useState(false)
   const [qrGpsLat, setQrGpsLat] = useState<number | null>(null)
   const [qrGpsLng, setQrGpsLng] = useState<number | null>(null)
-  const [qrSelectedClass, setQrSelectedClass] = useState<(typeof classes)[0] | null>(null)
+  const [qrSelectedClass, setQrSelectedClass] = useState<any>(null)
   const [generatedQRCode, setGeneratedQRCode] = useState<string | null>(null)
   const [gpsError, setGpsError] = useState<string | null>(null)
 
@@ -134,8 +121,14 @@ export default function FacilitatorDashboard() {
       if (!classMap[key]) {
         const prog = programs.find(p => p.id === e.programId);
         const fac = users.find(u => u.id === e.schedule!.facilitatorId);
+        const isCompleted = completedSessions.some(cs =>
+          cs.classId === key &&
+          cs.programId === e.programId &&
+          cs.sessionNumber === e.currentSessionNumber
+        );
+
         classMap[key] = {
-          id: key, // Unique ID for the class instance
+          id: key,
           name: prog?.name || "Unknown Program",
           day: e.schedule.day,
           time: e.schedule.time,
@@ -143,12 +136,14 @@ export default function FacilitatorDashboard() {
           session: e.currentSessionNumber,
           location: e.schedule.room,
           facilitator: fac?.name || "Unknown Facilitator",
+          programId: e.programId,
           enrolled: 0,
-          participants: []
+          participants: [],
+          isCompleted
         };
       }
       classMap[key].participants.push(e);
-      classMap[key].enrolled++;
+      classMap[key].enrolled = classMap[key].participants.length;
     });
     return Object.values(classMap);
   }, [enrollments, programs, users]);
@@ -167,6 +162,13 @@ export default function FacilitatorDashboard() {
     "6:00 PM",
   ]
 
+  // Authoritative list of participants for this facilitator
+  const myParticipantIds = useMemo(() => {
+    return enrollments
+      .filter(e => e.status === 'active' && e.schedule?.facilitatorId === currentUser?.id)
+      .map(e => e.participantId);
+  }, [enrollments, currentUser]);
+
   const facilitatorMessages = useMemo(() => {
     if (!currentUser) return [];
     return messages
@@ -175,47 +177,51 @@ export default function FacilitatorDashboard() {
   }, [messages, currentUser]);
 
   const journalSubmissions = useMemo(() => {
-    return (journalEntries || []).map((entry: JournalEntry) => {
-      const user = users.find((u: User) => u.id === entry.participantId);
-      return {
-        id: entry.id,
-        participant: user?.name || "Unknown",
-        participantId: entry.participantId,
-        date: new Date(entry.submittedAt),
-        content: entry.content,
-        late: false, // Simple fallback
-      };
-    });
-  }, [journalEntries, users]);
+    return (journalEntries || [])
+      .filter(entry => myParticipantIds.includes(entry.participantId))
+      .map((entry: JournalEntry) => {
+        const user = users.find((u: User) => u.id === entry.participantId);
+        return {
+          id: entry.id,
+          participant: user?.name || "Unknown",
+          participantId: entry.participantId,
+          date: new Date(entry.submittedAt),
+          content: entry.content,
+          late: false, // Simple fallback
+        };
+      });
+  }, [journalEntries, users, myParticipantIds]);
 
   useEffect(() => {
-    const list = (homeworkSubmissions || []).map((sub: HomeworkSubmission) => {
-      const user = users.find((u: User) => u.id === sub.participantId);
-      // HomeworkSubmission might not have programId anymore, try to find it via session
-      let prog: Program | undefined;
-      let sess: Session | undefined;
+    const list = (homeworkSubmissions || [])
+      .filter(sub => myParticipantIds.includes(sub.participantId))
+      .map((sub: HomeworkSubmission) => {
+        const user = users.find((u: User) => u.id === sub.participantId);
+        // HomeworkSubmission might not have programId anymore, try to find it via session
+        let prog: Program | undefined;
+        let sess: Session | undefined;
 
-      for (const p of programs) {
-        const s = p.sessions.find(s => s.id === sub.sessionId);
-        if (s) {
-          prog = p;
-          sess = s;
-          break;
+        for (const p of programs) {
+          const s = p.sessions.find(s => s.id === sub.sessionId);
+          if (s) {
+            prog = p;
+            sess = s;
+            break;
+          }
         }
-      }
 
-      return {
-        id: sub.id,
-        participant: user?.name || "Unknown",
-        participantId: sub.participantId,
-        session: prog ? `${prog.name} - Session ${sess?.sessionNumber || "?"}` : "Unknown Session",
-        title: sess?.title || "Homework",
-        submitted: new Date(sub.submittedAt),
-        status: sub.status === "revision_requested" ? "revision" : sub.status,
-      } as any;
-    });
+        return {
+          id: sub.id,
+          participant: user?.name || "Unknown",
+          participantId: sub.participantId,
+          session: prog ? `${prog.name} - Session ${sess?.sessionNumber || "?"}` : "Unknown Session",
+          title: sess?.title || "Homework",
+          submitted: new Date(sub.submittedAt),
+          status: sub.status === "revision_requested" ? "revision" : sub.status,
+        } as any;
+      });
     setHomeworkList(list);
-  }, [homeworkSubmissions, users, programs]);
+  }, [homeworkSubmissions, users, programs, myParticipantIds]);
 
   const handleApproveHomework = (hw: (typeof homeworkSubmissions)[0]) => {
     setProcessedHomework((prev) => ({ ...prev, [hw.id]: "approved" }))
@@ -241,7 +247,7 @@ export default function FacilitatorDashboard() {
 
   // Get participants enrolled in a program
   const getParticipantsInProgram = (programId: string) => {
-    const programEnrollments = enrollments.filter((e: Enrollment) => e.programId === programId && e.status === "active")
+    const programEnrollments = enrollments.filter((e: Enrollment) => e.programId === programId && e.status === "active" && e.schedule?.facilitatorId === currentUser?.id)
     return programEnrollments.map((e: Enrollment) => {
       const user = users.find((u: User) => u.id === e.participantId)
       return { ...e, user }
@@ -533,19 +539,27 @@ export default function FacilitatorDashboard() {
                           return (
                             <td
                               key={`${day}-${time}`}
-                              className={`border border-gray-400 p-1 min-h-[60px] ${cls ? "bg-green-100/90 cursor-pointer hover:bg-green-200/90" : "bg-white/60"
+                              className={`border border-gray-400 p-1 min-h-[60px] ${cls
+                                ? cls.isCompleted
+                                  ? "bg-gray-100/90 cursor-not-allowed"
+                                  : "bg-green-100/90 cursor-pointer hover:bg-green-200/90"
+                                : "bg-white/60"
                                 }`}
-                              onClick={() => cls && setSelectedScheduleClass(cls)}
+                              onClick={() => cls && !cls.isCompleted && setSelectedScheduleClass(cls)}
                             >
                               {cls && (
                                 <div className="text-xs">
-                                  <div className="font-bold text-green-800">{cls.name}</div>
-                                  <div className="text-green-600">Session {cls.session}</div>
+                                  <div className={`font-bold ${cls.isCompleted ? "text-gray-500" : "text-green-800"}`}>{cls.name}</div>
+                                  <div className={cls.isCompleted ? "text-gray-400" : "text-green-600"}>Session {cls.session}</div>
                                   <div className="text-gray-600 flex items-center justify-between">
                                     <span>{cls.location}</span>
-                                    <span className="opacity-70 italic text-[10px]">
-                                      {cls.location.toLowerCase().includes("virtual") || cls.location.toLowerCase().includes("zoom") ? "Virtual" : "In-person"}
-                                    </span>
+                                    {cls.isCompleted ? (
+                                      <Badge variant="outline" className="text-[10px] h-4 px-1 bg-gray-50">Completed</Badge>
+                                    ) : (
+                                      <span className="opacity-70 italic text-[10px]">
+                                        {cls.location.toLowerCase().includes("virtual") || cls.location.toLowerCase().includes("zoom") ? "Virtual" : "In-person"}
+                                      </span>
+                                    )}
                                   </div>
                                 </div>
                               )}
@@ -1168,12 +1182,12 @@ export default function FacilitatorDashboard() {
                   className="w-full mt-1 p-2 border rounded-md bg-white/50"
                   value={qrSelectedClass?.id || ""}
                   onChange={(e) => {
-                    const cls = classes.find((c) => c.id === e.target.value)
+                    const cls = scheduleClasses.find((c) => c.id === e.target.value)
                     setQrSelectedClass(cls || null)
                   }}
                 >
                   <option value="">Choose a class...</option>
-                  {classes.map((cls) => (
+                  {scheduleClasses.map((cls) => (
                     <option key={cls.id} value={cls.id}>
                       {cls.name} - {cls.day} {cls.time}
                     </option>

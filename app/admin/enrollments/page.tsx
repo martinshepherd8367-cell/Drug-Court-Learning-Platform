@@ -35,12 +35,13 @@ import {
   MapPin,
   FileText,
   Trash2,
+  MessageSquare,
 } from "lucide-react"
 import type { User } from "@/lib/types"
 
 export default function EnrollmentManagement() {
   const router = useRouter()
-  const { currentUser, users, programs, enrollments, updateEnrollment, addEnrollment, removeEnrollment, addMessage } = useStore()
+  const { currentUser, users, programs, enrollments, attendance, takeaways, updateEnrollment, addEnrollment, removeEnrollment, addMessage } = useStore()
 
   const [showEnroll, setShowEnroll] = useState(false)
   const [selectedParticipant, setSelectedParticipant] = useState("")
@@ -564,6 +565,63 @@ export default function EnrollmentManagement() {
                   ) : (
                     <p className="text-gray-500 text-sm italic">No active enrollments</p>
                   )}
+                </div>
+              </div>
+
+              {/* Attendance History Section */}
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4" />
+                  Attendance History
+                </h3>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {(() => {
+                    const myAttendance = attendance.filter(a => a.participantId === selectedParticipantDetail.id);
+                    if (myAttendance.length === 0) return <p className="text-gray-500 text-sm italic">No attendance records found</p>;
+
+                    return myAttendance.sort((a, b) => b.sessionId.localeCompare(a.sessionId)).map((record) => {
+                      const prog = programs.find(p => record.sessionId.startsWith(p.id));
+                      return (
+                        <div key={record.id} className="flex items-center justify-between bg-white border p-2 rounded text-sm">
+                          <div>
+                            <span className="font-medium">{prog?.name || "Program"}</span>
+                            <span className="text-gray-500 ml-2">Session {record.sessionId.split('-').pop()}</span>
+                          </div>
+                          <Badge variant={record.status === "present" ? "default" : "outline"}
+                            className={record.status === "present" ? "bg-green-600" : record.status === "absent" ? "text-red-600 border-red-600" : "text-amber-600 border-amber-600"}>
+                            {record.status.charAt(0).toUpperCase() + record.status.slice(1)}
+                          </Badge>
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+              </div>
+
+              {/* Takeaways Section */}
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4" />
+                  Facilitator Takeaways
+                </h3>
+                <div className="space-y-2">
+                  {(() => {
+                    const myTakeaways = takeaways.filter(t => t.participantId === selectedParticipantDetail.id);
+                    if (myTakeaways.length === 0) return <p className="text-gray-500 text-sm italic">No takeaways found</p>;
+
+                    return myTakeaways.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((takeaway) => {
+                      const creator = users.find(u => u.id === takeaway.createdBy);
+                      return (
+                        <div key={takeaway.id} className="bg-blue-50/50 p-3 rounded-lg border border-blue-100">
+                          <p className="text-sm text-gray-800 mb-1">{takeaway.content}</p>
+                          <div className="flex justify-between items-center text-[10px] text-gray-500">
+                            <span>From: {creator?.name || "Facilitator"}</span>
+                            <span>{new Date(takeaway.createdAt).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                      );
+                    });
+                  })()}
                 </div>
               </div>
 

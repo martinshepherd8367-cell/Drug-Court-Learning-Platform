@@ -12,10 +12,11 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Calendar, Mail, ClipboardList, Circle, ChevronRight, Send, Trophy, Star, Award, Flame } from "lucide-react"
+import { Calendar, Mail, ClipboardList, Circle, ChevronRight, Send, Trophy, Star, Award, Flame, CheckCircle } from "lucide-react"
 import React from "react"
 import type { UserRole } from "@/lib/types"
 
@@ -44,6 +45,9 @@ export default function ParticipantDashboard() {
     addMessage,
     makeupAssignments,
     getMakeupAssignmentsForParticipant,
+    attendance,
+    takeaways,
+    completedSessions,
     users,
   } = useStore()
 
@@ -64,6 +68,7 @@ export default function ParticipantDashboard() {
     room: string
     session: number
     programSlug: string
+    isCompleted?: boolean
   } | null>(null)
   const [replyTo, setReplyTo] = useState<MessageDisplay | null>(null)
   const [showAllAchievements, setShowAllAchievements] = useState(false)
@@ -112,10 +117,9 @@ export default function ParticipantDashboard() {
     "7:00 PM",
   ]
 
-  // Mock participant's scheduled classes based on enrollments
   const participantSchedule: Record<
     string,
-    Record<string, { program: string; facilitator: string; room: string; session: number; programSlug: string }>
+    Record<string, { program: string; facilitator: string; room: string; session: number; programSlug: string; isCompleted?: boolean }>
   > = {}
 
   // Add scheduled classes based on active enrollments
@@ -127,12 +131,18 @@ export default function ParticipantDashboard() {
       const facilitator = users?.find(u => u.id === enrollment.schedule?.facilitatorId);
 
       if (!participantSchedule[shortDay]) participantSchedule[shortDay] = {};
+      const isCompleted = completedSessions.some(cs =>
+        cs.programId === enrollment.programId &&
+        cs.sessionNumber === enrollment.currentSessionNumber
+      );
+
       participantSchedule[shortDay][enrollment.schedule.time] = {
         program: program.name,
         facilitator: facilitator?.name || "Unknown Facilitator",
         room: enrollment.schedule.room,
         session: enrollment.currentSessionNumber,
-        programSlug: program.slug
+        programSlug: program.slug,
+        isCompleted
       };
     } else if (program) {
       // Fallback for legacy mock data without schedule
@@ -142,12 +152,18 @@ export default function ParticipantDashboard() {
       const time = timeSlots[timeIndex]
 
       if (!participantSchedule[day]) participantSchedule[day] = {}
+      const isCompleted = completedSessions.some(cs =>
+        cs.programId === enrollment.programId &&
+        cs.sessionNumber === enrollment.currentSessionNumber
+      );
+
       participantSchedule[day][time] = {
         program: program.name,
         facilitator: "Facilitator",
         room: "Room " + (101 + index),
         session: enrollment.currentSessionNumber,
         programSlug: program.slug,
+        isCompleted
       }
     }
   })
@@ -169,13 +185,13 @@ export default function ParticipantDashboard() {
   }
 
   // Mock awards and progress
-  const completedSessions = activeEnrollments.reduce((acc, e) => acc + e.currentSessionNumber, 0)
+  const sessionsCompletedCount = activeEnrollments.reduce((acc, e) => acc + e.currentSessionNumber, 0)
   const sobrietyDays = 47
 
   const awards = [
-    { id: 1, name: "First Session", icon: Star, earned: completedSessions >= 1, color: "text-yellow-500" },
-    { id: 2, name: "5 Sessions", icon: Award, earned: completedSessions >= 5, color: "text-blue-500" },
-    { id: 3, name: "10 Sessions", icon: Trophy, earned: completedSessions >= 10, color: "text-purple-500" },
+    { id: 1, name: "First Session", icon: Star, earned: sessionsCompletedCount >= 1, color: "text-yellow-500" },
+    { id: 2, name: "5 Sessions", icon: Award, earned: sessionsCompletedCount >= 5, color: "text-blue-500" },
+    { id: 3, name: "10 Sessions", icon: Trophy, earned: sessionsCompletedCount >= 10, color: "text-purple-500" },
     { id: 4, name: "7 Days Sober", icon: Flame, earned: sobrietyDays >= 7, color: "text-orange-500" },
     { id: 5, name: "30 Days Sober", icon: Flame, earned: sobrietyDays >= 30, color: "text-red-500" },
     {
@@ -191,19 +207,20 @@ export default function ParticipantDashboard() {
   const displayedAwards = earnedAwards.slice(-3)
 
   let nextAward = null
-  if (completedSessions < 5) {
+  if (sessionsCompletedCount < 5) {
     nextAward = {
       name: "5 Sessions",
-      progress: (completedSessions / 5) * 100,
-      remaining: `${5 - completedSessions} more sessions`,
+      progress: (sessionsCompletedCount / 5) * 100,
+      remaining: `${5 - sessionsCompletedCount} more sessions`,
     }
-  } else if (completedSessions < 10) {
+  } else if (sessionsCompletedCount < 10) {
     nextAward = {
       name: "10 Sessions",
-      progress: (completedSessions / 10) * 100,
-      remaining: `${10 - completedSessions} more sessions`,
+      progress: (sessionsCompletedCount / 10) * 100,
+      remaining: `${10 - sessionsCompletedCount} more sessions`,
     }
-  } else if (sobrietyDays < 30) {
+  }
+  else if (sobrietyDays < 30) {
     nextAward = {
       name: "30 Days Sober",
       progress: (sobrietyDays / 30) * 100,
@@ -479,9 +496,11 @@ export default function ParticipantDashboard() {
                           <div
                             key={`${day}-${time}`}
                             className={`p-1 border border-gray-400 min-h-[40px] sm:min-h-[50px] ${classInfo
-                              ? isMakeup
-                                ? "bg-red-100/90 cursor-pointer hover:bg-red-200/90"
-                                : "bg-green-100/90 cursor-pointer hover:bg-green-200/90"
+                              ? classInfo.isCompleted
+                                ? "bg-gray-100/90 cursor-pointer hover:bg-gray-200/90"
+                                : isMakeup
+                                  ? "bg-red-100/90 cursor-pointer hover:bg-red-200/90"
+                                  : "bg-green-100/90 cursor-pointer hover:bg-green-200/90"
                               : "bg-white/60"
                               }`}
                             onClick={() => classInfo && setSelectedClass({ ...classInfo, day, time })}
@@ -489,12 +508,13 @@ export default function ParticipantDashboard() {
                             {classInfo && (
                               <div className="text-xs">
                                 <div
-                                  className={`font-semibold truncate ${isMakeup ? "text-red-800" : "text-green-800"}`}
+                                  className={`font-semibold truncate ${classInfo.isCompleted ? "text-gray-500" : isMakeup ? "text-red-800" : "text-green-800"}`}
                                 >
                                   {classInfo.program}
                                 </div>
-                                <div className={`hidden sm:block ${isMakeup ? "text-red-600" : "text-green-600"}`}>
+                                <div className={`hidden sm:flex items-center gap-1 ${classInfo.isCompleted ? "text-gray-400" : isMakeup ? "text-red-600" : "text-green-600"}`}>
                                   Session {classInfo.session}
+                                  {classInfo.isCompleted && <CheckCircle className="h-2 w-2" />}
                                 </div>
                                 <div className="text-gray-600 text-[10px] hidden sm:block">{classInfo.room}</div>
                               </div>
@@ -646,6 +666,63 @@ export default function ParticipantDashboard() {
               >
                 Save Entry
               </Button>
+            </CardContent>
+          </Card>
+
+          {/* My Progress & History Card */}
+          <Card className="card-transparent sm:col-span-2">
+            <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
+                My Progress & History
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-3 sm:px-6">
+              <Tabs defaultValue="attendance" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 mb-4 bg-gray-100/50">
+                  <TabsTrigger value="attendance">Attendance</TabsTrigger>
+                  <TabsTrigger value="takeaways">Takeaways</TabsTrigger>
+                </TabsList>
+                <TabsContent value="attendance" className="space-y-2 max-h-[300px] overflow-y-auto">
+                  {attendance.filter(a => a.participantId === participantId).length > 0 ? (
+                    attendance.filter(a => a.participantId === participantId)
+                      .sort((a, b) => b.sessionId.localeCompare(a.sessionId))
+                      .map((record) => {
+                        const prog = programs.find(p => record.sessionId.startsWith(p.id));
+                        return (
+                          <div key={record.id} className="flex items-center justify-between p-3 bg-white/80 rounded-lg border border-gray-100 shadow-sm">
+                            <div className="flex flex-col">
+                              <span className="font-medium text-sm text-gray-900">{prog?.name || "Program"}</span>
+                              <span className="text-xs text-gray-500">Session {record.sessionId.split('-').pop()}</span>
+                            </div>
+                            <Badge variant={record.status === "present" ? "default" : "outline"}
+                              className={record.status === "present" ? "bg-green-600" : "text-gray-600"}>
+                              {record.status.charAt(0).toUpperCase() + record.status.slice(1)}
+                            </Badge>
+                          </div>
+                        );
+                      })
+                  ) : (
+                    <p className="text-center text-gray-500 py-6 text-sm italic">No attendance records yet</p>
+                  )}
+                </TabsContent>
+                <TabsContent value="takeaways" className="space-y-3 max-h-[300px] overflow-y-auto">
+                  {takeaways.filter(t => t.participantId === participantId).length > 0 ? (
+                    takeaways.filter(t => t.participantId === participantId)
+                      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                      .map((t) => (
+                        <div key={t.id} className="p-3 bg-blue-50/50 rounded-lg border border-blue-100 italic text-sm text-gray-700">
+                          "{t.content}"
+                          <div className="mt-2 text-[10px] text-gray-500 text-right not-italic">
+                            {new Date(t.createdAt).toLocaleDateString()}
+                          </div>
+                        </div>
+                      ))
+                  ) : (
+                    <p className="text-center text-gray-500 py-6 text-sm italic">No takeaways shared yet</p>
+                  )}
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
 
@@ -846,7 +923,12 @@ export default function ParticipantDashboard() {
               <div className="text-gray-500">Session:</div>
               <div className="font-medium">{selectedClass?.session}</div>
             </div>
-            {selectedClass?.programSlug === "makeup" ? (
+            {selectedClass?.isCompleted ? (
+              <div className="bg-gray-100 p-4 rounded-lg border border-gray-200 flex items-center justify-center gap-2 text-gray-600 font-semibold">
+                <CheckCircle className="h-5 w-5 text-green-600" />
+                Session Completed
+              </div>
+            ) : selectedClass?.programSlug === "makeup" ? (
               <Button
                 className="w-full bg-red-600 hover:bg-red-700"
                 onClick={() => {

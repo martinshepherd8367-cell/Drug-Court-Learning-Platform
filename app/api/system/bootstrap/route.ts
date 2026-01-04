@@ -71,7 +71,13 @@ export async function GET() {
             enrollments = myEnrollments;
 
             // Only include relevant participants + staff
-            users = users.filter((u: any) => u.role !== "participant" || myParticipantIds.has(u.id));
+            // Strip sensitive fields for other staff members
+            users = users.filter((u: any) => u.role !== "participant" || myParticipantIds.has(u.id))
+                .map((u: any) => {
+                    if (u.id === user.uid || myParticipantIds.has(u.id)) return u;
+                    // For other staff, only return public metadata
+                    return { id: u.id, name: u.name, role: u.role };
+                });
 
             // Only include programs they teach
             programs = programs.filter((p: any) => myProgramIds.has(p.id));
@@ -90,7 +96,13 @@ export async function GET() {
             enrollments = enrollments.filter((e: any) => e.participantId === user.uid);
             const myProgramIds = new Set(enrollments.map((e: any) => e.programId));
 
-            users = users.filter((u: any) => u.id === user.uid || u.role !== "participant");
+            // Participant should only see themselves and staff metadata (for messaging)
+            users = users.filter((u: any) => u.id === user.uid || u.role !== "participant")
+                .map((u: any) => {
+                    if (u.id === user.uid) return u;
+                    return { id: u.id, name: u.name, role: u.role };
+                });
+
             programs = programs.filter((p: any) => myProgramIds.has(p.id));
             scheduleEvents = scheduleEvents.filter((e: any) => myProgramIds.has(e.programId));
 

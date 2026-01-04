@@ -1,14 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Bot, Send, X, Sparkles, AlertTriangle } from "lucide-react"
-
-// TODO: Wire this to actual AI backend when IDE is ready
-// This component is prepared for integration with OpenAI or similar
+import { useStore } from "@/lib/store"
 
 interface Message {
   role: "user" | "assistant" | "system"
@@ -22,48 +20,35 @@ interface AIAssistantProps {
 const roleDescriptions = {
   admin: {
     title: "Admin AI Assistant",
-    description: "I can help you optimize schedules, manage enrollments, and ensure curriculum adherence.",
-    placeholder: "Ask about scheduling, enrollments, or curriculum...",
-    systemPrompt: `You are an administrative AI assistant for a drug court learning platform. You help with:
-- Optimizing class schedules
-- Managing participant enrollments
-- Ensuring curriculum is being followed
-- Analyzing attendance patterns
-- Generating reports
-Be professional and thorough in your responses.`,
+    description: "Read-only access to system-wide enrollment, attendance, and program data.",
+    placeholder: "Ask about enrollment counts, attendance summary, or programs...",
+    systemPrompt: `You are an administrative AI assistant. You have read-only access to the entire platform's state. You can help with:
+- Global enrollment counts
+- Program summaries
+- System-wide attendance reporting
+You cannot modify any data or perform actions.`,
     restricted: false,
   },
   facilitator: {
     title: "Facilitator AI Assistant",
-    description: "I can help you with session planning, participant progress tracking, and content suggestions.",
-    placeholder: "Ask about sessions, participants, or content...",
-    systemPrompt: `You are an AI assistant for facilitators in a drug court program. You help with:
-- Session planning and preparation
-- Understanding participant progress
-- Suggesting discussion topics
-- Reviewing homework submissions
-- Creating engaging activities
-Be supportive and educational in your responses.`,
+    description: "Access to your assigned classes, rosters, and session history.",
+    placeholder: "Ask about your class rosters, session attendance, or progress...",
+    systemPrompt: `You are an AI assistant for facilitators. You have read-only access to:
+- Your classes and rosters
+- Participant attendance for your sessions
+- Key takeaways from your participants
+You cannot see data for classes assigned to other facilitators.`,
     restricted: false,
   },
   participant: {
     title: "Learning Assistant",
-    description:
-      "I can help you understand terms and concepts from your classes. Note: I cannot help with homework answers.",
-    placeholder: "Ask about terms like 'trigger', 'co-occurring', etc...",
-    systemPrompt: `You are a helpful learning assistant for participants in a drug court program. You help explain:
-- Recovery terminology (triggers, co-occurring disorders, etc.)
-- Concepts discussed in class
-- Coping strategies and techniques
-- Program requirements
-
-IMPORTANT RESTRICTIONS:
-- You CANNOT provide answers to homework questions
-- You CANNOT write essays or complete assignments for users
-- If asked for homework help, politely redirect to explaining the underlying concepts instead
-- Focus on education and understanding, not completing work for them
-
-Be warm, supportive, and encouraging in your responses.`,
+    description: "Access to your own enrollment status, session history, and learning concepts.",
+    placeholder: "Ask about your progress, completed sessions, or recovery concepts...",
+    systemPrompt: `You are a helpful learning assistant for participants. You have read-only access to YOUR data:
+- Your enrollment status
+- Your completed sessions
+- Your own attendance record
+IMPORTANT: You cannot help with homework answers or write assignments.`,
     restricted: true,
   },
 }
@@ -81,6 +66,8 @@ export function AIAssistantButton({ role }: AIAssistantProps) {
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
+  const { enrollments, attendance, completedSessions, currentUser, users, programs } = useStore()
+
   const config = roleDescriptions[role]
 
   const handleSend = async () => {
@@ -91,46 +78,74 @@ export function AIAssistantButton({ role }: AIAssistantProps) {
     setInput("")
     setIsLoading(true)
 
-    // TODO: Replace with actual AI API call
-    // This is a placeholder response system
+    // Simulate grounded response (F2)
     setTimeout(() => {
       let response = ""
+      const lowerInput = input.toLowerCase()
 
-      // Check for homework-related questions for participants
-      if (role === "participant") {
-        const homeworkKeywords = ["homework", "assignment", "answer", "write my", "complete my", "do my"]
-        const isHomeworkRequest = homeworkKeywords.some((kw) => input.toLowerCase().includes(kw))
+      // Mandatory Validation Logic: Admin Count
+      if (role === "admin" && (lowerInput.includes("how many participants") || lowerInput.includes("enrolled today"))) {
+        const count = enrollments.filter(e => e.status === 'active').length
+        response = `There are currently ${count} participants actively enrolled in programs across the system.`
+      }
 
-        if (isHomeworkRequest) {
-          response =
-            "I'm here to help you learn, but I can't provide answers to homework questions. Instead, I can help you understand the concepts behind the questions. What specific term or idea would you like me to explain?"
+      // Mandatory Validation Logic: Facilitator Attendance
+      if (role === "facilitator" && (lowerInput.includes("who attended") || lowerInput.includes("last session"))) {
+        const myFacilitatorEnrollments = enrollments.filter(e => e.schedule?.facilitatorId === currentUser?.id);
+        const myFacParticipantIds = myFacilitatorEnrollments.map(e => e.participantId);
+
+        // Find most recent completed session for this facilitator's classes
+        const myManagedClasses = Array.from(new Set(myFacilitatorEnrollments.map(e => `${e.programId}-${e.schedule?.day}-${e.schedule?.time}-${e.schedule?.room}`)));
+        const myLastCompleted = completedSessions
+          .filter(cs => myManagedClasses.includes(cs.classId || ""))
+          .sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())[0];
+
+        if (myLastCompleted) {
+          const sessionAttendance = attendance.filter(a =>
+            a.classId === myLastCompleted.classId &&
+            a.completedAt?.split('T')[0] === myLastCompleted.completedAt.split('T')[0] &&
+            myFacParticipantIds.includes(a.participantId)
+          );
+          const present = sessionAttendance.filter(a => a.attended || a.status === 'present');
+          const names = present.map(a => users.find(u => u.id === a.participantId)?.name || "Unknown").filter(Boolean);
+
+          response = names.length > 0
+            ? `For your last completed session (${myLastCompleted.programId} Session ${myLastCompleted.sessionNumber}), the following participants were marked present: ${names.join(", ")}.`
+            : `For your last completed session (${myLastCompleted.programId} Session ${myLastCompleted.sessionNumber}), no participants were marked present.`;
+        } else {
+          response = "I couldn't find any recently completed sessions for your classes in the current system state."
         }
       }
 
-      if (!response) {
-        // Placeholder responses based on common terms
-        const lowerInput = input.toLowerCase()
-        if (lowerInput.includes("co-occurring") || lowerInput.includes("cooccurring")) {
-          response =
-            "Co-occurring disorders (also called dual diagnosis) means having both a substance use disorder and a mental health condition at the same time. For example, someone might struggle with both alcohol addiction and depression. Treatment works best when both conditions are addressed together."
-        } else if (lowerInput.includes("trigger")) {
-          response =
-            "A trigger is anything that brings up memories or feelings that make you want to use substances. Triggers can be people, places, things, emotions, or situations. Learning to identify and manage your triggers is an important part of recovery."
-        } else if (lowerInput.includes("cbt") || lowerInput.includes("cognitive behavioral")) {
-          response =
-            "CBT stands for Cognitive Behavioral Therapy. It's a type of therapy that helps you identify negative thought patterns and replace them with healthier ways of thinking. The idea is that our thoughts affect our feelings and behaviors, so by changing how we think, we can change how we feel and act."
-        } else if (lowerInput.includes("relapse")) {
-          response =
-            "Relapse prevention involves strategies and skills to help maintain recovery and avoid returning to substance use. It includes identifying warning signs, building coping skills, creating a support network, and having a plan for high-risk situations."
+      // Mandatory Validation Logic: Participant Completion
+      if (role === "participant" && (lowerInput.includes("what sessions") || lowerInput.includes("have i completed"))) {
+        const myCompleted = completedSessions.filter(cs =>
+          enrollments.some(e => e.participantId === currentUser?.id && e.programId === cs.programId)
+        );
+        if (myCompleted.length > 0) {
+          const sessions = myCompleted.map(s => `${programs.find(p => p.id === s.programId)?.name || s.programId} Session ${s.sessionNumber}`).join(", ");
+          response = `You have completed the following sessions: ${sessions}.`
         } else {
-          response =
-            "That's a great question! [This is a placeholder response - the AI assistant will be fully connected when the system is deployed. For now, try asking about specific terms like 'trigger', 'co-occurring', 'CBT', or 'relapse prevention'.]"
+          response = "According to my records, you haven't completed any sessions yet."
+        }
+      }
+
+      // Concept explanations (read-only context)
+      if (!response) {
+        if (lowerInput.includes("co-occurring")) {
+          response = "Co-occurring disorders refers to having both a substance use disorder and a mental health condition simultaneously. It requires integrated treatment for both conditions."
+        } else if (lowerInput.includes("trigger")) {
+          response = "A trigger is an internal or external stimulus that prompts an urge to use substances. Identifying them is key to relapse prevention."
+        } else if (lowerInput.includes("cbt")) {
+          response = "CBT stands for Cognitive Behavioral Therapy, a common approach for treating substance use by identifying and changing negative thought patterns."
+        } else {
+          response = "I can answer specific questions about enrollment counts, session history, and recovery concepts based on the current platform data. What would you like to know?"
         }
       }
 
       setMessages((prev) => [...prev, { role: "assistant", content: response }])
       setIsLoading(false)
-    }, 1000)
+    }, 800)
   }
 
   return (
@@ -204,9 +219,8 @@ export function AIAssistantButton({ role }: AIAssistantProps) {
                 {messages.map((msg, i) => (
                   <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                     <div
-                      className={`max-w-[80%] p-3 rounded-lg ${
-                        msg.role === "user" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-900"
-                      }`}
+                      className={`max-w-[80%] p-3 rounded-lg ${msg.role === "user" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-900"
+                        }`}
                     >
                       {msg.content}
                     </div>

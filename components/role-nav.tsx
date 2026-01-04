@@ -46,12 +46,7 @@ export function RoleNav() {
           )}
         </div>
 
-        {isParticipant ? (
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-gray-200 bg-gray-50/50 text-sm font-medium text-gray-700">
-            <User className="h-4 w-4" />
-            {currentUser?.name}
-          </div>
-        ) : (
+        {currentUser?.role === "admin" ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2 bg-transparent">
@@ -73,6 +68,11 @@ export function RoleNav() {
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+        ) : (
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-gray-200 bg-gray-50/50 text-sm font-medium text-gray-700">
+            <User className="h-4 w-4" />
+            {currentUser?.name}
+          </div>
         )}
       </div>
     </header>

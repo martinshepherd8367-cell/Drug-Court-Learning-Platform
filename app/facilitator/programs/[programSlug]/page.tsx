@@ -12,7 +12,7 @@ import { ArrowLeft, BookOpen, Users, CheckCircle, Circle, Lock, ChevronRight } f
 export default function ProgramOverview() {
   const params = useParams()
   const router = useRouter()
-  const { getProgramBySlug, getEnrollmentsByProgram, users } = useStore()
+  const { getProgramBySlug, getEnrollmentsByProgram, users, currentUser } = useStore()
 
   const programSlug = params.programSlug as string
   const program = getProgramBySlug(programSlug)
@@ -36,7 +36,7 @@ export default function ProgramOverview() {
   }
 
   const enrollments = getEnrollmentsByProgram(program.id)
-  const activeEnrollments = enrollments.filter((e) => e.status === "active")
+  const activeEnrollments = enrollments.filter((e) => e.status === "active" && e.schedule?.facilitatorId === currentUser?.id)
 
   // Sort sessions by sessionNumber
   const sortedSessions = [...program.sessions].sort((a, b) => a.sessionNumber - b.sessionNumber)
@@ -141,9 +141,8 @@ export default function ProgramOverview() {
                   return (
                     <Card
                       key={session.id}
-                      className={`cursor-pointer transition-all ${
-                        isLocked ? "opacity-50 cursor-not-allowed" : "hover:border-green-500 hover:shadow-md"
-                      } ${isCurrent ? "border-green-500 border-2" : ""}`}
+                      className={`cursor-pointer transition-all ${isLocked ? "opacity-50 cursor-not-allowed" : "hover:border-green-500 hover:shadow-md"
+                        } ${isCurrent ? "border-green-500 border-2" : ""}`}
                       onClick={() => {
                         if (!isLocked) {
                           router.push(`/facilitator/programs/${programSlug}/sessions/${session.sessionNumber}`)
@@ -154,9 +153,8 @@ export default function ProgramOverview() {
                         <div className="flex items-center gap-4">
                           {/* Status Icon */}
                           <div
-                            className={`p-2 rounded-full ${
-                              isCompleted ? "bg-green-100" : isCurrent ? "bg-blue-100" : "bg-gray-100"
-                            }`}
+                            className={`p-2 rounded-full ${isCompleted ? "bg-green-100" : isCurrent ? "bg-blue-100" : "bg-gray-100"
+                              }`}
                           >
                             {isCompleted ? (
                               <CheckCircle className="h-5 w-5 text-green-600" />

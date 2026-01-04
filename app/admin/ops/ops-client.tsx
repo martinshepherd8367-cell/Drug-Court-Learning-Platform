@@ -51,7 +51,12 @@ export function OpsClient({ initialDate, events, enrollments, users, attendance,
                 if (e.scheduleEventId && event.id) {
                     return e.scheduleEventId === event.id;
                 }
-                return e.programId === event.programId;
+                // Robust join using schedule metadata
+                if (!e.schedule) return false;
+                return e.programId === event.programId &&
+                    e.schedule.day === event.dayOfWeek &&
+                    e.schedule.time === event.time &&
+                    e.schedule.room === event.location;
             });
 
             const roster = programEnrollments.map(enr => {

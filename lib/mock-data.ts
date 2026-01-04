@@ -1550,7 +1550,10 @@ export const mockQuickNotes: QuickNote[] = []
 export const mockMessages: Message[] = [
   {
     id: "msg-1",
-    participantId: "participant-1",
+    senderId: "facilitator-1",
+    senderRole: "facilitator",
+    recipientId: "participant-1",
+    recipientRole: "participant",
     title: "Welcome to Prime Solutions",
     content:
       "Welcome to the Prime Solutions program! We're excited to have you join us on this journey. Please make sure to complete your first session homework before our next meeting.",
@@ -1560,7 +1563,10 @@ export const mockMessages: Message[] = [
   },
   {
     id: "msg-2",
-    participantId: "participant-1",
+    senderId: "facilitator-1",
+    senderRole: "facilitator",
+    recipientId: "participant-1",
+    recipientRole: "participant",
     title: "Reminder: Session 2 Tomorrow",
     content:
       "Just a friendly reminder that Session 2 is tomorrow at 10 AM. We'll be discussing the Stages of Change. Please bring your completed Action Plan worksheet.",
@@ -1570,7 +1576,10 @@ export const mockMessages: Message[] = [
   },
   {
     id: "msg-3",
-    participantId: "participant-1",
+    senderId: "facilitator-2",
+    senderRole: "facilitator",
+    recipientId: "participant-1",
+    recipientRole: "participant",
     title: "Great Progress!",
     content:
       "I wanted to acknowledge the great progress you've made in identifying your triggers. Keep up the excellent work!",
@@ -1580,7 +1589,10 @@ export const mockMessages: Message[] = [
   },
   {
     id: "msg-4",
-    participantId: "participant-2",
+    senderId: "facilitator-1",
+    senderRole: "facilitator",
+    recipientId: "participant-2",
+    recipientRole: "participant",
     title: "Welcome to the Program",
     content: "Welcome! Looking forward to working with you.",
     fromName: "Martin Thompson",
@@ -1590,7 +1602,10 @@ export const mockMessages: Message[] = [
   // Messages for participant-4 (Emily Brown - current dev user)
   {
     id: "msg-5",
-    participantId: "participant-4",
+    senderId: "facilitator-1",
+    senderRole: "facilitator",
+    recipientId: "participant-4",
+    recipientRole: "participant",
     title: "Welcome to Prime Solutions!",
     content:
       "Hi Emily, welcome to the Prime Solutions program! We're excited to have you join our Tuesday/Thursday group. Your first session will cover Understanding Change. Please arrive 10 minutes early to complete check-in.",
@@ -1600,7 +1615,10 @@ export const mockMessages: Message[] = [
   },
   {
     id: "msg-6",
-    participantId: "participant-4",
+    senderId: "facilitator-2",
+    senderRole: "facilitator",
+    recipientId: "participant-4",
+    recipientRole: "participant",
     title: "Homework Feedback - Session 3",
     content:
       "Great work on your Action Plan! I can see you put a lot of thought into identifying your support network. One suggestion: consider adding a backup contact for each situation. Keep it up!",
@@ -1610,7 +1628,10 @@ export const mockMessages: Message[] = [
   },
   {
     id: "msg-7",
-    participantId: "participant-4",
+    senderId: "facilitator-1",
+    senderRole: "facilitator",
+    recipientId: "participant-4",
+    recipientRole: "participant",
     title: "Session 8 Tomorrow - Reminder",
     content:
       "Just a reminder that we have Session 8: Building Your Support Network tomorrow at 10:30 AM in Room 102. Please bring your completed Relapse Prevention Plan worksheet.",
@@ -1620,7 +1641,10 @@ export const mockMessages: Message[] = [
   },
   {
     id: "msg-8",
-    participantId: "participant-4",
+    senderId: "admin-1",
+    senderRole: "admin",
+    recipientId: "participant-4",
+    recipientRole: "participant",
     title: "Court Report Submitted",
     content:
       "Your progress report has been submitted to the court. You are on track with attendance and participation. Keep up the excellent work! Let me know if you have any questions.",

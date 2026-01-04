@@ -74,7 +74,8 @@ export default function FacilitatorSessionView() {
     completeSession,
     addTakeaway,
     takeaways,
-    completedSessions
+    completedSessions,
+    currentUser
   } = useStore()
 
   const programSlug = params.programSlug as string
@@ -887,7 +888,7 @@ export default function FacilitatorSessionView() {
                         sessionId: session.id,
                         classId: classId || "individual",
                         content: content.trim(),
-                        createdBy: "fac-1", // Should ideally be currentUser.id
+                        createdBy: currentUser?.id || "unknown",
                         createdAt: new Date().toISOString()
                       });
                     });
@@ -899,7 +900,7 @@ export default function FacilitatorSessionView() {
                     classId: classId || "generic",
                     programId: program.id,
                     sessionNumber: session.sessionNumber,
-                    facilitatorId: "fac-1", // Should ideally be currentUser.id
+                    facilitatorId: currentUser?.id || "unknown",
                     attendance: sessionAttendance
                   });
 

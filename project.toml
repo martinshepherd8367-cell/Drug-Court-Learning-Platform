@@ -1,0 +1,11 @@
+[[build.env]]
+name = "NEXT_PUBLIC_FIREBASE_API_KEY"
+value = "AIzaSyApcv2Expn_7O9RW7hbXM5m9VeSGXBjpN8"
+
+[[build.env]]
+name = "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN"
+value = "drug-court-learning-platform.firebaseapp.com"
+
+[[build.env]]
+name = "NEXT_PUBLIC_FIREBASE_PROJECT_ID"
+value = "drug-court-learning-platform"

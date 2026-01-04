@@ -1,0 +1,19 @@
+# Never upload deps/build output
+node_modules
+.next
+dist
+out
+
+# Never upload VCS + junk
+.git
+.DS_Store
+
+# Never upload local tooling/secrets
+.agent
+.secrets
+.env.local
+.env.*.local
+
+# NEVER upload pnpm/yarn lockfiles (force npm)
+pnpm-lock.yaml
+yarn.lock

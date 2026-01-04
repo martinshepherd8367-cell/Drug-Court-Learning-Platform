@@ -57,7 +57,18 @@ export default function LoginClient() {
         throw new Error(`session-login failed (${res.status}): ${t}`);
       }
 
-      window.location.href = from;
+      const { role } = await res.json();
+
+      // Determine final destination
+      let destination = from;
+      if (!params.get("from")) {
+        // Only override if 'from' wasn't explicitly provided (like from a deep link)
+        if (role === "admin") destination = "/admin";
+        else if (role === "facilitator") destination = "/facilitator";
+        else if (role === "participant") destination = "/participant";
+      }
+
+      window.location.href = destination;
     } catch (e: any) {
       setErr(e?.message || "Login failed");
     } finally {

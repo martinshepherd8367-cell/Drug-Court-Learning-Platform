@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { useStore } from "@/lib/store"
 import { RoleNav } from "@/components/role-nav"
@@ -19,34 +19,46 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { ArrowLeft, Plus, User, Shield, Users, Edit, Trash2 } from "lucide-react"
+import { ArrowLeft, Plus, User, Shield, Users, Edit, Search, AlertCircle } from "lucide-react"
 import type { UserRole } from "@/lib/types"
 
 export default function UserManagement() {
   const router = useRouter()
-  const { users, programs } = useStore()
+  const { users, setUsers } = useStore()
 
+  const [searchTerm, setSearchTerm] = useState("")
   const [showAddUser, setShowAddUser] = useState(false)
   const [showEditUser, setShowEditUser] = useState(false)
   const [selectedUser, setSelectedUser] = useState<any>(null)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
   const [newUser, setNewUser] = useState({
     name: "",
     email: "",
     role: "participant" as UserRole,
+    status: "active" as "active" | "inactive",
   })
+
+  const filteredUsers = useMemo(() => {
+    return users.filter(u =>
+      u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.email.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  }, [users, searchTerm])
 
   const getRoleBadge = (role: UserRole) => {
     switch (role) {
       case "admin":
         return (
-          <Badge className="bg-red-600 gap-1">
+          <Badge className="bg-red-600 gap-1 text-white">
             <Shield className="h-3 w-3" />
             Admin
           </Badge>
         )
       case "facilitator":
         return (
-          <Badge className="bg-blue-600 gap-1">
+          <Badge className="bg-blue-600 gap-1 text-white">
             <User className="h-3 w-3" />
             Facilitator
           </Badge>
@@ -61,26 +73,67 @@ export default function UserManagement() {
     }
   }
 
-  const handleAddUser = () => {
-    // TODO: Wire to backend
-    console.log("Adding user:", newUser)
-    setShowAddUser(false)
-    setNewUser({ name: "", email: "", role: "participant" })
+  const getStatusBadge = (user: any) => {
+    const isActive = user.status !== "inactive"
+    // Consider it "Profile Created" if it has no numeric-looking ID or specific flag
+    // In this app, we'll just check status for now, but could add "Pending Auth" if needed.
+    return (
+      <Badge variant={isActive ? "outline" : "destructive"} className={isActive ? "text-green-600 border-green-600" : ""}>
+        {isActive ? "Active" : "Inactive"}
+      </Badge>
+    )
+  }
+
+  const handleAddUser = async () => {
+    if (!newUser.name || !newUser.email) return
+    setBusy(true)
+    setError(null)
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newUser),
+      })
+      if (!res.ok) throw new Error(await res.text())
+      const savedUser = await res.json()
+      setUsers([...users, savedUser])
+      setShowAddUser(false)
+      setNewUser({ name: "", email: "", role: "participant", status: "active" })
+    } catch (e: any) {
+      setError(e.message)
+    } finally {
+      setBusy(false)
+    }
   }
 
   const handleEditUser = (user: any) => {
-    setSelectedUser(user)
+    setSelectedUser({ ...user })
     setShowEditUser(true)
   }
 
-  const handleSaveUser = () => {
-    // TODO: Wire to backend
-    console.log("Saving user:", selectedUser)
-    setShowEditUser(false)
+  const handleSaveUser = async () => {
+    if (!selectedUser) return
+    setBusy(true)
+    setError(null)
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(selectedUser),
+      })
+      if (!res.ok) throw new Error(await res.text())
+      const updatedUser = await res.json()
+      setUsers(users.map(u => u.id === updatedUser.id ? { ...u, ...updatedUser } : u))
+      setShowEditUser(false)
+    } catch (e: any) {
+      setError(e.message)
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-20">
       <RoleNav />
 
       <main className="container mx-auto px-6 py-8">
@@ -93,65 +146,31 @@ export default function UserManagement() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
-              <p className="text-gray-600 mt-1">Manage users and assign roles</p>
+              <p className="text-gray-600 mt-1">Manage platform access and roles</p>
             </div>
             <Button onClick={() => setShowAddUser(true)} className="bg-green-600 hover:bg-green-700">
               <Plus className="h-4 w-4 mr-2" />
-              Add User
+              Add User profile
             </Button>
           </div>
         </div>
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-red-100 rounded-lg">
-                  <Shield className="h-6 w-6 text-red-700" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{users.filter((u) => u.role === "admin").length}</p>
-                  <p className="text-sm text-gray-600">Admins</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-blue-100 rounded-lg">
-                  <User className="h-6 w-6 text-blue-700" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{users.filter((u) => u.role === "facilitator").length}</p>
-                  <p className="text-sm text-gray-600">Facilitators</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-gray-100 rounded-lg">
-                  <Users className="h-6 w-6 text-gray-700" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{users.filter((u) => u.role === "participant").length}</p>
-                  <p className="text-sm text-gray-600">Participants</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Search */}
+        <div className="relative mb-6">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            className="pl-10 bg-white"
+            placeholder="Search users by name or email..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
 
         {/* Users Table */}
         <Card>
           <CardHeader>
-            <CardTitle>All Users</CardTitle>
-            <CardDescription>{users.length} total users</CardDescription>
+            <CardTitle>Platform Users</CardTitle>
+            <CardDescription>{users.length} total profiles</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
@@ -160,24 +179,27 @@ export default function UserManagement() {
                   <TableHead>Name</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Role</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {users.map((user) => (
+                {filteredUsers.map((user) => (
                   <TableRow key={user.id}>
-                    <TableCell className="font-medium">{user.name}</TableCell>
+                    <TableCell>
+                      <div className="font-medium text-gray-900">{user.name}</div>
+                      {user.isProfileOnly && (
+                        <div className="text-[10px] text-orange-600 font-semibold uppercase">Profile Created (No Auth)</div>
+                      )}
+                    </TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>{getRoleBadge(user.role)}</TableCell>
+                    <TableCell>{getStatusBadge(user)}</TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button variant="outline" size="sm" onClick={() => handleEditUser(user)}>
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 bg-transparent">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      <Button variant="outline" size="sm" onClick={() => handleEditUser(user)}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -191,9 +213,16 @@ export default function UserManagement() {
       <Dialog open={showAddUser} onOpenChange={setShowAddUser}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Add New User</DialogTitle>
-            <DialogDescription>Create a new user account</DialogDescription>
+            <DialogTitle>Create User Profile</DialogTitle>
+            <DialogDescription>Add a new profile to the system. Authentication must be completed separately.</DialogDescription>
           </DialogHeader>
+
+          {error && (
+            <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm flex items-center gap-2">
+              <AlertCircle className="h-4 w-4" />
+              {error}
+            </div>
+          )}
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
@@ -201,7 +230,7 @@ export default function UserManagement() {
               <Input
                 value={newUser.name}
                 onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-                placeholder="Enter name"
+                placeholder="Enter full name"
               />
             </div>
 
@@ -231,11 +260,11 @@ export default function UserManagement() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddUser(false)}>
+            <Button variant="outline" onClick={() => setShowAddUser(false)} disabled={busy}>
               Cancel
             </Button>
-            <Button onClick={handleAddUser} className="bg-green-600 hover:bg-green-700">
-              Add User
+            <Button onClick={handleAddUser} disabled={busy || !newUser.name || !newUser.email} className="bg-green-600 hover:bg-green-700">
+              {busy ? "Creating..." : "Create Profile"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -245,9 +274,16 @@ export default function UserManagement() {
       <Dialog open={showEditUser} onOpenChange={setShowEditUser}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Edit User</DialogTitle>
-            <DialogDescription>Update user details and role</DialogDescription>
+            <DialogTitle>Edit User Profile</DialogTitle>
+            <DialogDescription>Update user details, role, or status.</DialogDescription>
           </DialogHeader>
+
+          {error && (
+            <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm flex items-center gap-2">
+              <AlertCircle className="h-4 w-4" />
+              {error}
+            </div>
+          )}
 
           {selectedUser && (
             <div className="space-y-4 py-4">
@@ -264,7 +300,8 @@ export default function UserManagement() {
                 <Input
                   type="email"
                   value={selectedUser.email}
-                  onChange={(e) => setSelectedUser({ ...selectedUser, email: e.target.value })}
+                  disabled
+                  className="bg-gray-50"
                 />
               </div>
 
@@ -285,21 +322,50 @@ export default function UserManagement() {
                 </Select>
               </div>
 
+              <div className="space-y-2">
+                <Label>Service Status</Label>
+                <Select
+                  value={selectedUser.status || "active"}
+                  onValueChange={(value: any) => setSelectedUser({ ...selectedUser, status: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive (Access Denied)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               {selectedUser.role === "facilitator" && (
                 <div className="space-y-2">
-                  <Label>Assign to Programs</Label>
-                  <p className="text-sm text-gray-500">TODO: Multi-select program assignment</p>
+                  <Label>Class Assignments</Label>
+                  <p className="text-sm text-gray-500">
+                    Manage class assignments and schedules in the{" "}
+                    <button
+                      type="button"
+                      className="text-blue-600 hover:underline font-medium"
+                      onClick={() => {
+                        setShowEditUser(false)
+                        router.push("/admin/schedule")
+                      }}
+                    >
+                      Schedule Manager
+                    </button>
+                    .
+                  </p>
                 </div>
               )}
             </div>
           )}
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowEditUser(false)}>
+            <Button variant="outline" onClick={() => setShowEditUser(false)} disabled={busy}>
               Cancel
             </Button>
-            <Button onClick={handleSaveUser} className="bg-green-600 hover:bg-green-700">
-              Save Changes
+            <Button onClick={handleSaveUser} disabled={busy} className="bg-green-600 hover:bg-green-700">
+              {busy ? "Saving..." : "Save Changes"}
             </Button>
           </DialogFooter>
         </DialogContent>

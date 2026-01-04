@@ -38,6 +38,24 @@ export default function ProgramOverview() {
   const enrollments = getEnrollmentsByProgram(program.id)
   const activeEnrollments = enrollments.filter((e) => e.status === "active" && e.schedule?.facilitatorId === currentUser?.id)
 
+  if (currentUser?.role === 'facilitator' && activeEnrollments.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <RoleNav />
+        <main className="container mx-auto px-6 py-8">
+          <div className="text-center py-12">
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h1>
+            <p className="text-gray-600 mb-4">You are not assigned to facilitate this program.</p>
+            <Button onClick={() => router.push("/facilitator")}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Dashboard
+            </Button>
+          </div>
+        </main>
+      </div>
+    )
+  }
+
   // Sort sessions by sessionNumber
   const sortedSessions = [...program.sessions].sort((a, b) => a.sessionNumber - b.sessionNumber)
 

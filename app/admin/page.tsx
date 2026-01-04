@@ -212,8 +212,8 @@ export default function AdminDashboard() {
                   <QrCode className="h-12 w-12 text-green-700" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg text-green-800">Participant Registration QR Code</h3>
-                  <p className="text-sm text-green-700">Share this code for new participants to register</p>
+                  <h3 className="font-semibold text-lg text-green-800">Court Intake QR Code</h3>
+                  <p className="text-sm text-green-700">Scan at intake to register new participants</p>
                 </div>
               </div>
               <Button className="bg-green-600 hover:bg-green-700">

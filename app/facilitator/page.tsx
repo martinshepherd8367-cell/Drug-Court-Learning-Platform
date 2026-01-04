@@ -97,16 +97,6 @@ export default function FacilitatorDashboard() {
   // New state for button state
   const [makeupAssignButtonState, setMakeupAssignButtonState] = useState<Record<string, boolean>>({})
 
-  // QR Code Generation State
-  const [showQRGenerator, setShowQRGenerator] = useState(false)
-  const [qrIsVirtual, setQrIsVirtual] = useState(false)
-  const [qrVirtualLink, setQrVirtualLink] = useState("")
-  const [qrGpsSet, setQrGpsSet] = useState(false)
-  const [qrGpsLat, setQrGpsLat] = useState<number | null>(null)
-  const [qrGpsLng, setQrGpsLng] = useState<number | null>(null)
-  const [qrSelectedClass, setQrSelectedClass] = useState<any>(null)
-  const [generatedQRCode, setGeneratedQRCode] = useState<string | null>(null)
-  const [gpsError, setGpsError] = useState<string | null>(null)
 
   // Derived schedule classes
   const scheduleClasses = useMemo(() => {
@@ -327,52 +317,7 @@ export default function FacilitatorDashboard() {
     }
   }
 
-  const captureGPSLocation = () => {
-    setGpsError(null)
-    if (!navigator.geolocation) {
-      setGpsError("GPS is not supported by your browser")
-      return
-    }
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setQrGpsLat(position.coords.latitude)
-        setQrGpsLng(position.coords.longitude)
-        setQrGpsSet(true)
-      },
-      (error) => {
-        setGpsError(`Unable to get location: ${error.message}`)
-      },
-      { enableHighAccuracy: true, timeout: 10000 },
-    )
-  }
-
-  const handleGenerateQRCode = () => {
-    if (!qrSelectedClass) return
-
-    if (!qrIsVirtual && !qrGpsSet) {
-      setGpsError("You must capture GPS location for in-person classes")
-      return
-    }
-
-    const qrCode = generateClassQRCode({
-      facilitatorId: "fac-1", // Assuming facilitator ID is fixed or fetched
-      programId: qrSelectedClass.id,
-      programName: qrSelectedClass.name,
-      sessionNumber: qrSelectedClass.session,
-      day: qrSelectedClass.day,
-      time: qrSelectedClass.time,
-      room: qrSelectedClass.location, // Changed to 'room' for consistency with `classes` mock if needed, assuming 'location' is the room
-      isVirtual: qrIsVirtual,
-      virtualLink: qrIsVirtual ? qrVirtualLink : undefined,
-      gpsLatitude: qrIsVirtual ? null : qrGpsLat,
-      gpsLongitude: qrIsVirtual ? null : qrGpsLng,
-      gpsRadius: 50, // 50 meters radius
-      expiresAt: new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString(), // 3 hours from now
-    })
-
-    setGeneratedQRCode(qrCode.code)
-  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -399,30 +344,6 @@ export default function FacilitatorDashboard() {
                 View Participants
               </Button>
 
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setQrIsVirtual(false)
-                  setShowQRGenerator(true)
-                }}
-                className="gap-2 bg-green-50 border-green-300 hover:bg-green-100"
-              >
-                <QrCode className="h-4 w-4 text-green-600" />
-                In-Person QR
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setQrIsVirtual(true)
-                  setShowQRGenerator(true)
-                }}
-                className="gap-2 bg-blue-50 border-blue-300 hover:bg-blue-100"
-              >
-                <Video className="h-4 w-4 text-blue-600" />
-                Virtual Class
-              </Button>
 
               {/* Notification Bell */}
               <Button
@@ -707,7 +628,7 @@ export default function FacilitatorDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {programs.map((program) => {
+              {programs.filter(p => getParticipantsInProgram(p.id).length > 0).map((program) => {
                 const participants = getParticipantsInProgram(program.id)
                 return (
                   <Card
@@ -786,7 +707,7 @@ export default function FacilitatorDashboard() {
             // Show list of classes first
             <div className="space-y-2">
               {programs
-                .filter((p) => !p.isLocked)
+                .filter((p) => !p.isLocked && getParticipantsInProgram(p.id).length > 0)
                 .map((program) => {
                   const participants = getParticipantsInProgram(program.id)
                   return (
@@ -1147,170 +1068,10 @@ export default function FacilitatorDashboard() {
               </Button>
             </div>
 
-            <div className="border-t pt-4">
-              <label className="text-sm font-medium flex items-center gap-2">
-                <QrCode className="h-4 w-4" />
-                Class Check-in QR Code
-              </label>
-              <p className="text-xs text-gray-500 mt-1 mb-3">
-                Generate a QR code for participants to scan when checking into class.
-              </p>
-
-              <Button onClick={() => setShowQRGenerator(true)} className="w-full bg-green-600 hover:bg-green-700">
-                Generate Class QR Code
-              </Button>
-            </div>
           </div>
         </DialogContent>
       </Dialog>
 
-      <Dialog open={showQRGenerator} onOpenChange={setShowQRGenerator}>
-        <DialogContent className="max-w-md card-transparent max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <QrCode className="h-5 w-5" />
-              Generate Check-in QR Code
-            </DialogTitle>
-          </DialogHeader>
-
-          {!generatedQRCode ? (
-            <div className="space-y-4">
-              {/* Select Class */}
-              <div>
-                <label className="text-sm font-medium">Select Class</label>
-                <select
-                  className="w-full mt-1 p-2 border rounded-md bg-white/50"
-                  value={qrSelectedClass?.id || ""}
-                  onChange={(e) => {
-                    const cls = scheduleClasses.find((c) => c.id === e.target.value)
-                    setQrSelectedClass(cls || null)
-                  }}
-                >
-                  <option value="">Choose a class...</option>
-                  {scheduleClasses.map((cls) => (
-                    <option key={cls.id} value={cls.id}>
-                      {cls.name} - {cls.day} {cls.time}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Virtual Toggle */}
-              <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                <div>
-                  <p className="font-medium text-sm">Virtual Class?</p>
-                  <p className="text-xs text-gray-500">No GPS verification for virtual classes</p>
-                </div>
-                <Button
-                  variant={qrIsVirtual ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setQrIsVirtual(!qrIsVirtual)}
-                  className={qrIsVirtual ? "bg-blue-600" : "bg-transparent"}
-                >
-                  {qrIsVirtual ? "Virtual" : "In-Person"}
-                </Button>
-              </div>
-
-              {/* Virtual Link Input */}
-              {qrIsVirtual && (
-                <div>
-                  <label className="text-sm font-medium">Virtual Meeting Link</label>
-                  <Input
-                    value={qrVirtualLink}
-                    onChange={(e) => setQrVirtualLink(e.target.value)}
-                    placeholder="https://zoom.us/j/..."
-                    className="mt-1 bg-white/50"
-                  />
-                </div>
-              )}
-
-              {/* GPS Capture for In-Person */}
-              {!qrIsVirtual && (
-                <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                  <div className="flex items-start gap-2">
-                    <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5" />
-                    <div className="flex-1">
-                      <p className="font-medium text-sm text-amber-800">GPS Location Required</p>
-                      <p className="text-xs text-amber-600 mt-1">
-                        You must capture your current GPS location while in the classroom. Participants must be within
-                        50 meters to check in.
-                      </p>
-
-                      {qrGpsSet ? (
-                        <div className="mt-2 p-2 bg-green-100 rounded text-xs text-green-800">
-                          <CheckCircle className="h-4 w-4 inline mr-1" />
-                          Location captured: {qrGpsLat?.toFixed(6)}, {qrGpsLng?.toFixed(6)}
-                        </div>
-                      ) : (
-                        <Button onClick={captureGPSLocation} size="sm" className="mt-2 bg-amber-600 hover:bg-amber-700">
-                          <MapPin className="h-4 w-4 mr-1" />
-                          Capture My Location
-                        </Button>
-                      )}
-
-                      {gpsError && <p className="text-xs text-red-600 mt-2">{gpsError}</p>}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <Button
-                onClick={handleGenerateQRCode}
-                disabled={!qrSelectedClass || (!qrIsVirtual && !qrGpsSet)}
-                className="w-full bg-green-600 hover:bg-green-700"
-              >
-                Generate QR Code
-              </Button>
-            </div>
-          ) : (
-            <div className="space-y-4 text-center">
-              <div className="bg-white p-4 rounded-lg inline-block mx-auto">
-                {/* QR Code Display - would use a real QR library in production */}
-                <div className="w-48 h-48 bg-gray-900 mx-auto flex items-center justify-center relative">
-                  <div className="absolute inset-2 grid grid-cols-8 grid-rows-8 gap-0.5">
-                    {Array.from({ length: 64 }).map((_, i) => (
-                      <div key={i} className={`${Math.random() > 0.5 ? "bg-white" : "bg-gray-900"}`} />
-                    ))}
-                  </div>
-                </div>
-                <p className="text-xs text-gray-500 mt-2 font-mono">{generatedQRCode}</p>
-              </div>
-
-              <div className="text-sm text-gray-600">
-                <p className="font-medium">{qrSelectedClass?.name}</p>
-                <p>
-                  {qrSelectedClass?.day} at {qrSelectedClass?.time}
-                </p>
-                {qrIsVirtual ? (
-                  <p className="text-blue-600 mt-1">Virtual Class</p>
-                ) : (
-                  <p className="text-green-600 mt-1">In-Person (GPS Required)</p>
-                )}
-              </div>
-
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  className="flex-1 bg-transparent"
-                  onClick={() => {
-                    setGeneratedQRCode(null)
-                    setQrGpsSet(false)
-                    setQrGpsLat(null)
-                    setQrGpsLng(null)
-                    // Potentially reset other QR related states too if needed for a fresh generation
-                    setQrIsVirtual(false)
-                    setQrVirtualLink("")
-                    setQrSelectedClass(null)
-                  }}
-                >
-                  Generate New
-                </Button>
-                <Button className="flex-1 bg-green-600 hover:bg-green-700">Download QR</Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
 
       {/* Class Detail Modal */}
       <Dialog open={showClassDetail} onOpenChange={setShowClassDetail}>

@@ -8,6 +8,8 @@ export interface User {
   name: string
   email: string
   phone?: string
+  status?: "active" | "inactive"
+  isProfileOnly?: boolean
   dateOfBirth?: string
   address?: string
   emergencyContact?: string
@@ -228,9 +230,6 @@ export interface ClassQRCode {
   room: string
   isVirtual: boolean
   virtualLink?: string
-  gpsLatitude: number | null
-  gpsLongitude: number | null
-  gpsRadius: number // meters - how close participant must be
   generatedAt: string
   expiresAt: string // QR codes expire after class time
   code: string // unique code embedded in QR
@@ -242,8 +241,6 @@ export interface CheckIn {
   qrCodeId: string
   sessionId: string
   checkedInAt: string
-  gpsLatitude: number | null
-  gpsLongitude: number | null
   wasVirtual: boolean
   verified: boolean
 }

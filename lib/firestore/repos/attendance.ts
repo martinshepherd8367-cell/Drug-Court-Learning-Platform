@@ -30,6 +30,17 @@ export class AttendanceRepo {
     }
 
     static async recordAttendance(data: NewAttendanceRecord): Promise<string> {
+        const query = await this.col(data.participantId)
+            .where("sessionId", "==", data.sessionId)
+            .limit(1)
+            .get();
+
+        if (!query.empty) {
+            const doc = query.docs[0];
+            await doc.ref.update(data as any);
+            return doc.id;
+        }
+
         const ref = await this.col(data.participantId).add(data);
         return ref.id;
     }

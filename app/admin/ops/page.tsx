@@ -42,11 +42,7 @@ function sanitizeForClient(value: any): any {
     return value;
 }
 
-export default async function AdminOpsPage({
-    searchParams,
-}: {
-    searchParams: { date?: string };
-}) {
+export default async function AdminOpsPage() {
     const user = await getAuthenticatedUser();
 
     if (!user || user.role !== "admin") {
@@ -55,83 +51,46 @@ export default async function AdminOpsPage({
 
     const db = getDb();
 
-    // Default to today in NY (User's timezone roughly)
-    // If date is provided, use it.
-    let targetDate = searchParams.date;
-    if (!targetDate) {
-        const now = new Date();
-        const parts = new Intl.DateTimeFormat('en-US', {
-            timeZone: "America/New_York",
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit'
-        }).formatToParts(now);
-
-        const y = parts.find(p => p.type === 'year')?.value;
-        const m = parts.find(p => p.type === 'month')?.value;
-        const d = parts.find(p => p.type === 'day')?.value;
-        targetDate = `${y}-${m}-${d}`;
-    }
-
-    // Schedule Events
-    const eventsSnap = await db
-        .collection("scheduleEvents")
-        .where("date", "==", targetDate)
-        .get();
-
-    const events = eventsSnap.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-    }));
-
-    // Enrollments (Active)
-    const enrollmentsSnap = await db
-        .collection("enrollments")
-        .where("status", "==", "active")
-        .get();
-
-    const enrollments = enrollmentsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-
-    // Users (Participants) for names
+    // Fetch all participants
     const usersSnap = await db
         .collection("users")
         .where("role", "==", "participant")
         .get();
+    const participants = usersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-    const users = usersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // Fetch all programs
+    const programsSnap = await db.collection("programs").get();
+    const programs = programsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-    // Attendance for today
-    let attendance: any[] = [];
-    try {
-        const attSnap = await db.collectionGroup("attendance").where("date", "==", targetDate).get();
-        attendance = attSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-    } catch (e) {
-        console.error("Error fetching attendance by date:", e);
-    }
+    // Fetch all enrollments
+    const enrollmentsSnap = await db.collection("enrollments").get();
+    const enrollments = enrollmentsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-    // Takeaways (Homework)
-    const sessionIds = Array.from(new Set(events.map((e: any) => e.sessionId))).filter(Boolean);
-    let takeaways: any[] = [];
+    // Fetch all attendance records (for absence review)
+    const attendanceSnap = await db.collectionGroup("attendance").get();
+    const attendance = attendanceSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-    if (sessionIds.length > 0) {
-        try {
-            const takeawaysSnap = await db.collectionGroup("homeworkSubmissions")
-                .where("sessionId", "in", sessionIds)
-                .get();
-            takeaways = takeawaysSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        } catch (e) {
-            console.error("Error fetching takeaways:", e);
-        }
-    }
+    // Fetch all facilitators for assignment dropdowns
+    const facilitatorsSnap = await db.collection("users").where("role", "==", "facilitator").get();
+    const facilitators = facilitatorsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    // Fetch makeup assignments
+    const makeupSnap = await db.collection("makeupAssignments").get();
+    const makeupAssignments = makeupSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    // Fetch all schedule events
+    const eventsSnap = await db.collection("scheduleEvents").get();
+    const allEvents = eventsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
     return (
         <OpsClient
-            initialDate={targetDate}
-            events={sanitizeForClient(events)}
+            participants={sanitizeForClient(participants)}
+            programs={sanitizeForClient(programs)}
             enrollments={sanitizeForClient(enrollments)}
-            users={sanitizeForClient(users)}
             attendance={sanitizeForClient(attendance)}
-            takeaways={sanitizeForClient(takeaways)}
+            facilitators={sanitizeForClient(facilitators)}
+            allEvents={sanitizeForClient(allEvents)}
+            makeupAssignments={sanitizeForClient(makeupAssignments)}
         />
     );
 }

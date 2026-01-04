@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuth } from "@/lib/firebase-admin";
+import { getAuth, getDb } from "@/lib/firebase-admin";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +16,17 @@ export async function POST(req: NextRequest) {
         const expiresIn = 5 * 24 * 60 * 60 * 1000; // 5 days
         const sessionCookie = await getAuth().createSessionCookie(idToken, { expiresIn });
 
-        const res = NextResponse.json({ uid: decoded.uid }, { status: 200 });
+        // Fetch user role for redirect logic
+        const userDoc = await getDb().collection("users").doc(decoded.uid).get();
+        const userData = userDoc.data();
+
+        if (userData?.status === "inactive") {
+            return NextResponse.json({ error: "Your account is inactive. Please contact your clinical director." }, { status: 403 });
+        }
+
+        const role = userData?.role || "participant";
+
+        const res = NextResponse.json({ uid: decoded.uid, role }, { status: 200 });
         res.cookies.set("session", sessionCookie, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",

@@ -138,6 +138,17 @@ interface StoreState {
   addQuickNote: (note: Omit<QuickNote, "id">) => void
   addTakeaway: (takeaway: Omit<Takeaway, "id">) => Promise<void>
 
+  // Setters for hydration/updates
+  setUsers: (users: User[]) => void
+  setPrograms: (programs: Program[]) => void
+  setEnrollments: (enrollments: Enrollment[]) => void
+  setMessages: (messages: Message[]) => void
+  setAttendance: (attendance: Attendance[]) => void
+  setJournalEntries: (entries: JournalEntry[]) => void
+  setHomeworkSubmissions: (submissions: HomeworkSubmission[]) => void
+  setCompletedSessions: (sessions: CompletedSession[]) => void
+  setTakeaways: (takeaways: Takeaway[]) => void
+
   // Program management functions
   addProgram: (program: Omit<Program, "id">) => void
   updateProgram: (id: string, updates: Partial<Program>) => void
@@ -183,9 +194,7 @@ interface StoreState {
   validateCheckIn: (
     participantId: string,
     qrCode: string,
-    gpsLat: number | null,
-    gpsLng: number | null,
-  ) => { success: boolean; error?: string; isVirtual?: boolean }
+  ) => { success: boolean; error?: string; qrCodeRecord?: ClassQRCode }
   recordCheckIn: (checkIn: Omit<CheckIn, "id">) => void
   getCheckInsForSession: (sessionId: string) => CheckIn[]
   markAbsentAfterClass: (sessionId: string, programId: string, programName: string, sessionNumber: number) => void
@@ -842,9 +851,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     (
       participantId: string,
       qrCode: string,
-      gpsLat: number | null,
-      gpsLng: number | null,
-    ): { success: boolean; error?: string; isVirtual?: boolean } => {
+    ): { success: boolean; error?: string; qrCodeRecord?: ClassQRCode } => {
       const qrCodeRecord = classQRCodes.find((qr) => qr.code === qrCode)
 
       if (!qrCodeRecord) {
@@ -855,39 +862,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         return { success: false, error: "This QR code has expired. Please ask your facilitator for a new code." }
       }
 
-      // Virtual class - no GPS check needed
-      if (qrCodeRecord.isVirtual) {
-        return { success: true, isVirtual: true }
-      }
-
-      // In-person class - GPS validation required
-      if (!gpsLat || !gpsLng) {
-        return { success: false, error: "Location access is required. Please enable GPS and try again." }
-      }
-
-      if (!qrCodeRecord.gpsLatitude || !qrCodeRecord.gpsLongitude) {
-        return { success: false, error: "This class location has not been set. Please contact your facilitator." }
-      }
-
-      // Calculate distance using Haversine formula
-      const R = 6371e3 // Earth's radius in meters
-      const φ1 = (gpsLat * Math.PI) / 180
-      const φ2 = (qrCodeRecord.gpsLatitude * Math.PI) / 180
-      const Δφ = ((qrCodeRecord.gpsLatitude - gpsLat) * Math.PI) / 180
-      const Δλ = ((qrCodeRecord.gpsLongitude - gpsLng) * Math.PI) / 180
-
-      const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2)
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-      const distance = R * c // Distance in meters
-
-      if (distance > qrCodeRecord.gpsRadius) {
-        return {
-          success: false,
-          error: `You are too far from the classroom (${Math.round(distance)}m away). Please move closer and try again.`,
-        }
-      }
-
-      return { success: true, isVirtual: false }
+      return { success: true, qrCodeRecord }
     },
     [classQRCodes],
   )
@@ -974,6 +949,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         takeaways,
         currentUser,
         setCurrentUser,
+        setUsers,
+        setPrograms,
+        setEnrollments,
+        setMessages,
+        setAttendance,
+        setJournalEntries,
+        setHomeworkSubmissions,
+        setCompletedSessions,
+        setTakeaways,
         launchActivity,
         closeActivity,
         submitResponse,

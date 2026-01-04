@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Calendar, Mail, ClipboardList, Circle, ChevronRight, Send, Trophy, Star, Award, Flame, CheckCircle } from "lucide-react"
+import { Calendar, Mail, ClipboardList, Circle, ChevronRight, Send, Trophy, Star, Award, Flame, CheckCircle, BookOpen } from "lucide-react"
 import React from "react"
 import type { UserRole } from "@/lib/types"
 
@@ -632,8 +632,8 @@ export default function ParticipantDashboard() {
             <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6">
               <CardTitle className="flex items-center justify-between text-base sm:text-lg">
                 <span className="flex items-center gap-2">
-                  <ClipboardList className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
-                  Daily Journal
+                  <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
+                  My Reflections & Journals
                 </span>
                 <Button size="sm" variant="outline" onClick={() => router.push("/participant/journal")}>
                   View All
@@ -674,7 +674,7 @@ export default function ParticipantDashboard() {
             <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6">
               <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                 <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
-                My Progress & History
+                Session Records
               </CardTitle>
             </CardHeader>
             <CardContent className="px-3 sm:px-6">
@@ -684,6 +684,9 @@ export default function ParticipantDashboard() {
                   <TabsTrigger value="takeaways">Takeaways</TabsTrigger>
                 </TabsList>
                 <TabsContent value="attendance" className="space-y-2 max-h-[300px] overflow-y-auto">
+                  <div className="text-[10px] sm:text-xs text-gray-500 mb-3 ml-1 uppercase tracking-wider font-bold bg-gray-50 p-2 rounded inline-block border border-gray-100">
+                    Attendance recorded by facilitator
+                  </div>
                   {attendance.filter(a => a.participantId === participantId).length > 0 ? (
                     attendance.filter(a => a.participantId === participantId)
                       .sort((a, b) => b.sessionId.localeCompare(a.sessionId))
@@ -707,6 +710,9 @@ export default function ParticipantDashboard() {
                   )}
                 </TabsContent>
                 <TabsContent value="takeaways" className="space-y-3 max-h-[300px] overflow-y-auto">
+                  <div className="text-[10px] sm:text-xs text-blue-600 mb-3 ml-1 uppercase tracking-wider font-bold bg-blue-50 p-2 rounded inline-block border border-blue-100">
+                    Facilitator notes shared with you
+                  </div>
                   {takeaways.filter(t => t.participantId === participantId).length > 0 ? (
                     takeaways.filter(t => t.participantId === participantId)
                       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
@@ -725,7 +731,6 @@ export default function ParticipantDashboard() {
               </Tabs>
             </CardContent>
           </Card>
-
           {/* My Programs Card */}
           <Card className="card-transparent">
             <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6">

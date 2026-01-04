@@ -40,6 +40,7 @@ import {
   StickyNote,
   Send,
   Video,
+  QrCode,
 } from "lucide-react"
 
 const SECTIONS = [
@@ -76,7 +77,8 @@ export default function FacilitatorSessionView() {
     takeaways,
     completedSessions,
     attendance,
-    currentUser
+    currentUser,
+    generateClassQRCode,
   } = useStore()
 
   const programSlug = params.programSlug as string
@@ -102,6 +104,8 @@ export default function FacilitatorSessionView() {
   const [isEnding, setIsEnding] = useState(false)
   const [copiedCaseworx, setCopiedCaseworx] = useState(false)
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false)
+  const [showQRModal, setShowQRModal] = useState(false)
+  const [generatedQR, setGeneratedQR] = useState<string | null>(null)
 
   // Get enrollments for this program/class
   const participants = useMemo(() => {
@@ -109,12 +113,14 @@ export default function FacilitatorSessionView() {
     const enrollments = getEnrollmentsByProgram(program.id)
     const activeEnrollments = enrollments.filter((e) => {
       if (e.status !== "active") return false
+      // Enforce facilitator boundaries
+      if (currentUser?.role === "facilitator" && e.schedule?.facilitatorId !== currentUser.id) return false
+
       if (classId && e.schedule) {
         const eKey = `${e.programId}-${e.schedule.day}-${e.schedule.time}-${e.schedule.room}`
         return eKey === classId
       }
-      // If no specific classId context, only show participants assigned to this facilitator
-      return e.schedule?.facilitatorId === currentUser?.id
+      return true
     })
     return activeEnrollments.map((e) => users.find((u) => u.id === e.participantId)).filter(Boolean) as any[]
   }, [program, getEnrollmentsByProgram, classId, users, currentUser])
@@ -200,6 +206,24 @@ export default function FacilitatorSessionView() {
     )
   }
 
+  if (currentUser?.role === 'facilitator' && participants.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <RoleNav />
+        <main className="container mx-auto px-6 py-8">
+          <div className="text-center py-12">
+            <h1 className="text-2xl font-bold text-gray-900 mb-2 text-red-600">Access Denied</h1>
+            <p className="text-gray-600 mb-4">You are not assigned to facilitate this class session.</p>
+            <Button onClick={() => router.push("/facilitator")}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Return to Dashboard
+            </Button>
+          </div>
+        </main>
+      </div>
+    )
+  }
+
   // Get prompts for current section
   const getSectionPrompts = (sectionId: SectionId) => {
     return session.facilitatorPrompts.filter((p) => p.section === sectionId)
@@ -248,6 +272,23 @@ export default function FacilitatorSessionView() {
     router.push(`/facilitator/programs/${programSlug}/sessions/${num}`)
   }
 
+  const handleShowQR = () => {
+    if (!program || !session) return
+    const qr = generateClassQRCode({
+      facilitatorId: currentUser?.id || "fac-1",
+      programId: program.id,
+      programName: program.name,
+      sessionNumber: session.sessionNumber,
+      day: new Date().toLocaleDateString('en-US', { weekday: 'long' }),
+      time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      room: "Classroom",
+      isVirtual: searchParams.get("isVirtual") === "true",
+      expiresAt: new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString(),
+    })
+    setGeneratedQR(qr.code)
+    setShowQRModal(true)
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <RoleNav />
@@ -285,6 +326,13 @@ export default function FacilitatorSessionView() {
               <Clock className="h-4 w-4 text-gray-600" />
               <span className="font-mono text-sm">{formatTime(elapsedTime)}</span>
             </div>
+
+            {sessionStarted && !sessionEnded && !isCompleted && (
+              <Button onClick={handleShowQR} variant="outline" className="gap-2 border-green-200 bg-green-50 text-green-700 hover:bg-green-100">
+                <QrCode className="h-4 w-4" />
+                Attendance QR
+              </Button>
+            )}
 
             {/* Session Controls */}
             {!sessionStarted ? (
@@ -934,6 +982,38 @@ export default function FacilitatorSessionView() {
             >
               {isEnding ? "Ending..." : "End Session & Save Roster"}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Attendance QR Modal */}
+      <Dialog open={showQRModal} onOpenChange={setShowQRModal}>
+        <DialogContent className="max-w-md text-center">
+          <DialogHeader>
+            <DialogTitle>Attendance QR Code</DialogTitle>
+            <DialogDescription>
+              Participants can scan this code to record their attendance.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-8 space-y-4">
+            <div className="bg-white p-4 rounded-xl border-4 border-gray-100 inline-block mx-auto shadow-xl">
+              <div className="w-64 h-64 bg-gray-900 mx-auto flex items-center justify-center relative">
+                <div className="absolute inset-2 grid grid-cols-10 grid-rows-10 gap-0.5">
+                  {Array.from({ length: 100 }).map((_, i) => (
+                    <div key={i} className={`${Math.random() > 0.5 ? "bg-white" : "bg-gray-900"}`} />
+                  ))}
+                </div>
+              </div>
+              <p className="text-xs text-gray-400 mt-4 font-mono select-all">{generatedQR}</p>
+            </div>
+            <div className="text-sm text-gray-500">
+              <p className="font-medium text-gray-900">{program?.name}</p>
+              <p>Session {session?.sessionNumber}: {session?.title}</p>
+              <p className="mt-2 text-amber-600 font-medium">Valid for 3 hours</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setShowQRModal(false)} className="w-full">Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

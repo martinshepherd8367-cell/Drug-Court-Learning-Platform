@@ -17,9 +17,10 @@ export async function getAuthenticatedUser(): Promise<AuthedUser | null> {
     const decoded = await getAuth().verifySessionCookie(session, true);
 
     const userDoc = await getDb().collection("users").doc(decoded.uid).get();
-    const role = userDoc.exists ? (userDoc.data()?.role as AuthedUser["role"] | undefined) : undefined;
+    const userData = userDoc.data();
+    const role = userDoc.exists ? (userData?.role as AuthedUser["role"] | undefined) : undefined;
 
-    if (!role) return null;
+    if (!role || userData?.status === "inactive") return null;
 
     return {
       uid: decoded.uid,

@@ -93,6 +93,8 @@ export default function FacilitatorDashboard() {
   const [selectedHomework, setSelectedHomework] = useState<any | null>(null)
   const [feedbackText, setFeedbackText] = useState("")
   const [showStartClass, setShowStartClass] = useState(false) // Add state for start class modal
+  const [messageError, setMessageError] = useState<string | null>(null)
+  const [isSending, setIsSending] = useState(false)
 
   const [showMakeupAssignments, setShowMakeupAssignments] = useState(false)
   const [selectedMakeupParticipant, setSelectedMakeupParticipant] = useState<MakeupAssignment | null>(null)
@@ -124,6 +126,7 @@ export default function FacilitatorDashboard() {
     const classMap: Record<string, any> = {};
     enrollments.forEach(e => {
       if (!e.schedule || e.status !== 'active') return;
+      if (currentUser?.role === 'facilitator' && e.schedule.facilitatorId !== currentUser.id) return;
 
       // Group by day/time/room/program to form a "class"
       const key = `${e.programId}-${e.schedule.day}-${e.schedule.time}-${e.schedule.room}`;
@@ -140,9 +143,11 @@ export default function FacilitatorDashboard() {
           session: e.currentSessionNumber,
           location: e.schedule.room,
           facilitator: fac?.name || "Unknown Facilitator",
-          enrolled: 0
+          enrolled: 0,
+          participants: []
         };
       }
+      classMap[key].participants.push(e);
       classMap[key].enrolled++;
     });
     return Object.values(classMap);
@@ -370,8 +375,8 @@ export default function FacilitatorDashboard() {
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-bold text-gray-900">Facilitator Dashboard</h1>
-              <p className="text-sm text-gray-600">Welcome, Martin</p>
+              <h1 className="text-xl font-bold text-gray-900">My Classes</h1>
+              <p className="text-sm text-gray-600">Welcome, {currentUser?.name || "Facilitator"}</p>
             </div>
 
             <div className="flex items-center gap-2">
@@ -499,9 +504,9 @@ export default function FacilitatorDashboard() {
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2">
               <Calendar className="h-5 w-5 text-green-600" />
-              Weekly Schedule
+              My Active Classes
             </CardTitle>
-            <CardDescription>Click a class to view details and participants</CardDescription>
+            <CardDescription>Select a class instance to manage attendance and session details</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
@@ -536,7 +541,12 @@ export default function FacilitatorDashboard() {
                                 <div className="text-xs">
                                   <div className="font-bold text-green-800">{cls.name}</div>
                                   <div className="text-green-600">Session {cls.session}</div>
-                                  <div className="text-gray-600">{cls.location}</div>
+                                  <div className="text-gray-600 flex items-center justify-between">
+                                    <span>{cls.location}</span>
+                                    <span className="opacity-70 italic text-[10px]">
+                                      {cls.location.toLowerCase().includes("virtual") || cls.location.toLowerCase().includes("zoom") ? "Virtual" : "In-person"}
+                                    </span>
+                                  </div>
                                 </div>
                               )}
                             </td>
@@ -678,8 +688,8 @@ export default function FacilitatorDashboard() {
         {/* Programs List */}
         <Card className="card-transparent">
           <CardHeader>
-            <CardTitle>Programs</CardTitle>
-            <CardDescription>Click a program to view sessions and manage content</CardDescription>
+            <CardTitle>Program Curriculum</CardTitle>
+            <CardDescription>View session materials and session guides for each program</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -719,7 +729,7 @@ export default function FacilitatorDashboard() {
                             </span>
                             <span className="flex items-center gap-1">
                               <Users className="h-3 w-3" />
-                              {participants.length} Participants
+                              {participants.length} Participant{participants.length !== 1 ? 's' : ''}
                             </span>
                           </div>
                         </div>
@@ -774,7 +784,11 @@ export default function FacilitatorDashboard() {
                       <CardContent className="p-4 flex items-center justify-between">
                         <div>
                           <div className="font-medium">{program.name}</div>
-                          <div className="text-sm text-gray-500">{participants.length} participants enrolled</div>
+                          <div className="text-sm text-gray-500">
+                            {participants.length > 0
+                              ? `${participants.length} participants enrolled`
+                              : "Participants not yet enrolled"}
+                          </div>
                         </div>
                         <ChevronRight className="h-5 w-5 text-gray-400" />
                       </CardContent>
@@ -1316,17 +1330,24 @@ export default function FacilitatorDashboard() {
               <div className="border-t pt-4">
                 <h4 className="font-medium mb-3">Enrolled Participants</h4>
                 <div className="space-y-2">
-                  {["John Smith", "Sarah Johnson", "Mike Davis", "Emily Brown", "James Wilson"]
-                    .slice(0, selectedClass.enrolled)
-                    .map((name, i) => (
-                      <div key={i} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                        <div>
-                          <div className="font-medium text-sm">{name}</div>
-                          <div className="text-xs text-gray-500">Session {selectedClass.session} of 16</div>
+                  {selectedClass.participants.length > 0 ? (
+                    selectedClass.participants.map((enrollment: Enrollment, i: number) => {
+                      const participantUser = users.find(u => u.id === enrollment.participantId);
+                      return (
+                        <div key={i} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                          <div>
+                            <div className="font-medium text-sm">{participantUser?.name || "Unknown Participant"}</div>
+                            <div className="text-xs text-gray-500">Session {enrollment.currentSessionNumber} of {programs.find(p => p.id === enrollment.programId)?.totalSessions || 16}</div>
+                          </div>
+                          <Badge className={enrollment.status === 'active' ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}>
+                            {enrollment.status.charAt(0).toUpperCase() + enrollment.status.slice(1)}
+                          </Badge>
                         </div>
-                        <Badge className="bg-green-100 text-green-800">Active</Badge>
-                      </div>
-                    ))}
+                      )
+                    })
+                  ) : (
+                    <p className="text-sm text-gray-500 italic">No participants enrolled in this class.</p>
+                  )}
                 </div>
               </div>
 
@@ -1335,7 +1356,10 @@ export default function FacilitatorDashboard() {
                 <Button
                   className="flex-1 bg-green-600 hover:bg-green-700"
                   onClick={() => {
-                    setShowStartClass(true)
+                    const programSlug = programs.find(p => p.id === selectedClass.programId)?.slug;
+                    if (programSlug) {
+                      router.push(`/facilitator/programs/${programSlug}/sessions/${selectedClass.session}?classId=${selectedClass.id}`);
+                    }
                   }}
                 >
                   <Play className="mr-2 h-4 w-4" />
@@ -1344,8 +1368,10 @@ export default function FacilitatorDashboard() {
                 <Button
                   className="flex-1 bg-blue-600 hover:bg-blue-700"
                   onClick={() => {
-                    setQrIsVirtual(true) // Set to virtual
-                    setShowQRGenerator(true) // Open QR generator to get the virtual link
+                    const programSlug = programs.find(p => p.id === selectedClass.programId)?.slug;
+                    if (programSlug) {
+                      router.push(`/facilitator/programs/${programSlug}/sessions/${selectedClass.session}?classId=${selectedClass.id}&isVirtual=true`);
+                    }
                   }}
                 >
                   <Video className="mr-2 h-4 w-4" />
@@ -1419,82 +1445,44 @@ export default function FacilitatorDashboard() {
               </div>
             )}
 
-            <div>
-              <label className="text-sm font-medium mb-2 block">To (Select Role):</label>
-              <Select value={composeToRole} onValueChange={(val: any) => { setComposeToRole(val); setComposeToId(""); setComposeSearch(""); }}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="facilitator">Facilitator</SelectItem>
-                  <SelectItem value="participant">Participant</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {composeToRole && (
-              <div>
-                <label className="text-sm font-medium mb-2 block">Search {composeToRole}:</label>
-                <Input
-                  className="mb-2"
-                  placeholder="Type name to filter..."
-                  value={composeSearch}
-                  onChange={(e) => setComposeSearch(e.target.value)}
-                />
-                <Select value={composeToId} onValueChange={setComposeToId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={`Select ${composeToRole}`} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {users
-                      .filter((u: any) => u.role === (composeToRole as UserRole) && u.id !== currentUser?.id)
-                      .filter((u: any) => u.name.toLowerCase().includes(composeSearch.toLowerCase()))
-                      .map((u: any) => (
-                        <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>
-                      ))
-                    }
-                  </SelectContent>
-                </Select>
-              </div>
+            {messageError && (
+              <p className="text-sm text-red-600 font-medium">{messageError}</p>
             )}
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">Message</label>
-              <Textarea
-                value={messageText}
-                onChange={(e) => setMessageText(e.target.value)}
-                placeholder="Type your message..."
-                rows={4}
-              />
-            </div>
             <Button
               className="bg-green-600 hover:bg-green-700 w-full"
-              onClick={() => {
+              onClick={async () => {
                 if (!messageText.trim() || !composeToId || !currentUser) return
 
-                addMessage({
-                  senderId: currentUser.id,
-                  senderRole: currentUser.role,
-                  recipientId: composeToId,
-                  recipientRole: composeToRole as UserRole,
-                  title: "Message from Facilitator",
-                  content: messageText,
-                  fromName: currentUser.name,
-                  readAt: null,
-                  createdAt: new Date().toISOString()
-                })
+                setIsSending(true)
+                setMessageError(null)
 
-                setShowMessageCompose(false)
-                setMessageText("")
-                setComposeToId("")
-                setComposeToRole("")
-                setComposeSearch("")
+                try {
+                  await addMessage({
+                    senderId: currentUser.id,
+                    senderRole: currentUser.role,
+                    recipientId: composeToId,
+                    recipientRole: composeToRole as UserRole,
+                    title: "Message from Facilitator",
+                    content: messageText,
+                    fromName: currentUser.name,
+                    readAt: null,
+                    createdAt: new Date().toISOString()
+                  })
+
+                  setShowMessageCompose(false)
+                  setMessageText("")
+                  setComposeToId("")
+                  setComposeToRole("")
+                  setComposeSearch("")
+                } catch (e) {
+                  setMessageError("Message could not be sent")
+                } finally {
+                  setIsSending(false)
+                }
               }}
-              disabled={!composeToId || !messageText.trim()}
+              disabled={!composeToId || !messageText.trim() || isSending}
             >
-              <Send className="h-4 w-4 mr-2" />
-              Send Message
+              {isSending ? "Sending..." : "Send Message"}
             </Button>
           </div>
         </DialogContent>

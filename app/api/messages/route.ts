@@ -16,6 +16,13 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
 
+        // Role enforcement
+        if (user.role === "participant") {
+            if (recipientRole !== "admin" && recipientRole !== "facilitator") {
+                return NextResponse.json({ error: "Participants can only message staff" }, { status: 403 });
+            }
+        }
+
         const db = getDb();
 
         const newMessage = {
@@ -56,6 +63,17 @@ export async function PATCH(req: Request) {
         }
 
         const db = getDb();
+        const messageDoc = await db.collection("messages").doc(messageId).get();
+
+        if (!messageDoc.exists) {
+            return NextResponse.json({ error: "Message not found" }, { status: 404 });
+        }
+
+        const messageData = messageDoc.data();
+        if (messageData?.recipientId !== user.uid) {
+            return NextResponse.json({ error: "Forbidden: You are not the recipient" }, { status: 403 });
+        }
+
         await db.collection("messages").doc(messageId).update({
             readAt: readAt || new Date().toISOString()
         });

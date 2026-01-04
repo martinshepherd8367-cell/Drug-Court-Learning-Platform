@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
   Dialog,
@@ -33,18 +34,23 @@ import {
   Mail,
   MapPin,
   FileText,
+  Trash2,
 } from "lucide-react"
 import type { User } from "@/lib/types"
 
 export default function EnrollmentManagement() {
   const router = useRouter()
-  const { currentUser, users, programs, enrollments, updateEnrollment, addEnrollment, addMessage } = useStore()
+  const { currentUser, users, programs, enrollments, updateEnrollment, addEnrollment, removeEnrollment, addMessage } = useStore()
 
   const [showEnroll, setShowEnroll] = useState(false)
   const [selectedParticipant, setSelectedParticipant] = useState("")
   const [selectedProgram, setSelectedProgram] = useState("")
   const [showParticipantDetail, setShowParticipantDetail] = useState(false)
   const [selectedParticipantDetail, setSelectedParticipantDetail] = useState<User | null>(null)
+  const [selectedDay, setSelectedDay] = useState("Monday")
+  const [selectedTime, setSelectedTime] = useState("10:00 AM")
+  const [selectedFacilitator, setSelectedFacilitator] = useState("")
+  const [selectedRoom, setSelectedRoom] = useState("A101")
 
   const participants = users.filter((u) => u.role === "participant")
 
@@ -102,16 +108,15 @@ export default function EnrollmentManagement() {
   }
 
   const handleEnroll = () => {
-    if (selectedParticipant && selectedProgram) {
+    if (selectedParticipant && selectedProgram && selectedFacilitator) {
       const program = programs.find((p) => p.id === selectedProgram)
-      const participant = users.find((u) => u.id === selectedParticipant)
+      const facilitator = users.find((u) => u.id === selectedFacilitator)
 
-      // Mock class schedule info (in real app, this would come from a schedule database)
       const classSchedule = {
-        day: "Monday",
-        time: "10:00 AM",
-        facilitator: "Sarah Johnson",
-        room: "A101",
+        day: selectedDay,
+        time: selectedTime,
+        facilitatorId: selectedFacilitator,
+        room: selectedRoom,
       }
 
       // Create enrollment
@@ -121,6 +126,7 @@ export default function EnrollmentManagement() {
         currentSessionNumber: 1,
         status: "active",
         startedAt: new Date().toISOString(),
+        schedule: classSchedule
       })
 
       addMessage({
@@ -129,7 +135,7 @@ export default function EnrollmentManagement() {
         recipientId: selectedParticipant,
         recipientRole: "participant",
         title: `Welcome to ${program?.name}!`,
-        content: `You have been enrolled in ${program?.name}.\n\nClass Details:\n- Day: ${classSchedule.day}\n- Time: ${classSchedule.time}\n- Facilitator: ${classSchedule.facilitator}\n- Room: ${classSchedule.room}\n\nYour first session starts soon. Check your calendar for the full schedule. Good luck!`,
+        content: `You have been enrolled in ${program?.name}.\n\nClass Details:\n- Day: ${classSchedule.day}\n- Time: ${classSchedule.time}\n- Facilitator: ${facilitator?.name || "Facilitator"}\n- Room: ${classSchedule.room}\n\nYour first session starts soon. Check your calendar for the full schedule. Good luck!`,
         fromName: currentUser?.name || "Admin",
         readAt: null,
         createdAt: new Date().toISOString(),
@@ -138,6 +144,7 @@ export default function EnrollmentManagement() {
       setShowEnroll(false)
       setSelectedParticipant("")
       setSelectedProgram("")
+      setSelectedFacilitator("")
     }
   }
 
@@ -264,6 +271,18 @@ export default function EnrollmentManagement() {
                               </>
                             )}
                           </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="ml-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            onClick={() => {
+                              if (confirm("Are you sure you want to unenroll this participant?")) {
+                                removeEnrollment(enrollment.id)
+                              }
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </TableCell>
                       </TableRow>
                     )
@@ -320,6 +339,61 @@ export default function EnrollmentManagement() {
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Day</Label>
+                <Select value={selectedDay} onValueChange={setSelectedDay}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"].map((d) => (
+                      <SelectItem key={d} value={d}>
+                        {d}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Time</Label>
+                <Select value={selectedTime} onValueChange={setSelectedTime}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {["9:00 AM", "10:00 AM", "10:30 AM", "1:00 PM", "4:00 PM", "5:30 PM", "6:00 PM", "7:00 PM"].map((t) => (
+                      <SelectItem key={t} value={t}>
+                        {t}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Facilitator</Label>
+              <Select value={selectedFacilitator} onValueChange={setSelectedFacilitator}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select facilitator" />
+                </SelectTrigger>
+                <SelectContent>
+                  {users.filter(u => u.role === 'facilitator').map((f) => (
+                    <SelectItem key={f.id} value={f.id}>
+                      {f.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Room</Label>
+              <Input value={selectedRoom} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSelectedRoom(e.target.value)} />
+            </div>
           </div>
 
           <DialogFooter>
@@ -328,7 +402,7 @@ export default function EnrollmentManagement() {
             </Button>
             <Button
               onClick={handleEnroll}
-              disabled={!selectedParticipant || !selectedProgram}
+              disabled={!selectedParticipant || !selectedProgram || !selectedFacilitator}
               className="bg-green-600 hover:bg-green-700"
             >
               Enroll

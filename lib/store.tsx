@@ -16,6 +16,9 @@ import type {
   Message,
   MakeupAssignment,
   MakeupGroup,
+  ScheduleEvent,
+  CompletedSession,
+  Takeaway,
   ClassQRCode,
   CheckIn,
 } from "./types"
@@ -100,6 +103,8 @@ interface StoreState {
   messages: Message[]
   classQRCodes: ClassQRCode[]
   checkIns: CheckIn[]
+  completedSessions: CompletedSession[]
+  takeaways: Takeaway[]
 
   // Current user (for demo)
   currentUser: User | null
@@ -113,15 +118,24 @@ interface StoreState {
   copyCaseworx: (sessionId: string) => string
   markMessageRead: (messageId: string) => void
   addMessage: (message: Omit<Message, "id">) => void
+  completeSession: (data: {
+    classId: string,
+    programId: string,
+    sessionNumber: number,
+    facilitatorId: string,
+    attendance: Record<string, "present" | "absent" | "excused">
+  }) => Promise<any>
 
   // CRUD helpers
   addEnrollment: (enrollment: Omit<Enrollment, "id">) => void
   updateEnrollment: (id: string, updates: Partial<Enrollment>) => void
+  removeEnrollment: (id: string) => void
   addJournalEntry: (entry: Omit<JournalEntry, "id">) => void
   addHomeworkSubmission: (submission: Omit<HomeworkSubmission, "id">) => void
   updateHomeworkSubmission: (id: string, updates: Partial<HomeworkSubmission>) => void
   addFacilitatorNote: (note: Omit<FacilitatorNote, "id">) => void
   addQuickNote: (note: Omit<QuickNote, "id">) => void
+  addTakeaway: (takeaway: Omit<Takeaway, "id">) => Promise<void>
 
   // Program management functions
   addProgram: (program: Omit<Program, "id">) => void
@@ -191,7 +205,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [facilitatorNotes, setFacilitatorNotes] = useState<FacilitatorNote[]>(mockFacilitatorNotes)
   const [quickNotes, setQuickNotes] = useState<QuickNote[]>(mockQuickNotes)
   const [messages, setMessages] = useState<Message[]>(mockMessages)
-  const [currentUser, setCurrentUser] = useState<User | null>(mockUsers[3])
+  const [currentUser, setCurrentUser] = useState<User | null>(null)
 
   // Added makeup group state
   const [makeupGroup, setMakeupGroup] = useState<MakeupGroup>(initialMakeupGroup)
@@ -199,6 +213,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const [classQRCodes, setClassQRCodes] = useState<ClassQRCode[]>([])
   const [checkIns, setCheckIns] = useState<CheckIn[]>([])
+  const [completedSessions, setCompletedSessions] = useState<CompletedSession[]>([])
+  const [takeaways, setTakeaways] = useState<Takeaway[]>([])
   const [isHydrated, setIsHydrated] = useState(false)
 
   // Hydrate from Server
@@ -217,8 +233,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         if (data.journalEntries?.length) setJournalEntries(data.journalEntries);
         if (data.homeworkSubmissions?.length) setHomeworkSubmissions(data.homeworkSubmissions);
         if (data.attendance?.length) setAttendance(data.attendance);
+        if (data.completedSessions?.length) setCompletedSessions(data.completedSessions);
+        if (data.takeaways?.length) setTakeaways(data.takeaways);
 
-        console.log(`Hydrated: ${data.users?.length} users, ${data.journalEntries?.length} journals, ${data.homeworkSubmissions?.length} homework, ${data.attendance?.length} attendance records`);
+        console.log(`Hydrated: ${data.users?.length} users, ${data.completedSessions?.length} completed sessions, ${data.takeaways?.length} takeaways, ${data.attendance?.length} attendance records`);
         setIsHydrated(true);
       } catch (e) {
         console.error("Hydration failed, falling back to mock:", e);
@@ -269,7 +287,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       id: `att-${Date.now()}`,
       participantId,
       sessionId,
+      classId: "individual", // Default for individual endSession
       attended: true,
+      status: "present",
       completedAt: new Date().toISOString(),
     }
     setAttendance((prev) => [...prev, newAttendance])
@@ -285,7 +305,56 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         })
       });
     } catch (e) {
-      console.error("Failed to persist session end:", e);
+      console.error("Failed to record attendance:", e);
+    }
+  }, [])
+
+  const completeSession = useCallback(async (data: {
+    classId: string,
+    programId: string,
+    sessionNumber: number,
+    facilitatorId: string,
+    attendance: Record<string, "present" | "absent" | "excused">
+  }) => {
+    try {
+      const res = await fetch("/api/facilitator/session/complete", {
+        method: "POST",
+        body: JSON.stringify(data)
+      });
+      const result = await res.json();
+      if (result.success) {
+        // Optimistic update of completedSessions
+        const newCompleted: CompletedSession = {
+          id: result.id,
+          classId: data.classId,
+          programId: data.programId,
+          sessionNumber: data.sessionNumber,
+          facilitatorId: data.facilitatorId,
+          completedAt: new Date().toISOString(),
+          attendeeIds: Object.entries(data.attendance).filter(([_, s]) => s === "present").map(([id]) => id),
+          absenteeIds: Object.entries(data.attendance).filter(([_, s]) => s === "absent").map(([id]) => id),
+          excusedIds: Object.entries(data.attendance).filter(([_, s]) => s === "excused").map(([id]) => id),
+        };
+        setCompletedSessions(prev => [...prev, newCompleted]);
+
+        // Optimistic update of attendance
+        setAttendance(prev => {
+          const newRecords: Attendance[] = Object.entries(data.attendance).map(([pId, status]) => ({
+            id: `att-${Date.now()}-${pId}`,
+            participantId: pId,
+            sessionId: `${data.programId}-${data.sessionNumber}`,
+            classId: data.classId,
+            attended: status === "present",
+            status: status as any,
+            completedAt: new Date().toISOString()
+          }));
+          return [...prev, ...newRecords];
+        });
+      }
+      return result;
+    } catch (e) {
+      console.error("Failed to complete session:", e);
+      throw e;
     }
   }, [])
 
@@ -298,12 +367,53 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [programs],
   )
 
-  const addEnrollment = useCallback((enrollment: Omit<Enrollment, "id">) => {
-    setEnrollments((prev) => [...prev, { ...enrollment, id: `enr-${Date.now()}` }])
+  const addEnrollment = useCallback(async (enrollment: Omit<Enrollment, "id">) => {
+    // Optimistic local update
+    const tempId = `enr-${Date.now()}`;
+    setEnrollments((prev) => [...prev, { ...enrollment, id: tempId }])
+
+    // Persist to server
+    try {
+      const res = await fetch("/api/admin/enrollments", {
+        method: "POST",
+        body: JSON.stringify(enrollment)
+      });
+      const data = await res.json();
+      if (data.id) {
+        setEnrollments(prev => prev.map(e => e.id === tempId ? { ...e, id: data.id } : e));
+      }
+    } catch (e) {
+      console.error("Failed to persist enrollment:", e);
+    }
   }, [])
 
-  const updateEnrollment = useCallback((id: string, updates: Partial<Enrollment>) => {
+  const updateEnrollment = useCallback(async (id: string, updates: Partial<Enrollment>) => {
+    // Optimistic update
     setEnrollments((prev) => prev.map((e) => (e.id === id ? { ...e, ...updates } : e)))
+
+    // Persist
+    try {
+      await fetch("/api/admin/enrollments", {
+        method: "PATCH",
+        body: JSON.stringify({ id, ...updates })
+      });
+    } catch (e) {
+      console.error("Failed to update enrollment on server:", e);
+    }
+  }, [])
+
+  const removeEnrollment = useCallback(async (id: string) => {
+    // Optimistic update
+    setEnrollments((prev) => prev.filter((e) => e.id !== id))
+
+    // Persist
+    try {
+      await fetch(`/api/admin/enrollments?id=${id}`, {
+        method: "DELETE"
+      });
+    } catch (e) {
+      console.error("Failed to delete enrollment on server:", e);
+    }
   }, [])
 
   const addJournalEntry = useCallback(async (entry: Omit<JournalEntry, "id">) => {
@@ -359,18 +469,50 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setQuickNotes((prev) => [...prev, { ...note, id: `qn-${Date.now()}` }])
   }, [])
 
+  const addTakeaway = useCallback(async (takeaway: Omit<Takeaway, "id">) => {
+    // Optimistic update
+    const tempId = `tk-${Date.now()}`;
+    setTakeaways((prev) => [...prev, { ...takeaway, id: tempId }])
+
+    // Persist
+    try {
+      const res = await fetch("/api/participant/takeaways", {
+        method: "POST",
+        body: JSON.stringify(takeaway)
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Failed to persist takeaway");
+      }
+      const data = await res.json();
+      if (data.id) {
+        setTakeaways(prev => prev.map(t => t.id === tempId ? { ...t, id: data.id } : t));
+      }
+    } catch (e) {
+      console.error("Failed to persist takeaway:", e);
+      // Rollback
+      setTakeaways(prev => prev.filter(t => t.id !== tempId));
+      throw e;
+    }
+  }, [])
+
   const markMessageRead = useCallback(async (messageId: string) => {
     // Optimistic update
     setMessages((prev) => prev.map((m) => (m.id === messageId ? { ...m, readAt: new Date().toISOString() } : m)))
 
     // Persist
     try {
-      await fetch("/api/messages", {
+      const res = await fetch("/api/messages", {
         method: "PATCH",
         body: JSON.stringify({ messageId })
       });
+      if (!res.ok) {
+        throw new Error("Failed to mark message as read");
+      }
     } catch (e) {
       console.error("Failed to mark message read:", e);
+      // Rollback
+      setMessages((prev) => prev.map((m) => (m.id === messageId ? { ...m, readAt: null } : m)))
     }
   }, [])
 
@@ -391,12 +533,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           isUrgent: message.isUrgent
         })
       });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Failed to send message");
+      }
       const data = await res.json();
       if (data.id) {
         setMessages(prev => prev.map(m => m.id === tempId ? { ...m, id: data.id } : m));
       }
     } catch (e) {
       console.error("Failed to send message:", e);
+      // Rollback
+      setMessages(prev => prev.filter(m => m.id !== tempId));
+      throw e;
     }
   }, [])
 
@@ -800,6 +949,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         messages,
         classQRCodes,
         checkIns,
+        completedSessions,
+        takeaways,
         currentUser,
         setCurrentUser,
         launchActivity,
@@ -809,13 +960,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         copyCaseworx,
         markMessageRead,
         addMessage,
+        completeSession,
         addEnrollment,
         updateEnrollment,
+        removeEnrollment,
         addJournalEntry,
         addHomeworkSubmission,
         updateHomeworkSubmission,
         addFacilitatorNote,
         addQuickNote,
+        addTakeaway,
+        addProgram,
+        updateProgram,
+        deleteProgram,
         getProgramBySlug,
         getSessionByNumber,
         getEnrollmentsByParticipant,
@@ -837,9 +994,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         getMakeupAssignmentsForFacilitator,
         getMakeupAssignmentsForParticipant,
         getPendingMakeupAssignments,
-        addProgram,
-        updateProgram,
-        deleteProgram,
         generateClassQRCode,
         getQRCodeForClass,
         validateCheckIn,

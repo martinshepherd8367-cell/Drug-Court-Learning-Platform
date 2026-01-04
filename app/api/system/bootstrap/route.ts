@@ -23,7 +23,9 @@ export async function GET() {
             journalsSnap,
             homeworkSnap,
             attendanceSnap,
-            messagesSnap
+            messagesSnap,
+            completedSessionsSnap,
+            takeawaysSnap
         ] = await Promise.all([
             db.collection("users").get(),
             db.collection("programs_catalog").get(),
@@ -32,7 +34,9 @@ export async function GET() {
             db.collectionGroup("journals").get(),
             db.collectionGroup("homeworkSubmissions").get(),
             db.collectionGroup("attendance").get(),
-            db.collection("messages").get()
+            db.collection("messages").get(),
+            db.collection("completed_sessions").get(),
+            db.collection("takeaways").get()
         ]);
 
         let users = usersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -43,6 +47,8 @@ export async function GET() {
         let homeworkSubmissions = homeworkSnap.docs.map(d => ({ id: d.id, ...d.data() }));
         let attendance = attendanceSnap.docs.map(d => ({ id: d.id, ...d.data() }));
         let messages = messagesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        let completedSessions = completedSessionsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        let takeaways = takeawaysSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
         // 2. Apply Scoping Logic
         if (user.role === "admin") {
@@ -76,6 +82,8 @@ export async function GET() {
             attendance = attendance.filter((a: any) => myParticipantIds.has(a.participantId));
             // Facilitator sees messages TO them OR FROM them
             messages = messages.filter((m: any) => m.recipientId === user.uid || m.senderId === user.uid);
+            completedSessions = completedSessions.filter((cs: any) => cs.facilitatorId === user.uid || myProgramIds.has(cs.programId));
+            takeaways = takeaways.filter((t: any) => myParticipantIds.has(t.participantId));
 
         } else if (user.role === "participant") {
             // Participant only sees themselves and their own enrollments/artifacts
@@ -91,6 +99,8 @@ export async function GET() {
             attendance = attendance.filter((a: any) => a.participantId === user.uid);
             // Participant sees messages TO them OR FROM them
             messages = messages.filter((m: any) => m.recipientId === user.uid || m.senderId === user.uid);
+            completedSessions = completedSessions.filter((cs: any) => myProgramIds.has(cs.programId));
+            takeaways = takeaways.filter((t: any) => t.participantId === user.uid);
         }
 
         return NextResponse.json({
@@ -101,7 +111,9 @@ export async function GET() {
             journalEntries,
             homeworkSubmissions,
             attendance,
-            messages
+            messages,
+            completedSessions,
+            takeaways
         });
 
     } catch (error: any) {

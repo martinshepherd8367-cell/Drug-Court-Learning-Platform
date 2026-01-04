@@ -25,6 +25,8 @@ export default function AdminDashboard() {
   const [composeSearch, setComposeSearch] = useState("")
   const [messageText, setMessageText] = useState("")
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null)
+  const [messageError, setMessageError] = useState<string | null>(null)
+  const [isSending, setIsSending] = useState(false)
 
   const stats = {
     totalParticipants: users.filter((u: User) => u.role === "participant").length,
@@ -338,33 +340,44 @@ export default function AdminDashboard() {
                   rows={4}
                 />
               </div>
+              {messageError && (
+                <p className="text-sm text-red-600 font-medium">{messageError}</p>
+              )}
               <Button
                 className="bg-green-600 hover:bg-green-700 w-full"
-                onClick={() => {
+                onClick={async () => {
                   if (!messageText.trim() || !composeToId || !currentUser) return
 
-                  addMessage({
-                    senderId: currentUser.id,
-                    senderRole: currentUser.role,
-                    recipientId: composeToId,
-                    recipientRole: composeToRole as UserRole,
-                    title: "Message from Admin",
-                    content: messageText,
-                    fromName: currentUser.name,
-                    readAt: null,
-                    createdAt: new Date().toISOString()
-                  })
+                  setIsSending(true)
+                  setMessageError(null)
 
-                  setShowMessageCompose(false)
-                  setMessageText("")
-                  setComposeToId("")
-                  setComposeToRole("")
-                  setComposeSearch("")
+                  try {
+                    await addMessage({
+                      senderId: currentUser.id,
+                      senderRole: currentUser.role,
+                      recipientId: composeToId,
+                      recipientRole: composeToRole as UserRole,
+                      title: "Message from Admin",
+                      content: messageText,
+                      fromName: currentUser.name,
+                      readAt: null,
+                      createdAt: new Date().toISOString()
+                    })
+
+                    setShowMessageCompose(false)
+                    setMessageText("")
+                    setComposeToId("")
+                    setComposeToRole("")
+                    setComposeSearch("")
+                  } catch (e) {
+                    setMessageError("Message could not be sent")
+                  } finally {
+                    setIsSending(false)
+                  }
                 }}
-                disabled={!composeToId || !messageText.trim()}
+                disabled={!composeToId || !messageText.trim() || isSending}
               >
-                <Send className="h-4 w-4 mr-2" />
-                Send Message
+                {isSending ? "Sending..." : "Send Message"}
               </Button>
             </div>
           </DialogContent>

@@ -91,8 +91,22 @@ export interface Attendance {
   id: string
   participantId: string
   sessionId: string
+  classId: string
   attended: boolean
+  status: "present" | "absent" | "excused"
   completedAt: string | null
+}
+
+export interface CompletedSession {
+  id: string
+  classId: string
+  programId: string
+  sessionNumber: number
+  facilitatorId: string
+  completedAt: string
+  attendeeIds: string[]
+  absenteeIds: string[]
+  excusedIds: string[]
 }
 
 export interface ActivityRun {
@@ -137,6 +151,16 @@ export interface FacilitatorNote {
   facilitatorId: string
   sessionId: string
   content: string
+  createdAt: string
+}
+
+export interface Takeaway {
+  id: string
+  participantId: string
+  sessionId: string
+  classId: string
+  content: string
+  createdBy: string
   createdAt: string
 }
 

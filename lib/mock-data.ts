@@ -1422,10 +1422,10 @@ export const mockEnrollments: Enrollment[] = [
 
 // Mock Attendance
 export const mockAttendance: Attendance[] = [
-  { id: "att-1", participantId: "participant-1", sessionId: "prime-1", attended: true, completedAt: "2025-01-08" },
-  { id: "att-2", participantId: "participant-1", sessionId: "prime-2", attended: true, completedAt: "2025-01-15" },
-  { id: "att-3", participantId: "participant-2", sessionId: "prime-1", attended: true, completedAt: "2024-12-20" },
-  { id: "att-4", participantId: "participant-2", sessionId: "prime-2", attended: false, completedAt: null },
+  { id: "att-1", participantId: "participant-1", sessionId: "prime-1", classId: "prime-mon-10am", status: "present", attended: true, completedAt: "2025-01-08" },
+  { id: "att-2", participantId: "participant-1", sessionId: "prime-2", classId: "prime-mon-10am", status: "present", attended: true, completedAt: "2025-01-15" },
+  { id: "att-3", participantId: "participant-2", sessionId: "prime-1", classId: "prime-mon-10am", status: "present", attended: true, completedAt: "2024-12-20" },
+  { id: "att-4", participantId: "participant-2", sessionId: "prime-2", classId: "prime-mon-10am", status: "absent", attended: false, completedAt: null },
 ]
 
 // Mock Activity Runs

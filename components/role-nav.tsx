@@ -18,6 +18,7 @@ export function RoleNav() {
     { href: "/admin", label: "Admin", roles: ["admin"] },
   ]
 
+  const isParticipant = currentUser?.role === "participant"
   const filteredNav = navItems.filter((item) => currentUser && item.roles.includes(currentUser.role))
 
   return (
@@ -27,43 +28,52 @@ export function RoleNav() {
           <Link href="/" className="font-semibold text-green-700">
             DMS Clinical Services
           </Link>
-          <nav className="flex items-center gap-4">
-            {filteredNav.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "text-sm font-medium transition-colors hover:text-green-700",
-                  pathname.startsWith(item.href) ? "text-green-700" : "text-gray-600",
-                )}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+          {!isParticipant && (
+            <nav className="flex items-center gap-4">
+              {filteredNav.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "text-sm font-medium transition-colors hover:text-green-700",
+                    pathname.startsWith(item.href) ? "text-green-700" : "text-gray-600",
+                  )}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          )}
         </div>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-2 bg-transparent">
-              <User className="h-4 w-4" />
-              {currentUser?.name || "Select Role"}
-              <ChevronDown className="h-3 w-3" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {users.map((user) => (
-              <DropdownMenuItem
-                key={user.id}
-                onClick={() => setCurrentUser(user)}
-                className={cn(currentUser?.id === user.id && "bg-green-50")}
-              >
-                <span className="font-medium">{user.name}</span>
-                <span className="ml-2 text-xs text-gray-500 capitalize">({user.role})</span>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {isParticipant ? (
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-gray-200 bg-gray-50/50 text-sm font-medium text-gray-700">
+            <User className="h-4 w-4" />
+            {currentUser?.name}
+          </div>
+        ) : (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2 bg-transparent">
+                <User className="h-4 w-4" />
+                {currentUser?.name || "Select Role"}
+                <ChevronDown className="h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {users.map((user) => (
+                <DropdownMenuItem
+                  key={user.id}
+                  onClick={() => setCurrentUser(user)}
+                  className={cn(currentUser?.id === user.id && "bg-green-50")}
+                >
+                  <span className="font-medium">{user.name}</span>
+                  <span className="ml-2 text-xs text-gray-500 capitalize">({user.role})</span>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
     </header>
   )

@@ -67,6 +67,8 @@ export default function ParticipantDashboard() {
   } | null>(null)
   const [replyTo, setReplyTo] = useState<MessageDisplay | null>(null)
   const [showAllAchievements, setShowAllAchievements] = useState(false)
+  const [messageError, setMessageError] = useState<string | null>(null)
+  const [isSending, setIsSending] = useState(false)
 
   // Get data for current participant - use fallback for dev mode
   const participantId = currentUser?.id || "part-1"
@@ -142,7 +144,7 @@ export default function ParticipantDashboard() {
       if (!participantSchedule[day]) participantSchedule[day] = {}
       participantSchedule[day][time] = {
         program: program.name,
-        facilitator: "Ms. Thompson",
+        facilitator: "Facilitator",
         room: "Room " + (101 + index),
         session: enrollment.currentSessionNumber,
         programSlug: program.slug,
@@ -209,47 +211,65 @@ export default function ParticipantDashboard() {
     }
   }
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!composeBody.trim() || !composeToId || !currentUser) return
 
-    addMessage({
-      senderId: currentUser.id,
-      senderRole: currentUser.role,
-      recipientId: composeToId,
-      recipientRole: composeToRole as UserRole,
-      title: composeSubject || "No Subject",
-      content: composeBody,
-      fromName: currentUser.name,
-      readAt: null,
-      createdAt: new Date().toISOString(),
-    })
+    setIsSending(true)
+    setMessageError(null)
 
-    setShowComposeModal(false)
-    setComposeSubject("")
-    setComposeBody("")
-    setComposeToId("")
-    setComposeToRole("")
-    setComposeSearch("")
+    try {
+      await addMessage({
+        senderId: currentUser.id,
+        senderRole: currentUser.role,
+        recipientId: composeToId,
+        recipientRole: composeToRole as UserRole,
+        title: composeSubject || "No Subject",
+        content: composeBody,
+        fromName: currentUser.name,
+        readAt: null,
+        createdAt: new Date().toISOString(),
+      })
+
+      setShowComposeModal(false)
+      setComposeSubject("")
+      setComposeBody("")
+      setComposeToId("")
+      setComposeToRole("")
+      setComposeSearch("")
+    } catch (e) {
+      setMessageError("Message could not be sent")
+    } finally {
+      setIsSending(false)
+    }
   }
 
-  const handleReply = () => {
+  const handleReply = async () => {
     if (!composeBody.trim() || !replyTo || !currentUser) return
 
-    addMessage({
-      senderId: currentUser.id,
-      senderRole: currentUser.role,
-      recipientId: replyTo.senderId,
-      recipientRole: replyTo.senderRole,
-      title: replyTo.title.startsWith("Re:") ? replyTo.title : `Re: ${replyTo.title}`,
-      content: composeBody,
-      fromName: currentUser.name,
-      readAt: null,
-      createdAt: new Date().toISOString(),
-    })
+    setIsSending(true)
+    setMessageError(null)
 
-    setReplyTo(null)
-    setComposeBody("")
-    setShowMessageModal(false)
+    try {
+      await addMessage({
+        senderId: currentUser.id,
+        senderRole: currentUser.role,
+        recipientId: replyTo.senderId,
+        recipientRole: replyTo.senderRole,
+        title: replyTo.title.startsWith("Re:") ? replyTo.title : `Re: ${replyTo.title}`,
+        content: composeBody,
+        fromName: currentUser.name,
+        readAt: null,
+        createdAt: new Date().toISOString(),
+      })
+
+      setReplyTo(null)
+      setComposeBody("")
+      setShowMessageModal(false)
+    } catch (e) {
+      setMessageError("Message could not be sent")
+    } finally {
+      setIsSending(false)
+    }
   }
 
   return (
@@ -705,6 +725,9 @@ export default function ParticipantDashboard() {
               </Button>
             </div>
 
+            {messageError && (
+              <p className="text-sm text-red-600 font-medium mb-2">{messageError}</p>
+            )}
             {replyTo && (
               <div className="border-t pt-4">
                 <Textarea
@@ -714,8 +737,8 @@ export default function ParticipantDashboard() {
                   rows={3}
                   className="mb-2"
                 />
-                <Button className="w-full bg-green-600 hover:bg-green-700" onClick={handleReply}>
-                  Send Reply
+                <Button className="w-full bg-green-600 hover:bg-green-700" onClick={handleReply} disabled={isSending}>
+                  {isSending ? "Sending..." : "Send Reply"}
                 </Button>
               </div>
             )}
@@ -789,9 +812,12 @@ export default function ParticipantDashboard() {
                 className="mt-1"
               />
             </div>
+            {messageError && (
+              <p className="text-sm text-red-600 font-medium">{messageError}</p>
+            )}
             <div className="flex gap-2">
-              <Button className="flex-1 bg-green-600 hover:bg-green-700" onClick={handleSendMessage} disabled={!composeToId || !composeBody.trim()}>
-                Send
+              <Button className="flex-1 bg-green-600 hover:bg-green-700" onClick={handleSendMessage} disabled={!composeToId || !composeBody.trim() || isSending}>
+                {isSending ? "Sending..." : "Send"}
               </Button>
               <Button variant="outline" onClick={() => setShowComposeModal(false)}>
                 Cancel

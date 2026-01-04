@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useState, useEffect, useMemo } from "react"
+import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { useStore } from "@/lib/store"
 import { RoleNav } from "@/components/role-nav"
 import { Button } from "@/components/ui/button"
@@ -20,6 +20,9 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
 import {
   ArrowLeft,
   Play,
@@ -36,6 +39,7 @@ import {
   ChevronLeft,
   StickyNote,
   Send,
+  Video,
 } from "lucide-react"
 
 const SECTIONS = [
@@ -55,6 +59,8 @@ type SectionId = (typeof SECTIONS)[number]["id"]
 export default function FacilitatorSessionView() {
   const params = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const classId = searchParams.get("classId")
   const {
     getProgramBySlug,
     getSessionByNumber,
@@ -65,6 +71,10 @@ export default function FacilitatorSessionView() {
     closeActivity,
     users,
     copyCaseworx,
+    completeSession,
+    addTakeaway,
+    takeaways,
+    completedSessions
   } = useStore()
 
   const programSlug = params.programSlug as string
@@ -84,13 +94,46 @@ export default function FacilitatorSessionView() {
   const [newQuickNote, setNewQuickNote] = useState("")
   const [showActivityLauncher, setShowActivityLauncher] = useState(false)
   const [selectedActivity, setSelectedActivity] = useState<string | null>(null)
+  const [showEndSessionDialog, setShowEndSessionDialog] = useState(false)
+  const [sessionAttendance, setSessionAttendance] = useState<Record<string, "present" | "absent" | "excused">>({})
+  const [sessionTakeaways, setSessionTakeaways] = useState<Record<string, string>>({})
+  const [isEnding, setIsEnding] = useState(false)
   const [copiedCaseworx, setCopiedCaseworx] = useState(false)
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false)
 
-  // Get enrollments for this program
-  const enrollments = program ? getEnrollmentsByProgram(program.id) : []
-  const activeEnrollments = enrollments.filter((e) => e.status === "active")
-  const participants = activeEnrollments.map((e) => users.find((u) => u.id === e.participantId)).filter(Boolean)
+  // Get enrollments for this program/class
+  const participants = useMemo(() => {
+    if (!program) return []
+    const enrollments = getEnrollmentsByProgram(program.id)
+    const activeEnrollments = enrollments.filter((e) => {
+      if (e.status !== "active") return false
+      if (classId && e.schedule) {
+        const eKey = `${e.programId}-${e.schedule.day}-${e.schedule.time}-${e.schedule.room}`
+        return eKey === classId
+      }
+      return true
+    })
+    return activeEnrollments.map((e) => users.find((u) => u.id === e.participantId)).filter(Boolean) as any[]
+  }, [program, getEnrollmentsByProgram, classId, users])
+
+  // Check if session is already completed
+  const isCompleted = useMemo(() => {
+    if (!program || !session || !classId) return false
+    return completedSessions.some(cs =>
+      cs.classId === classId &&
+      cs.programId === program.id &&
+      cs.sessionNumber === session.sessionNumber
+    )
+  }, [completedSessions, classId, program, session])
+
+  // Initialize attendance when participants load
+  useEffect(() => {
+    const initialAttendance: Record<string, "present" | "absent" | "excused"> = {}
+    participants.forEach(p => {
+      initialAttendance[p.id] = "present"
+    })
+    setSessionAttendance(initialAttendance)
+  }, [participants])
 
   // Get active activity run
   const activeActivityRun = session ? getActiveActivityRun(session.id) : undefined
@@ -168,7 +211,7 @@ export default function FacilitatorSessionView() {
   }
 
   // Add quick note
-  const addQuickNote = () => {
+  const doAddQuickNote = () => {
     if (newQuickNote.trim()) {
       setQuickNotes([...quickNotes, newQuickNote.trim()])
       setNewQuickNote("")
@@ -224,13 +267,13 @@ export default function FacilitatorSessionView() {
                 <Play className="h-4 w-4 mr-2" />
                 Start Session
               </Button>
-            ) : !sessionEnded ? (
-              <Button onClick={() => setSessionEnded(true)} variant="destructive">
+            ) : !sessionEnded && !isCompleted ? (
+              <Button onClick={() => setShowEndSessionDialog(true)} variant="destructive">
                 <Square className="h-4 w-4 mr-2" />
                 End Session
               </Button>
             ) : (
-              <Badge className="bg-gray-600">Session Ended</Badge>
+              <Badge className="bg-gray-600">Session Completed</Badge>
             )}
 
             {/* Navigation */}
@@ -284,9 +327,8 @@ export default function FacilitatorSessionView() {
                 return (
                   <div
                     key={section.id}
-                    className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-all ${
-                      isActive ? "bg-green-100 border border-green-300" : "hover:bg-gray-100"
-                    }`}
+                    className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-all ${isActive ? "bg-green-100 border border-green-300" : "hover:bg-gray-100"
+                      }`}
                     onClick={() => setActiveSection(section.id)}
                   >
                     <Checkbox
@@ -506,7 +548,7 @@ export default function FacilitatorSessionView() {
                               {Object.entries(response.answers).map(([key, value]) => (
                                 <div key={key} className="mb-2">
                                   <p className="text-sm font-medium text-gray-600">{key}</p>
-                                  <p className="text-gray-900">{value}</p>
+                                  <p className="text-gray-900">{(value as any).toString()}</p>
                                 </div>
                               ))}
                             </CardContent>
@@ -652,28 +694,52 @@ export default function FacilitatorSessionView() {
 
             <TabsContent value="responses" className="flex-1 overflow-auto m-0 px-3 pb-3">
               <ScrollArea className="h-[calc(100vh-260px)]">
-                {activityResponses.length > 0 ? (
-                  <div className="space-y-3">
-                    {activityResponses.map((response) => {
-                      const participant = users.find((u) => u.id === response.participantId)
-                      return (
-                        <Card key={response.id} className="bg-green-50">
-                          <CardContent className="p-3">
-                            <p className="font-medium text-sm">{participant?.name}</p>
-                            <p className="text-xs text-gray-500">
-                              {new Date(response.submittedAt).toLocaleTimeString()}
-                            </p>
-                          </CardContent>
-                        </Card>
-                      )
-                    })}
+                <div className="space-y-4">
+                  {/* Takeaways Section */}
+                  {takeaways.filter(t => t.sessionId === session.id).length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-1">Takeaways</p>
+                      {takeaways.filter(t => t.sessionId === session.id).map((t) => {
+                        const participant = users.find((u) => u.id === t.participantId)
+                        return (
+                          <Card key={t.id} className="bg-blue-50 border-blue-100">
+                            <CardContent className="p-3">
+                              <p className="font-medium text-sm">{participant?.name}</p>
+                              <p className="text-sm text-gray-700 mt-1 italic">"{t.content}"</p>
+                            </CardContent>
+                          </Card>
+                        )
+                      })}
+                    </div>
+                  )}
+
+                  {/* Activity Responses Section */}
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-1">Activity Feed</p>
+                    {activityResponses.length > 0 ? (
+                      <div className="space-y-3">
+                        {activityResponses.map((response) => {
+                          const participant = users.find((u) => u.id === response.participantId)
+                          return (
+                            <Card key={response.id} className="bg-green-50 border-green-100">
+                              <CardContent className="p-3">
+                                <p className="font-medium text-sm">{participant?.name}</p>
+                                <p className="text-xs text-gray-500">
+                                  {new Date(response.submittedAt).toLocaleTimeString()}
+                                </p>
+                              </CardContent>
+                            </Card>
+                          )
+                        })}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-gray-500 text-sm">
+                        <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p>No activity responses yet</p>
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-500 text-sm">
-                    <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p>No responses yet</p>
-                  </div>
-                )}
+                </div>
               </ScrollArea>
             </TabsContent>
 
@@ -713,7 +779,7 @@ export default function FacilitatorSessionView() {
                     className="text-sm"
                     rows={2}
                   />
-                  <Button size="icon" onClick={addQuickNote} className="bg-green-600 hover:bg-green-700">
+                  <Button size="icon" onClick={doAddQuickNote} className="bg-green-600 hover:bg-green-700">
                     <Send className="h-4 w-4" />
                   </Button>
                 </div>
@@ -735,6 +801,123 @@ export default function FacilitatorSessionView() {
         </div>
       </div>
 
+      {/* End Session Confirmation Dialog */}
+      <Dialog open={showEndSessionDialog} onOpenChange={setShowEndSessionDialog}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>End Session & Complete Roster</DialogTitle>
+            <DialogDescription>
+              Verify attendance and record key learning takeaways for each participant.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6 py-4">
+            <div className="border rounded-lg overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 border-b">
+                  <tr>
+                    <th className="px-4 py-3 text-left font-medium">Participant</th>
+                    <th className="px-4 py-3 text-left font-medium">Attendance</th>
+                    <th className="px-4 py-3 text-left font-medium">Learning Takeaway</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {participants.map((p) => (
+                    <tr key={p.id}>
+                      <td className="px-4 py-3 font-medium">{p.name}</td>
+                      <td className="px-4 py-3">
+                        <RadioGroup
+                          value={sessionAttendance[p.id]}
+                          onValueChange={(val: any) => setSessionAttendance(prev => ({ ...prev, [p.id]: val }))}
+                          className="flex gap-4"
+                        >
+                          <div className="flex items-center space-x-1">
+                            <RadioGroupItem value="present" id={`p-${p.id}`} />
+                            <Label htmlFor={`p-${p.id}`} className="text-xs">Present</Label>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <RadioGroupItem value="absent" id={`a-${p.id}`} />
+                            <Label htmlFor={`a-${p.id}`} className="text-xs">Absent</Label>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <RadioGroupItem value="excused" id={`e-${p.id}`} />
+                            <Label htmlFor={`e-${p.id}`} className="text-xs">Excused</Label>
+                          </div>
+                        </RadioGroup>
+                      </td>
+                      <td className="px-4 py-3">
+                        <Input
+                          placeholder="Key concept learned..."
+                          value={sessionTakeaways[p.id] || ""}
+                          onChange={(e) => setSessionTakeaways(prev => ({ ...prev, [p.id]: e.target.value }))}
+                          className="text-xs"
+                          disabled={sessionAttendance[p.id] !== "present"}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                  {participants.length === 0 && (
+                    <tr>
+                      <td colSpan={3} className="px-4 py-8 text-center text-gray-500 italic">
+                        No participants enrolled to record attendance for.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEndSessionDialog(false)} disabled={isEnding}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={isEnding}
+              onClick={async () => {
+                setIsEnding(true);
+                try {
+                  // 1. Save Takeaways
+                  const takeawayPromises = Object.entries(sessionTakeaways)
+                    .filter(([pId, content]) => content.trim() !== "" && sessionAttendance[pId] === "present")
+                    .map(([pId, content]) => {
+                      return addTakeaway({
+                        participantId: pId,
+                        sessionId: session.id,
+                        classId: classId || "individual",
+                        content: content.trim(),
+                        createdBy: "fac-1", // Should ideally be currentUser.id
+                        createdAt: new Date().toISOString()
+                      });
+                    });
+
+                  await Promise.all(takeawayPromises);
+
+                  // 2. Complete Session
+                  await completeSession({
+                    classId: classId || "generic",
+                    programId: program.id,
+                    sessionNumber: session.sessionNumber,
+                    facilitatorId: "fac-1", // Should ideally be currentUser.id
+                    attendance: sessionAttendance
+                  });
+
+                  setSessionEnded(true);
+                  setShowEndSessionDialog(false);
+                } catch (e) {
+                  console.error(e);
+                } finally {
+                  setIsEnding(false);
+                }
+              }}
+            >
+              {isEnding ? "Ending..." : "End Session & Save Roster"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Activity Launcher Modal */}
       <Dialog open={showActivityLauncher} onOpenChange={setShowActivityLauncher}>
         <DialogContent className="max-w-2xl">
@@ -749,9 +932,8 @@ export default function FacilitatorSessionView() {
             {session.activityTemplates.map((activity) => (
               <Card
                 key={activity.id}
-                className={`cursor-pointer transition-all ${
-                  selectedActivity === activity.id ? "border-green-500 border-2" : "hover:border-green-300"
-                }`}
+                className={`cursor-pointer transition-all ${selectedActivity === activity.id ? "border-green-500 border-2" : "hover:border-green-300"
+                  }`}
                 onClick={() => setSelectedActivity(activity.id)}
               >
                 <CardContent className="p-4">

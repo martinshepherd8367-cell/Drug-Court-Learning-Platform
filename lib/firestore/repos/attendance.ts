@@ -4,6 +4,7 @@ export type AttendanceRecord = {
     id: string;
     participantId: string;
     sessionId: string;
+    classId: string;
     date: string; // ISO Date YYYY-MM-DD
     status: "present" | "absent" | "late" | "pending";
     attended: boolean;

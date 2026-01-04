@@ -37,6 +37,7 @@ export async function POST(req: NextRequest) {
         const id = await AttendanceRepo.recordAttendance({
             participantId: targetParticipantId,
             sessionId,
+            classId: body.classId || "individual",
             date: date || new Date().toISOString().split('T')[0],
             status: status || "present",
             attended: (status === "present" || status === "late"),

@@ -8,7 +8,7 @@ import { AIAssistantButton } from "@/components/ai-assistant"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Users, BookOpen, UserCheck, FileBarChart, ChevronRight, QrCode, Calendar, Activity, Mail, Send, Search } from "lucide-react"
+import { Users, BookOpen, UserCheck, FileBarChart, ChevronRight, QrCode, Calendar, Activity, Mail, Send, Search, UserPlus, Scale } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
@@ -35,22 +35,12 @@ export default function AdminDashboard() {
     completionRate: 75, // Mock
   }
 
-  const quickLinks = [
+  const navigationTiles = [
     {
-      title: "Daily Ops Cockpit",
-      description: "Manage daily attendance and needs",
-      icon: Activity,
-      href: "/admin/ops",
-      count: null,
-      highlight: true,
-    },
-    {
-      title: "Weekly Schedule",
-      description: "View all classes by day and time",
-      icon: Calendar,
-      href: "/admin/schedule",
-      count: null,
-      highlight: true,
+      title: "Add User",
+      description: "Add a new facilitator or participant",
+      icon: UserPlus,
+      href: "/admin/users",
     },
     {
       title: "Programs",
@@ -60,11 +50,10 @@ export default function AdminDashboard() {
       count: stats.totalPrograms,
     },
     {
-      title: "Class Schedule",
-      description: "View weekly class schedule grid",
-      icon: Calendar,
-      href: "/admin/schedule",
-      count: null,
+      title: "Courts",
+      description: "Manage court types and assignments",
+      icon: Scale,
+      href: "/admin/courts",
     },
     {
       title: "Users",
@@ -81,19 +70,18 @@ export default function AdminDashboard() {
       count: stats.activeEnrollments,
     },
     {
-      title: "Messages",
-      description: "Send and receive system messages",
-      icon: Mail,
-      href: "#",
-      count: messages.filter((m: Message) => !m.readAt && (m.recipientId === currentUser?.id || currentUser?.role === "admin")).length,
-      onClick: () => setShowMessageCompose(true)
-    },
-    {
       title: "Reports",
-      description: "View reports and analytics",
+      description: "View reports and court summaries",
       icon: FileBarChart,
       href: "/admin/reports",
-      count: null,
+    },
+    {
+      title: "Messages",
+      description: "View and send system messages",
+      icon: Mail,
+      href: "#",
+      onClick: () => setShowMessageCompose(true),
+      count: messages.filter((m: Message) => !m.readAt && (m.recipientId === currentUser?.id || currentUser?.role === "admin")).length,
     },
   ]
 
@@ -203,6 +191,40 @@ export default function AdminDashboard() {
           </Card>
         </div>
 
+        {/* Quick Access Section */}
+        <div className="mb-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-4 px-1">Quick Access</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {navigationTiles.map((item) => (
+              <Card
+                key={item.title}
+                className="cursor-pointer hover:border-green-500 transition-all hover:shadow-md card-transparent group"
+                onClick={() => {
+                  if (item.onClick) item.onClick()
+                  else router.push(item.href)
+                }}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="p-2 bg-gray-100 rounded-lg group-hover:bg-green-100 transition-colors">
+                      <item.icon className="h-5 w-5 text-gray-600 group-hover:text-green-600" />
+                    </div>
+                    {item.count !== undefined && item.count !== null && (
+                      <Badge variant="secondary" className="bg-gray-100 text-gray-600">
+                        {item.count}
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="mt-3">
+                    <h3 className="font-semibold text-gray-900 group-hover:text-green-700 transition-colors">{item.title}</h3>
+                    <p className="text-xs text-gray-500 mt-1">{item.description}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
         {/* Registration QR Code */}
         <Card className="mb-8 border-green-200 bg-green-50/80 card-transparent">
           <CardContent className="pt-6">
@@ -224,7 +246,7 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        {/* Quick Links */}
+        {/* Recent Messages */}
         <Card className="card-transparent mt-8">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>

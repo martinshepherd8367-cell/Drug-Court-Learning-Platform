@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import type { UserRole, Message } from "@/lib/types"
+import type { User, Enrollment, UserRole, Message } from "@/lib/types"
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -27,8 +27,8 @@ export default function AdminDashboard() {
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null)
 
   const stats = {
-    totalParticipants: users.filter((u) => u.role === "participant").length,
-    activeEnrollments: enrollments.filter((e) => e.status === "active").length,
+    totalParticipants: users.filter((u: User) => u.role === "participant").length,
+    activeEnrollments: enrollments.filter((e: Enrollment) => e.status === "active").length,
     totalPrograms: programs.length,
     completionRate: 75, // Mock
   }
@@ -83,7 +83,7 @@ export default function AdminDashboard() {
       description: "Send and receive system messages",
       icon: Mail,
       href: "#",
-      count: messages.filter(m => !m.readAt && (m.recipientId === currentUser?.id || currentUser?.role === "admin")).length,
+      count: messages.filter((m: Message) => !m.readAt && (m.recipientId === currentUser?.id || currentUser?.role === "admin")).length,
       onClick: () => setShowMessageCompose(true)
     },
     {

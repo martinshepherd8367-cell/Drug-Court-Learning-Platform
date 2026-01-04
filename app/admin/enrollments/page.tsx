@@ -38,7 +38,7 @@ import type { User } from "@/lib/types"
 
 export default function EnrollmentManagement() {
   const router = useRouter()
-  const { users, programs, enrollments, updateEnrollment, addEnrollment, addMessage } = useStore()
+  const { currentUser, users, programs, enrollments, updateEnrollment, addEnrollment, addMessage } = useStore()
 
   const [showEnroll, setShowEnroll] = useState(false)
   const [selectedParticipant, setSelectedParticipant] = useState("")
@@ -124,10 +124,13 @@ export default function EnrollmentManagement() {
       })
 
       addMessage({
-        participantId: selectedParticipant,
+        senderId: currentUser?.id || "system",
+        senderRole: currentUser?.role || "admin",
+        recipientId: selectedParticipant,
+        recipientRole: "participant",
         title: `Welcome to ${program?.name}!`,
         content: `You have been enrolled in ${program?.name}.\n\nClass Details:\n- Day: ${classSchedule.day}\n- Time: ${classSchedule.time}\n- Facilitator: ${classSchedule.facilitator}\n- Room: ${classSchedule.room}\n\nYour first session starts soon. Check your calendar for the full schedule. Good luck!`,
-        fromName: "Admin",
+        fromName: currentUser?.name || "Admin",
         readAt: null,
         createdAt: new Date().toISOString(),
       })

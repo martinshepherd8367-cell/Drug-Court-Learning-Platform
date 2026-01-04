@@ -39,7 +39,7 @@ import {
   MapPin,
   Video,
 } from "lucide-react"
-import type { HomeworkSubmission, User, Program, Session, Message, JournalEntry, Enrollment, UserRole } from "@/lib/types"
+import type { HomeworkSubmission, User, Program, Session, Message, JournalEntry, Enrollment, UserRole, MakeupAssignment } from "@/lib/types"
 
 export default function FacilitatorDashboard() {
   const router = useRouter()
@@ -90,12 +90,12 @@ export default function FacilitatorDashboard() {
   const [messageRecipient, setMessageRecipient] = useState("")
   const [notificationsViewed, setNotificationsViewed] = useState(false)
   const [selectedClassForParticipants, setSelectedClassForParticipants] = useState<string | null>(null)
-  const [selectedHomework, setSelectedHomework] = useState<HomeworkSubmission | null>(null)
+  const [selectedHomework, setSelectedHomework] = useState<any | null>(null)
   const [feedbackText, setFeedbackText] = useState("")
   const [showStartClass, setShowStartClass] = useState(false) // Add state for start class modal
 
   const [showMakeupAssignments, setShowMakeupAssignments] = useState(false)
-  const [selectedMakeupParticipant, setSelectedMakeupParticipant] = useState<User | null>(null)
+  const [selectedMakeupParticipant, setSelectedMakeupParticipant] = useState<MakeupAssignment | null>(null)
   const [makeupWorksheets, setMakeupWorksheets] = useState<string[]>([])
   const [makeupReadings, setMakeupReadings] = useState<string[]>([])
   const [makeupInstructions, setMakeupInstructions] = useState("")
@@ -857,7 +857,7 @@ export default function FacilitatorDashboard() {
           </DialogHeader>
           <div className="space-y-3">
             {facilitatorMessages.map((msg) => (
-              <Card key={msg.id} className={msg.read ? "card-transparent" : "border-green-500 bg-green-50"}>
+              <Card key={msg.id} className={msg.readAt ? "card-transparent" : "border-green-500 bg-green-50"}>
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between">
                     <div>
@@ -1067,7 +1067,7 @@ export default function FacilitatorDashboard() {
           </DialogHeader>
           <div className="space-y-3">
             {facilitatorMessages
-              .filter((m) => !m.read)
+              .filter((m) => !m.readAt)
               .map((msg) => (
                 <div
                   key={msg.id}
@@ -1080,7 +1080,7 @@ export default function FacilitatorDashboard() {
                   </div>
                 </div>
               ))}
-            {homeworkSubmissions
+            {homeworkList
               .filter((h) => h.status === "pending")
               .map((hw) => (
                 <div key={hw.id} className="flex items-start gap-3 p-3 bg-blue-50 rounded border-l-2 border-blue-500">

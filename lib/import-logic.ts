@@ -130,6 +130,7 @@ export function parseImports(dataDir: string) {
                     name: className,
                     description: `Session held on ${day}s`,
                     totalSessions: 12,
+                    type: "Core",
                     isLocked: false,
                     sessions: Array.from({ length: 12 }).map((_, i) => ({
                         id: `${progId}-s${i + 1}`,
@@ -246,6 +247,7 @@ export function parseImports(dataDir: string) {
                             name: meta.prog,
                             description: "From Roster Import",
                             totalSessions: 10,
+                            type: "Core",
                             isLocked: false,
                             sessions: []
                         });

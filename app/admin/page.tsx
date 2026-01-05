@@ -76,6 +76,13 @@ export default function AdminDashboard() {
       href: "/admin/reports",
     },
     {
+      title: "Facilitators",
+      description: "Manage facilitator profiles and requests",
+      icon: UserCheck,
+      href: "/admin/facilitators",
+      count: users.filter(u => u.role === 'facilitator').length,
+    },
+    {
       title: "Messages",
       description: "View and send system messages",
       icon: Mail,

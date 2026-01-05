@@ -4,7 +4,7 @@ import { getAuth, getDb } from "@/lib/firebase-admin";
 export type AuthedUser = {
   uid: string;
   email?: string | null;
-  role: "admin" | "facilitator" | "participant";
+  role: "admin" | "facilitator" | "participant" | "case_manager";
   name: string;
 };
 

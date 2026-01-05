@@ -88,6 +88,7 @@ export const dbtProgram: Program = {
     name: dbtData.programName,
     description: `${dbtData.intendedSetting}. ${dbtData.programAbbrev} Program.`,
     totalSessions: dbtData.totalWeeks,
+    type: "Core",
     isLocked: false,
     sessions: mapSessions(dbtData.weeks)
 };

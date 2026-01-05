@@ -37,9 +37,10 @@ import {
   QrCode,
   CheckCircle,
   MapPin,
+  User,
   Video,
 } from "lucide-react"
-import type { HomeworkSubmission, User, Program, Session, Message, JournalEntry, Enrollment, UserRole, MakeupAssignment } from "@/lib/types"
+import type { HomeworkSubmission, User as UserType, Program, Session, Message, JournalEntry, Enrollment, UserRole, MakeupAssignment } from "@/lib/types"
 
 export default function FacilitatorDashboard() {
   const router = useRouter()
@@ -57,6 +58,7 @@ export default function FacilitatorDashboard() {
     addMessage,
     generateClassQRCode,
     completedSessions,
+    scheduleEvents,
   } = useStore()
 
   // Modal states
@@ -98,45 +100,50 @@ export default function FacilitatorDashboard() {
   const [makeupAssignButtonState, setMakeupAssignButtonState] = useState<Record<string, boolean>>({})
 
 
-  // Derived schedule classes
+  // Helper to match enrollment to its schedule event
+  const getSlotKey = (e: any) => {
+    if (!e.schedule) return "";
+    const slugify = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    const safeId = (text: string) => slugify(text) || "unknown";
+    return `evt-${e.schedule.day}-${safeId(e.schedule.time)}-${e.programId}`;
+  };
+
+  // Derived schedule classes - Authoritative source is scheduleEvents
   const scheduleClasses = useMemo(() => {
-    const classMap: Record<string, any> = {};
-    enrollments.forEach(e => {
-      if (!e.schedule || e.status !== 'active') return;
-      if (currentUser?.role === 'facilitator' && e.schedule.facilitatorId !== currentUser.id) return;
+    const eventsForMe = scheduleEvents.filter(se => se.facilitatorId === currentUser?.id);
 
-      // Group by day/time/room/program to form a "class"
-      const key = `${e.programId}-${e.schedule.day}-${e.schedule.time}-${e.schedule.room}`;
+    return eventsForMe.map(se => {
+      const prog = programs.find(p => p.id === se.programId);
+      const fac = users.find(u => u.id === se.facilitatorId);
 
-      if (!classMap[key]) {
-        const prog = programs.find(p => p.id === e.programId);
-        const fac = users.find(u => u.id === e.schedule!.facilitatorId);
-        const isCompleted = completedSessions.some(cs =>
-          cs.classId === key &&
-          cs.programId === e.programId &&
-          cs.sessionNumber === e.currentSessionNumber
-        );
+      // Find participants whose enrollment was originally assigned to this slot
+      const matchingEnrollments = enrollments.filter(e => {
+        if (e.status !== 'active') return false;
+        const user = users.find(u => u.id === e.participantId);
+        if (!user || user.status !== 'active') return false;
+        return getSlotKey(e) === se.id;
+      });
 
-        classMap[key] = {
-          id: key,
-          name: prog?.name || "Unknown Program",
-          day: e.schedule.day,
-          time: e.schedule.time,
-          program: prog?.name || "Unknown Program",
-          session: e.currentSessionNumber,
-          location: e.schedule.room,
-          facilitator: fac?.name || "Unknown Facilitator",
-          programId: e.programId,
-          enrolled: 0,
-          participants: [],
-          isCompleted
-        };
-      }
-      classMap[key].participants.push(e);
-      classMap[key].enrolled = classMap[key].participants.length;
+      return {
+        id: se.id,
+        name: prog?.name || se.programName || "Unknown Program",
+        day: se.dayOfWeek,
+        time: se.time,
+        program: prog?.name || se.programName || "Unknown Program",
+        session: matchingEnrollments[0]?.currentSessionNumber || 1,
+        location: se.location,
+        facilitator: fac?.name || se.facilitatorName || "Unknown Facilitator",
+        programId: se.programId,
+        enrolled: matchingEnrollments.length,
+        participants: matchingEnrollments,
+        isCompleted: completedSessions.some(cs =>
+          cs.classId === se.id &&
+          cs.programId === se.programId &&
+          cs.sessionNumber === (matchingEnrollments[0]?.currentSessionNumber || 1)
+        )
+      };
     });
-    return Object.values(classMap);
-  }, [enrollments, programs, users]);
+  }, [scheduleEvents, enrollments, programs, users, currentUser, completedSessions]);
 
   const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
   const timeSlots = [
@@ -154,10 +161,12 @@ export default function FacilitatorDashboard() {
 
   // Authoritative list of participants for this facilitator
   const myParticipantIds = useMemo(() => {
+    const myEventIds = new Set(scheduleEvents.filter(se => se.facilitatorId === currentUser?.id).map(se => se.id));
     return enrollments
-      .filter(e => e.status === 'active' && e.schedule?.facilitatorId === currentUser?.id)
+      .filter(e => e.status === 'active' && myEventIds.has(getSlotKey(e)))
+      .filter(e => users.find(u => u.id === e.participantId)?.status === 'active')
       .map(e => e.participantId);
-  }, [enrollments, currentUser]);
+  }, [enrollments, currentUser, users, scheduleEvents]);
 
   const facilitatorMessages = useMemo(() => {
     if (!currentUser) return [];
@@ -170,7 +179,7 @@ export default function FacilitatorDashboard() {
     return (journalEntries || [])
       .filter(entry => myParticipantIds.includes(entry.participantId))
       .map((entry: JournalEntry) => {
-        const user = users.find((u: User) => u.id === entry.participantId);
+        const user = users.find((u: UserType) => u.id === entry.participantId);
         return {
           id: entry.id,
           participant: user?.name || "Unknown",
@@ -186,7 +195,7 @@ export default function FacilitatorDashboard() {
     const list = (homeworkSubmissions || [])
       .filter(sub => myParticipantIds.includes(sub.participantId))
       .map((sub: HomeworkSubmission) => {
-        const user = users.find((u: User) => u.id === sub.participantId);
+        const user = users.find((u: UserType) => u.id === sub.participantId);
         // HomeworkSubmission might not have programId anymore, try to find it via session
         let prog: Program | undefined;
         let sess: Session | undefined;
@@ -237,9 +246,13 @@ export default function FacilitatorDashboard() {
 
   // Get participants enrolled in a program
   const getParticipantsInProgram = (programId: string) => {
-    const programEnrollments = enrollments.filter((e: Enrollment) => e.programId === programId && e.status === "active" && e.schedule?.facilitatorId === currentUser?.id)
+    const programEnrollments = enrollments.filter((e: Enrollment) => {
+      if (e.programId !== programId || e.status !== "active" || e.schedule?.facilitatorId !== currentUser?.id) return false;
+      const user = users.find((u: UserType) => u.id === e.participantId);
+      return user && user.status === "active";
+    })
     return programEnrollments.map((e: Enrollment) => {
-      const user = users.find((u: User) => u.id === e.participantId)
+      const user = users.find((u: UserType) => u.id === e.participantId)
       return { ...e, user }
     })
   }
@@ -366,6 +379,12 @@ export default function FacilitatorDashboard() {
               {/* Settings */}
               <Button variant="ghost" size="icon" onClick={() => setShowSettings(true)}>
                 <Settings className="h-5 w-5" />
+              </Button>
+
+              {/* My Profile */}
+              <Button variant="outline" size="sm" onClick={() => router.push("/facilitator/profile")} className="gap-2 bg-white/80">
+                <User className="h-4 w-4" />
+                My Profile
               </Button>
 
               {/* Sign Out */}

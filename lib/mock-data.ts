@@ -11,6 +11,8 @@ import type {
   FacilitatorNote,
   QuickNote,
   Message,
+  Court,
+  CaseManager,
 } from "./types"
 
 // Mock Users
@@ -18,6 +20,9 @@ export const mockUsers: User[] = [
   { id: "admin-1", role: "admin", name: "Clinical Director", email: "admin@dmsclinicalservices.com" },
   { id: "facilitator-1", role: "facilitator", name: "Martin Thompson", email: "martin@dmsclinicalservices.com" },
   { id: "facilitator-2", role: "facilitator", name: "Sarah Johnson", email: "sarah@dmsclinicalservices.com" },
+  { id: "cm-1", role: "case_manager", name: "Alice Green", email: "alice.green@example.com" },
+  { id: "cm-2", role: "case_manager", name: "Bob White", email: "bob.white@example.com" },
+  { id: "cm-3", role: "case_manager", name: "Charlie Brown", email: "charlie.brown@example.com" },
   {
     id: "participant-1",
     role: "participant",
@@ -93,6 +98,7 @@ export const mockPrograms: Program[] = [
     description:
       "A comprehensive program designed to help participants reach their treatment goals through structured sessions focusing on change, recovery, and personal growth.",
     totalSessions: 16,
+    type: "Core",
     isLocked: false,
     sessions: [
       {
@@ -1336,6 +1342,7 @@ export const mockPrograms: Program[] = [
     description:
       "Cognitive behavioral approach focusing on criminal thinking patterns and their connection to addictive behavior.",
     totalSessions: 12,
+    type: "Core",
     isLocked: true,
     sessions: [],
   },
@@ -1346,6 +1353,7 @@ export const mockPrograms: Program[] = [
     description:
       "Focused program on identifying triggers, warning signs, and building sustainable recovery strategies.",
     totalSessions: 8,
+    type: "Core",
     isLocked: true,
     sessions: [],
   },
@@ -1355,6 +1363,7 @@ export const mockPrograms: Program[] = [
     name: "Anger Management",
     description: "Learn to recognize anger triggers and develop healthy coping strategies.",
     totalSessions: 10,
+    type: "Elective",
     isLocked: true,
     sessions: [],
   },
@@ -1365,6 +1374,7 @@ export const mockPrograms: Program[] = [
     name: "CODA (Co-Dependents Anonymous)",
     description: "Recovery from codependency patterns and building healthy relationships.",
     totalSessions: 8,
+    type: "Elective",
     isLocked: true,
     sessions: [],
   },
@@ -1652,4 +1662,16 @@ export const mockMessages: Message[] = [
     readAt: null,
     createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
   },
+]
+
+export const mockCourts: Court[] = [
+  { id: "accountability-court", name: "Accountability Court", caseManagerIds: ["cm-1", "cm-2"] },
+  { id: "drug-court", name: "Drug Court", caseManagerIds: ["cm-3"] },
+  { id: "mental-health-court", name: "Mental Health Court", caseManagerIds: ["cm-1"] },
+]
+
+export const mockCaseManagers: CaseManager[] = [
+  { id: "cm-1", name: "Alice Green", email: "alice.green@example.com", courtIds: ["accountability-court", "mental-health-court"], participantCount: 10 },
+  { id: "cm-2", name: "Bob White", email: "bob.white@example.com", courtIds: ["accountability-court"], participantCount: 12 },
+  { id: "cm-3", name: "Charlie Brown", email: "charlie.brown@example.com", courtIds: ["drug-court"], participantCount: 8 },
 ]

@@ -36,7 +36,11 @@ export default function ProgramOverview() {
   }
 
   const enrollments = getEnrollmentsByProgram(program.id)
-  const activeEnrollments = enrollments.filter((e) => e.status === "active" && e.schedule?.facilitatorId === currentUser?.id)
+  const activeEnrollments = enrollments.filter((e) => {
+    if (e.status !== "active" || e.schedule?.facilitatorId !== currentUser?.id) return false;
+    const user = users.find(u => u.id === e.participantId);
+    return user && user.status === "active";
+  })
 
   if (currentUser?.role === 'facilitator' && activeEnrollments.length === 0) {
     return (

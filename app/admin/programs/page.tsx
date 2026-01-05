@@ -49,6 +49,7 @@ export default function ProgramManagement() {
     slug: "",
     description: "",
     totalSessions: 12,
+    type: "Core",
     isLocked: false,
   })
 
@@ -64,6 +65,7 @@ export default function ProgramManagement() {
         name: newProgram.name,
         description: newProgram.description,
         totalSessions: newProgram.totalSessions,
+        type: newProgram.type,
         isLocked: newProgram.isLocked,
         sessions: [],
       })
@@ -76,7 +78,7 @@ export default function ProgramManagement() {
   }
 
   const resetForm = () => {
-    setNewProgram({ name: "", slug: "", description: "", totalSessions: 12, isLocked: false })
+    setNewProgram({ name: "", slug: "", description: "", totalSessions: 12, type: "Core", isLocked: false })
     setCodeInput("")
     setParseError(null)
     setParsedProgram(null)
@@ -317,6 +319,15 @@ export default function ProgramManagement() {
                   onChange={(e) =>
                     setNewProgram({ ...newProgram, totalSessions: Number.parseInt(e.target.value) || 0 })
                   }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Program Type</Label>
+                <Input
+                  value={newProgram.type}
+                  onChange={(e) => setNewProgram({ ...newProgram, type: e.target.value })}
+                  placeholder="e.g., Core, Elective, Supplemental"
                 />
               </div>
 

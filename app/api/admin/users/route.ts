@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { name, email, role, status } = body;
+        const { name, email, role, status, courtId, county } = body;
 
         if (!name || !email || !role) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -27,18 +27,62 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "User with this email already exists" }, { status: 400 });
         }
 
-        // Create the user profile in Firestore
-        // Note: We don't have a UID yet from Firebase Auth, so we let Firestore generate one
-        // or we could use email but it's better to use a random ID.
+        let caseManagerId = null;
+
+        if (role === "participant" && courtId) {
+            const courtDoc = await db.collection("courts").doc(courtId).get();
+            if (courtDoc.exists) {
+                const courtData = courtDoc.data();
+                const cmIds: string[] = courtData?.caseManagerIds || [];
+
+                // Rule 5a: If exactly one case manager, assign them
+                if (cmIds.length === 1) {
+                    caseManagerId = cmIds[0];
+                }
+                // Rule 5b: Accountability Court + Banks -> Load balancing
+                else if (courtData?.name === "Accountability Court" && county === "Banks") {
+                    const cms = await db.collection("users")
+                        .where("role", "==", "case_manager")
+                        .where("id", "in", cmIds)
+                        .get();
+
+                    let bestCmId = cmIds[0];
+                    let minCount = Infinity;
+
+                    for (const cmDoc of cms.docs) {
+                        const participantCount = (await db.collection("users")
+                            .where("role", "==", "participant")
+                            .where("caseManagerId", "==", cmDoc.id)
+                            .get()).size;
+
+                        if (participantCount < minCount) {
+                            minCount = participantCount;
+                            bestCmId = cmDoc.id;
+                        }
+                    }
+                    caseManagerId = bestCmId;
+                }
+            }
+        }
+
         const newUserRef = db.collection("users").doc();
-        const userData = {
+        const userData: any = {
             name,
             email,
             role,
-            status: status || "active",
+            status: role === "participant" ? "active" : (status || "active"),
             isProfileOnly: true,
             createdAt: new Date().toISOString(),
         };
+
+        if (role === "participant") {
+            if (!courtId || !county || !caseManagerId) {
+                return NextResponse.json({ error: "Court, County, and Case Manager are required for participants" }, { status: 400 });
+            }
+            userData.courtId = courtId;
+            userData.county = county;
+            userData.caseManagerId = caseManagerId;
+        }
 
         await newUserRef.set(userData);
 

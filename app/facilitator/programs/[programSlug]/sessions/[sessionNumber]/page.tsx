@@ -79,6 +79,7 @@ export default function FacilitatorSessionView() {
     attendance,
     currentUser,
     generateClassQRCode,
+    scheduleEvents,
   } = useStore()
 
   const programSlug = params.programSlug as string
@@ -107,23 +108,43 @@ export default function FacilitatorSessionView() {
   const [showQRModal, setShowQRModal] = useState(false)
   const [generatedQR, setGeneratedQR] = useState<string | null>(null)
 
+  // Helper to match enrollment to its schedule event
+  const getSlotKey = (e: any) => {
+    if (!e.schedule) return "";
+    const slugify = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    const safeId = (text: string) => slugify(text) || "unknown";
+    return `evt-${e.schedule.day}-${safeId(e.schedule.time)}-${e.programId}`;
+  };
+
   // Get enrollments for this program/class
   const participants = useMemo(() => {
     if (!program) return []
-    const enrollments = getEnrollmentsByProgram(program.id)
-    const activeEnrollments = enrollments.filter((e) => {
-      if (e.status !== "active") return false
-      // Enforce facilitator boundaries
-      if (currentUser?.role === "facilitator" && e.schedule?.facilitatorId !== currentUser.id) return false
 
-      if (classId && e.schedule) {
-        const eKey = `${e.programId}-${e.schedule.day}-${e.schedule.time}-${e.schedule.room}`
-        return eKey === classId
+    // Authorization check via ScheduleEvent
+    if (classId && currentUser?.role === "facilitator") {
+      const event = scheduleEvents.find(se => se.id === classId);
+      if (event && event.facilitatorId !== currentUser.id) return [];
+    }
+
+    const allEnrollments = getEnrollmentsByProgram(program.id)
+    const activeEnrollments = allEnrollments.filter((e) => {
+      if (e.status !== "active") return false
+
+      if (classId) {
+        // Match by slot identity
+        return getSlotKey(e) === classId;
       }
       return true
     })
-    return activeEnrollments.map((e) => users.find((u) => u.id === e.participantId)).filter(Boolean) as any[]
-  }, [program, getEnrollmentsByProgram, classId, users, currentUser])
+
+    return activeEnrollments
+      .map((e) => {
+        const user = users.find((u) => u.id === e.participantId);
+        if (!user || user.status !== "active") return null;
+        return { ...user, enrollmentId: e.id };
+      })
+      .filter(Boolean) as any[]
+  }, [program, getEnrollmentsByProgram, classId, users, currentUser, scheduleEvents])
 
   // Check if session is already completed
   const isCompleted = useMemo(() => {

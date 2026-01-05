@@ -1,6 +1,6 @@
 // Core types for the Accountability Court Platform
 
-export type UserRole = "admin" | "facilitator" | "participant"
+export type UserRole = "admin" | "facilitator" | "participant" | "case_manager"
 
 export interface User {
   id: string
@@ -8,7 +8,7 @@ export interface User {
   name: string
   email: string
   phone?: string
-  status?: "active" | "inactive"
+  status?: "active" | "inactive" | "paused"
   isProfileOnly?: boolean
   dateOfBirth?: string
   address?: string
@@ -19,6 +19,62 @@ export interface User {
   startDate?: string
   probationOfficer?: string
   notes?: string
+  courtId?: string
+  county?: string
+  caseManagerId?: string
+  pauseReason?: string
+  pauseDate?: string
+  expectedReturnDate?: string
+  // Facilitator Specific
+  agency?: string
+  credentials?: string
+  certifications?: string[]
+  authorizedPrograms?: string[] // program IDs
+  availabilityNotes?: string
+}
+
+export interface FacilitatorProfileUpdate {
+  id: string
+  facilitatorId: string
+  changes: {
+    phone?: string
+    email?: string
+    address?: string
+    credentials?: string
+    certifications?: string[]
+    availabilityNotes?: string
+  }
+  status: "pending" | "approved" | "rejected"
+  timestamp: string // Matches 'submittedAt' but renamed for implementation consistency
+  reviewedAt?: string
+  reviewedBy?: string
+  adminNote?: string
+}
+
+export interface FacilitatorHistoryRecord {
+  id: string
+  facilitatorId: string
+  fieldName: string
+  oldValue: any
+  newValue: any
+  changedBy: string
+  changedAt: string
+  type: string
+  reason?: string
+}
+
+export interface Court {
+  id: string
+  name: string
+  caseManagerIds: string[]
+}
+
+export interface CaseManager {
+  id: string
+  name: string
+  email: string
+  courtIds: string[]
+  participantCount: number
 }
 
 export interface Program {
@@ -27,6 +83,7 @@ export interface Program {
   name: string
   description: string
   totalSessions: number
+  type: string
   isLocked: boolean
   sessions: Session[]
 }
@@ -97,6 +154,11 @@ export interface Attendance {
   attended: boolean
   status: "present" | "absent" | "excused"
   completedAt: string | null
+  isCorrection?: boolean
+  originalRecordId?: string
+  correctionReason?: string
+  correctedBy?: string
+  correctedAt?: string
 }
 
 export interface CompletedSession {
@@ -258,4 +320,23 @@ export interface ScheduleEvent {
   active: boolean
   sessionId: string
   sessionNumber: number
+}
+export interface CourtPrepSnapshot {
+  id: string
+  courtId: string
+  snapshotGeneratedAt: string
+  generatedBy: string
+  snapshotData: {
+    participants: any[]
+    activity: {
+      completions: any[]
+      attendance: any[]
+      takeaways: any[]
+    }
+  }
+  approvedContent: Record<string, {
+    suggestedTakeaway: string
+    suggestedJudgeQuestion: string
+    adminNote?: string
+  }>
 }

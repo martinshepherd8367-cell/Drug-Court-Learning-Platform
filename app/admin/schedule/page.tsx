@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -9,12 +9,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, Users, Calendar, Clock, MapPin, Plus, Settings, QrCode, CheckCircle } from "lucide-react"
+import { ArrowLeft, Users, Calendar, Clock, MapPin, Plus, Settings, QrCode, CheckCircle, Edit, AlertCircle } from "lucide-react"
 import { useStore } from "@/lib/store"
 
 export default function AdminSchedulePage() {
   const router = useRouter()
-  const { users, programs, enrollments, makeupGroup, makeupAssignments, updateMakeupGroup, completedSessions } = useStore()
+  const { users, programs, enrollments, makeupGroup, makeupAssignments, updateMakeupGroup, completedSessions, scheduleEvents, updateScheduleEvent } = useStore()
 
   const [showClassDetail, setShowClassDetail] = useState(false)
   const [showParticipantList, setShowParticipantList] = useState(false)
@@ -25,6 +25,10 @@ export default function AdminSchedulePage() {
   const [showMakeupSettings, setShowMakeupSettings] = useState(false)
   const [makeupDate, setMakeupDate] = useState(makeupGroup.date)
   const [makeupTime, setMakeupTime] = useState(makeupGroup.time)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editData, setEditData] = useState<any>(null)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const makeupParticipants = makeupAssignments.filter((a) => a.status !== "completed")
 
@@ -54,50 +58,78 @@ export default function AdminSchedulePage() {
     setShowMakeupSettings(false)
   }
 
-  // Derived Schedule Data
-  const derivedScheduleData = enrollments.reduce((acc, enrollment) => {
-    if (!enrollment.schedule || enrollment.status !== "active") return acc;
+  // Derived Schedule Data - Primary source: scheduleEvents
+  const derivedScheduleData = useMemo(() => {
+    const acc: Record<string, Record<string, any[]>> = {};
 
-    if (!enrollment.schedule || !enrollment.schedule.day || !enrollment.schedule.time) return acc;
+    scheduleEvents.forEach(event => {
+      const { dayOfWeek: day, time, location: room, programId, id: eventId, date } = event;
+      if (!day || !time) return;
 
-    const { day, time, room, facilitatorId } = enrollment.schedule;
-    const program = programs.find(p => p.id === enrollment.programId);
-    const facilitator = users.find(u => u.id === facilitatorId);
+      const program = programs.find(p => p.id === programId);
+      const facilitator = users.find(u => u.id === event.facilitatorId);
 
-    if (!acc[day]) acc[day] = {};
-    if (!acc[day][time]) acc[day][time] = [];
+      if (!acc[day]) acc[day] = {};
+      if (!acc[day][time]) acc[day][time] = [];
 
-    // Check if class already exists in slot
-    let classEntry = acc[day][time].find((c: any) => c.programId === enrollment.programId && c.room === room);
-
-    if (!classEntry) {
-      const isCompleted = completedSessions.some(cs =>
-        cs.classId === `${enrollment.programId}-${day}-${time}-${room}` &&
-        cs.programId === enrollment.programId &&
-        cs.sessionNumber === enrollment.currentSessionNumber
-      );
-
-      classEntry = {
-        programId: enrollment.programId,
-        program: program?.name || "Unknown Program",
-        facilitator: facilitator?.name || "Unknown Facilitator",
-        session: enrollment.currentSessionNumber,
-        totalSessions: program?.totalSessions || 0,
-        enrolled: 0,
-        room: room,
-        day: day,
-        time: time,
+      acc[day][time].push({
+        eventId,
+        programId,
+        program: program?.name || event.programName || "Unknown Program",
+        facilitator: facilitator?.name || event.facilitatorName || "Unknown Facilitator",
+        facilitatorId: event.facilitatorId,
+        room,
+        day,
+        time,
+        date,
         participants: [],
-        isCompleted
-      };
-      acc[day][time].push(classEntry);
-    }
+        enrolled: 0,
+        session: 1,
+        totalSessions: program?.totalSessions || 0,
+        isCompleted: false
+      });
+    });
 
-    classEntry.participants.push(enrollment.participantId);
-    classEntry.enrolled = classEntry.participants.length;
+    // Attach participation data from enrollments
+    const getSlotKey = (e: any) => {
+      if (!e.schedule) return "";
+      const slugify = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+      const safeId = (text: string) => slugify(text) || "unknown";
+      return `evt-${e.schedule.day}-${safeId(e.schedule.time)}-${e.programId}`;
+    };
+
+    // Flatten acc for easier lookup by ID
+    const eventLookup: Record<string, any> = {};
+    Object.values(acc).forEach(dayMap => {
+      Object.values(dayMap).forEach((slots: any[]) => {
+        slots.forEach(s => {
+          eventLookup[s.eventId] = s;
+        });
+      });
+    });
+
+    enrollments.forEach(enrollment => {
+      if (!enrollment.schedule || enrollment.status !== "active") return;
+
+      const slotKey = getSlotKey(enrollment);
+      const entry = eventLookup[slotKey];
+
+      if (entry) {
+        entry.participants.push(enrollment.participantId);
+        entry.enrolled = entry.participants.length;
+        entry.session = Math.max(entry.session, enrollment.currentSessionNumber);
+
+        const isCompleted = completedSessions.some(cs =>
+          cs.classId === entry.eventId &&
+          cs.programId === enrollment.programId &&
+          cs.sessionNumber === enrollment.currentSessionNumber
+        );
+        if (isCompleted) entry.isCompleted = true;
+      }
+    });
 
     return acc;
-  }, {} as Record<string, Record<string, any[]>>);
+  }, [scheduleEvents, enrollments, programs, users, completedSessions]);
 
   const getClassesForSlot = (day: string, time: string) => {
     return derivedScheduleData[day]?.[time] || []
@@ -124,6 +156,52 @@ export default function AdminSchedulePage() {
       };
     });
   }
+
+  const isFutureEvent = (dateStr: string, timeStr: string) => {
+    if (!dateStr || !timeStr) return true;
+    const now = new Date();
+    try {
+      const [time, meridian] = timeStr.split(" ");
+      let [hours, minutes] = time.split(":").map(Number);
+      if (meridian === "PM" && hours < 12) hours += 12;
+      if (meridian === "AM" && hours === 12) hours = 0;
+      const eventTime = new Date(`${dateStr}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`);
+      return eventTime.getTime() > now.getTime();
+    } catch (e) {
+      return true;
+    }
+  };
+
+  const handleEditClick = () => {
+    setEditData({
+      programId: selectedClass.programId,
+      facilitatorId: selectedClass.facilitatorId,
+      time: selectedClass.time,
+      room: selectedClass.room
+    });
+    setIsEditing(true);
+    setError(null);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!selectedClass?.eventId) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await updateScheduleEvent(selectedClass.eventId, {
+        programId: editData.programId,
+        facilitatorId: editData.facilitatorId,
+        time: editData.time,
+        location: editData.room
+      });
+      setIsEditing(false);
+      setShowClassDetail(false);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  };
 
   return (
     <div className="min-h-screen">
@@ -364,76 +442,146 @@ export default function AdminSchedulePage() {
       </main>
 
       {/* Class Detail Modal */}
-      <Dialog open={showClassDetail} onOpenChange={setShowClassDetail}>
+      <Dialog open={showClassDetail} onOpenChange={(open) => {
+        setShowClassDetail(open);
+        if (!open) setIsEditing(false);
+      }}>
         <DialogContent className="max-w-md card-transparent">
           <DialogHeader>
-            <DialogTitle>{selectedClass?.program}</DialogTitle>
+            <div className="flex items-center justify-between pr-6">
+              <DialogTitle>{isEditing ? "Edit Class Schedule" : selectedClass?.program}</DialogTitle>
+              {!isEditing && selectedClass && isFutureEvent(selectedClass.date, selectedClass.time) && (
+                <Button variant="ghost" size="sm" onClick={handleEditClick} className="h-8 w-8 p-0">
+                  <Edit className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </DialogHeader>
+
+          {error && (
+            <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm flex items-center gap-2 mb-2">
+              <AlertCircle className="h-4 w-4 font-bold" />
+              {error}
+            </div>
+          )}
+
           {selectedClass && (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-gray-500" />
-                  <span>{selectedClass.day}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-gray-500" />
-                  <span>{selectedClass.time}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-gray-500" />
-                  <span>{selectedClass.facilitator}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-gray-500" />
-                  <span>{selectedClass.room}</span>
-                </div>
-              </div>
-
-              {!selectedClass.isMakeup && (
-                <div className="bg-gray-50 p-3 rounded">
-                  <div className="text-sm text-gray-600">Session Progress</div>
-                  <div className="text-lg font-semibold">
-                    Session {selectedClass.session} of {selectedClass.totalSessions}
+              {isEditing ? (
+                <div className="space-y-3 py-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Program (Class)</Label>
+                    <Select value={editData.programId} onValueChange={(val) => setEditData({ ...editData, programId: val })}>
+                      <SelectTrigger className="h-9">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {programs.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                    <div
-                      className="bg-green-600 h-2 rounded-full"
-                      style={{
-                        width: `${(selectedClass.session / selectedClass.totalSessions) * 100}%`,
+
+                  <div className="space-y-1">
+                    <Label className="text-xs">Facilitator</Label>
+                    <Select value={editData.facilitatorId} onValueChange={(val) => setEditData({ ...editData, facilitatorId: val })}>
+                      <SelectTrigger className="h-9">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {users.filter(u => u.role === 'facilitator').map(f => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Time</Label>
+                      <Select value={editData.time} onValueChange={(val) => setEditData({ ...editData, time: val })}>
+                        <SelectTrigger className="h-9">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[...morningSlots, ...afternoonSlots].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Location (Room)</Label>
+                      <Input
+                        value={editData.room}
+                        onChange={(e) => setEditData({ ...editData, room: e.target.value })}
+                        className="h-9"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-4 flex gap-2">
+                    <Button variant="outline" className="flex-1" onClick={() => setIsEditing(false)} disabled={busy}>
+                      Cancel
+                    </Button>
+                    <Button className="flex-1 bg-green-600 hover:bg-green-700" onClick={handleSaveEdit} disabled={busy}>
+                      {busy ? "Saving..." : "Save Changes"}
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-gray-500" />
+                      <span>{selectedClass.day}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-gray-500" />
+                      <span>{selectedClass.time}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4 text-gray-500" />
+                      <span>{selectedClass.facilitator}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-gray-500" />
+                      <span>{selectedClass.room}</span>
+                    </div>
+                  </div>
+
+                  {!selectedClass.isMakeup && (
+                    <div className="bg-gray-50 p-3 rounded">
+                      <div className="text-sm text-gray-600">Session Progress</div>
+                      <div className="text-lg font-semibold">
+                        Session {selectedClass.session} of {selectedClass.totalSessions}
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                        <div
+                          className="bg-green-600 h-2 rounded-full"
+                          style={{
+                            width: `${(selectedClass.session / selectedClass.totalSessions) * 100}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">{selectedClass.enrolled} Participants Enrolled</span>
+                    <Badge className={selectedClass.isCompleted ? "bg-gray-400" : "bg-green-600"}>
+                      {selectedClass.isCompleted ? "Completed" : "Active"}
+                    </Badge>
+                  </div>
+
+                  {!isEditing && (
+                    <Button
+                      className="w-full bg-green-600 hover:bg-green-700"
+                      onClick={() => {
+                        setShowClassDetail(false)
+                        setShowParticipantList(true)
                       }}
-                    />
-                  </div>
-                </div>
-              )}
-
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">{selectedClass.enrolled} Participants Enrolled</span>
-                <Badge className="bg-green-600">Active</Badge>
-              </div>
-
-              <Button
-                className="w-full bg-green-600 hover:bg-green-700"
-                onClick={() => {
-                  setShowClassDetail(false)
-                  setShowParticipantList(true)
-                }}
-              >
-                <Users className="h-4 w-4 mr-2" />
-                View Participant List
-              </Button>
-
-              {selectedClass.isMakeup && (
-                <Button
-                  variant="outline"
-                  className="w-full bg-transparent"
-                  onClick={() => {
-                    // Show QR code for makeup group
-                  }}
-                >
-                  <QrCode className="h-4 w-4 mr-2" />
-                  Show Check-In QR Code
-                </Button>
+                    >
+                      <Users className="h-4 w-4 mr-2" />
+                      View Participant List
+                    </Button>
+                  )}
+                </>
               )}
             </div>
           )}

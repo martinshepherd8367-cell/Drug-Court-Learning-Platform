@@ -25,7 +25,10 @@ export async function GET() {
             attendanceSnap,
             messagesSnap,
             completedSessionsSnap,
-            takeawaysSnap
+            takeawaysSnap,
+            courtsSnap,
+            facilitatorHistorySnap,
+            facilitatorRequestsSnap
         ] = await Promise.all([
             db.collection("users").get(),
             db.collection("programs_catalog").get(),
@@ -36,7 +39,10 @@ export async function GET() {
             db.collectionGroup("attendance").get(),
             db.collection("messages").get(),
             db.collection("completed_sessions").get(),
-            db.collection("takeaways").get()
+            db.collection("takeaways").get(),
+            db.collection("courts").get(),
+            db.collection("facilitator_history").get(),
+            db.collection("facilitator_update_requests").get()
         ]);
 
         let users = usersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -49,6 +55,9 @@ export async function GET() {
         let messages = messagesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
         let completedSessions = completedSessionsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
         let takeaways = takeawaysSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        let courts = courtsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        let facilitatorHistory = facilitatorHistorySnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        let facilitatorRequests = facilitatorRequestsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
         // 2. Apply Scoping Logic
         if (user.role === "admin") {
@@ -91,6 +100,9 @@ export async function GET() {
             completedSessions = completedSessions.filter((cs: any) => cs.facilitatorId === user.uid || myProgramIds.has(cs.programId));
             takeaways = takeaways.filter((t: any) => myParticipantIds.has(t.participantId));
 
+            facilitatorHistory = facilitatorHistory.filter((h: any) => h.facilitatorId === user.uid);
+            facilitatorRequests = facilitatorRequests.filter((r: any) => r.facilitatorId === user.uid);
+
         } else if (user.role === "participant") {
             // Participant only sees themselves and their own enrollments/artifacts
             enrollments = enrollments.filter((e: any) => e.participantId === user.uid);
@@ -113,6 +125,9 @@ export async function GET() {
             messages = messages.filter((m: any) => m.recipientId === user.uid || m.senderId === user.uid);
             completedSessions = completedSessions.filter((cs: any) => myProgramIds.has(cs.programId));
             takeaways = takeaways.filter((t: any) => t.participantId === user.uid);
+
+            facilitatorHistory = [];
+            facilitatorRequests = [];
         }
 
         return NextResponse.json({
@@ -125,7 +140,10 @@ export async function GET() {
             attendance,
             messages,
             completedSessions,
-            takeaways
+            takeaways,
+            courts,
+            facilitatorHistory,
+            facilitatorRequests
         });
 
     } catch (error: any) {

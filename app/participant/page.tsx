@@ -49,6 +49,7 @@ export default function ParticipantDashboard() {
     takeaways,
     completedSessions,
     users,
+    scheduleEvents,
   } = useStore()
 
   const [selectedMessage, setSelectedMessage] = useState<MessageDisplay | null>(null)
@@ -122,13 +123,29 @@ export default function ParticipantDashboard() {
     Record<string, { program: string; facilitator: string; room: string; session: number; programSlug: string; isCompleted?: boolean }>
   > = {}
 
+  // Helper to match enrollment to its schedule event
+  const getSlotKey = (e: any) => {
+    if (!e.schedule) return "";
+    const slugify = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    const safeId = (text: string) => slugify(text) || "unknown";
+    return `evt-${e.schedule.day}-${safeId(e.schedule.time)}-${e.programId}`;
+  };
+
   // Add scheduled classes based on active enrollments
   activeEnrollments.forEach((enrollment, index) => {
     const program = programs.find((p) => p.id === enrollment.programId)
-    // Use explicit schedule if available
     if (program && enrollment.schedule) {
-      const shortDay = enrollment.schedule.day.substring(0, 3);
-      const facilitator = users?.find(u => u.id === enrollment.schedule?.facilitatorId);
+      // Find authoritative ScheduleEvent
+      const slotKey = getSlotKey(enrollment);
+      const event = scheduleEvents.find(se => se.id === slotKey);
+
+      // Metadata from Event (live) or Enrollment (baseline)
+      const dayRaw = event?.dayOfWeek || enrollment.schedule.day;
+      const shortDay = dayRaw.substring(0, 3);
+      const time = event?.time || enrollment.schedule.time;
+      const room = event?.location || enrollment.schedule.room;
+      const facilitatorId = event?.facilitatorId || enrollment.schedule.facilitatorId;
+      const facilitator = users?.find(u => u.id === facilitatorId);
 
       if (!participantSchedule[shortDay]) participantSchedule[shortDay] = {};
       const isCompleted = completedSessions.some(cs =>
@@ -136,10 +153,10 @@ export default function ParticipantDashboard() {
         cs.sessionNumber === enrollment.currentSessionNumber
       );
 
-      participantSchedule[shortDay][enrollment.schedule.time] = {
+      participantSchedule[shortDay][time] = {
         program: program.name,
-        facilitator: facilitator?.name || "Unknown Facilitator",
-        room: enrollment.schedule.room,
+        facilitator: facilitator?.name || event?.facilitatorName || "Unknown Facilitator",
+        room: room,
         session: enrollment.currentSessionNumber,
         programSlug: program.slug,
         isCompleted
@@ -687,27 +704,41 @@ export default function ParticipantDashboard() {
                   <div className="text-[10px] sm:text-xs text-gray-500 mb-3 ml-1 uppercase tracking-wider font-bold bg-gray-50 p-2 rounded inline-block border border-gray-100">
                     Attendance recorded by facilitator
                   </div>
-                  {attendance.filter(a => a.participantId === participantId).length > 0 ? (
-                    attendance.filter(a => a.participantId === participantId)
-                      .sort((a, b) => b.sessionId.localeCompare(a.sessionId))
-                      .map((record) => {
-                        const prog = programs.find(p => record.sessionId.startsWith(p.id));
-                        return (
-                          <div key={record.id} className="flex items-center justify-between p-3 bg-white/80 rounded-lg border border-gray-100 shadow-sm">
-                            <div className="flex flex-col">
-                              <span className="font-medium text-sm text-gray-900">{prog?.name || "Program"}</span>
-                              <span className="text-xs text-gray-500">Session {record.sessionId.split('-').pop()}</span>
-                            </div>
-                            <Badge variant={record.status === "present" ? "default" : "outline"}
-                              className={record.status === "present" ? "bg-green-600" : "text-gray-600"}>
-                              {record.status.charAt(0).toUpperCase() + record.status.slice(1)}
-                            </Badge>
+                  {(() => {
+                    const myAttendance = attendance.filter(a => a.participantId === participantId);
+                    const map = new Map<string, any>();
+                    [...myAttendance].sort((a, b) => {
+                      const dateA = a.correctedAt || a.completedAt || "";
+                      const dateB = b.correctedAt || b.completedAt || "";
+                      return dateA.localeCompare(dateB);
+                    }).forEach(a => {
+                      map.set(a.sessionId, a);
+                    });
+                    const resolved = Array.from(map.values()).sort((a, b) => b.sessionId.localeCompare(a.sessionId));
+
+                    if (resolved.length === 0) {
+                      return <p className="text-center text-gray-500 py-6 text-sm italic">No attendance records yet</p>;
+                    }
+
+                    return resolved.map((record) => {
+                      const prog = programs.find(p => record.sessionId.startsWith(p.id));
+                      return (
+                        <div key={record.id} className="flex items-center justify-between p-3 bg-white/80 rounded-lg border border-gray-100 shadow-sm">
+                          <div className="flex flex-col">
+                            <span className="font-medium text-sm text-gray-900">{prog?.name || "Program"}</span>
+                            <span className="text-xs text-gray-500">
+                              Session {record.sessionId.split('-').pop()}
+                              {record.isCorrection && <span className="ml-2 text-[10px] text-orange-600 font-bold uppercase">(Corrected)</span>}
+                            </span>
                           </div>
-                        );
-                      })
-                  ) : (
-                    <p className="text-center text-gray-500 py-6 text-sm italic">No attendance records yet</p>
-                  )}
+                          <Badge variant={record.status === "present" ? "default" : "outline"}
+                            className={record.status === "present" ? "bg-green-600" : "text-gray-600"}>
+                            {record.status.charAt(0).toUpperCase() + record.status.slice(1)}
+                          </Badge>
+                        </div>
+                      );
+                    });
+                  })()}
                 </TabsContent>
                 <TabsContent value="takeaways" className="space-y-3 max-h-[300px] overflow-y-auto">
                   <div className="text-[10px] sm:text-xs text-blue-600 mb-3 ml-1 uppercase tracking-wider font-bold bg-blue-50 p-2 rounded inline-block border border-blue-100">

@@ -36,12 +36,13 @@ import {
   FileText,
   Trash2,
   MessageSquare,
+  AlertCircle
 } from "lucide-react"
 import type { User } from "@/lib/types"
 
 export default function EnrollmentManagement() {
   const router = useRouter()
-  const { currentUser, users, programs, enrollments, attendance, takeaways, updateEnrollment, addEnrollment, removeEnrollment, addMessage } = useStore()
+  const { currentUser, users, programs, enrollments, attendance, takeaways, updateEnrollment, removeEnrollment, addMessage, setEnrollments } = useStore()
 
   const [showEnroll, setShowEnroll] = useState(false)
   const [selectedParticipant, setSelectedParticipant] = useState("")
@@ -52,8 +53,10 @@ export default function EnrollmentManagement() {
   const [selectedTime, setSelectedTime] = useState("10:00 AM")
   const [selectedFacilitator, setSelectedFacilitator] = useState("")
   const [selectedRoom, setSelectedRoom] = useState("A101")
+  const [error, setError] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
 
-  const participants = users.filter((u) => u.role === "participant")
+  const participants = users.filter((u) => u.role === "participant" && u.status === "active")
 
   const getParticipantEnrollments = (participantId: string) => {
     return enrollments.filter((e) => e.participantId === participantId)
@@ -108,44 +111,65 @@ export default function EnrollmentManagement() {
     }
   }
 
-  const handleEnroll = () => {
+  const handleEnroll = async () => {
     if (selectedParticipant && selectedProgram && selectedFacilitator) {
-      const program = programs.find((p) => p.id === selectedProgram)
-      const facilitator = users.find((u) => u.id === selectedFacilitator)
+      setBusy(true)
+      setError(null)
+      try {
+        const program = programs.find((p) => p.id === selectedProgram)
+        const facilitator = users.find((u) => u.id === selectedFacilitator)
 
-      const classSchedule = {
-        day: selectedDay,
-        time: selectedTime,
-        facilitatorId: selectedFacilitator,
-        room: selectedRoom,
+        const classSchedule = {
+          day: selectedDay,
+          time: selectedTime,
+          facilitatorId: selectedFacilitator,
+          room: selectedRoom,
+        }
+
+        const res = await fetch("/api/admin/enrollments", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            participantId: selectedParticipant,
+            programId: selectedProgram,
+            schedule: classSchedule,
+            status: "active"
+          }),
+        })
+
+        if (!res.ok) {
+          const data = await res.json()
+          throw new Error(data.error || "Failed to enroll participant")
+        }
+
+        const newEnrollment = await res.json()
+        setEnrollments([...enrollments, newEnrollment])
+
+        if (newEnrollment.warning) {
+          alert(newEnrollment.warning)
+        }
+
+        addMessage({
+          senderId: currentUser?.id || "system",
+          senderRole: currentUser?.role || "admin",
+          recipientId: selectedParticipant,
+          recipientRole: "participant",
+          title: `Welcome to ${program?.name}!`,
+          content: `You have been enrolled in ${program?.name}.\n\nClass Details:\n- Day: ${classSchedule.day}\n- Time: ${classSchedule.time}\n- Facilitator: ${facilitator?.name || "Facilitator"}\n- Room: ${classSchedule.room}\n\nYour first session starts soon. Check your calendar for the full schedule. Good luck!`,
+          fromName: currentUser?.name || "Admin",
+          readAt: null,
+          createdAt: new Date().toISOString(),
+        })
+
+        setShowEnroll(false)
+        setSelectedParticipant("")
+        setSelectedProgram("")
+        setSelectedFacilitator("")
+      } catch (e: any) {
+        setError(e.message)
+      } finally {
+        setBusy(false)
       }
-
-      // Create enrollment
-      addEnrollment({
-        participantId: selectedParticipant,
-        programId: selectedProgram,
-        currentSessionNumber: 1,
-        status: "active",
-        startedAt: new Date().toISOString(),
-        schedule: classSchedule
-      })
-
-      addMessage({
-        senderId: currentUser?.id || "system",
-        senderRole: currentUser?.role || "admin",
-        recipientId: selectedParticipant,
-        recipientRole: "participant",
-        title: `Welcome to ${program?.name}!`,
-        content: `You have been enrolled in ${program?.name}.\n\nClass Details:\n- Day: ${classSchedule.day}\n- Time: ${classSchedule.time}\n- Facilitator: ${facilitator?.name || "Facilitator"}\n- Room: ${classSchedule.room}\n\nYour first session starts soon. Check your calendar for the full schedule. Good luck!`,
-        fromName: currentUser?.name || "Admin",
-        readAt: null,
-        createdAt: new Date().toISOString(),
-      })
-
-      setShowEnroll(false)
-      setSelectedParticipant("")
-      setSelectedProgram("")
-      setSelectedFacilitator("")
     }
   }
 
@@ -308,6 +332,13 @@ export default function EnrollmentManagement() {
             <DialogDescription>Add a participant to a program</DialogDescription>
           </DialogHeader>
 
+          {error && (
+            <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm flex items-center gap-2">
+              <AlertCircle className="h-4 w-4" />
+              {error}
+            </div>
+          )}
+
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label>Participant</Label>
@@ -398,15 +429,15 @@ export default function EnrollmentManagement() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowEnroll(false)}>
+            <Button variant="outline" onClick={() => setShowEnroll(false)} disabled={busy}>
               Cancel
             </Button>
             <Button
               onClick={handleEnroll}
-              disabled={!selectedParticipant || !selectedProgram || !selectedFacilitator}
+              disabled={busy || !selectedParticipant || !selectedProgram || !selectedFacilitator}
               className="bg-green-600 hover:bg-green-700"
             >
-              Enroll
+              {busy ? "Enrolling..." : "Enroll"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -21,6 +21,10 @@ import type {
   Takeaway,
   ClassQRCode,
   CheckIn,
+  Court,
+  CaseManager,
+  FacilitatorProfileUpdate,
+  FacilitatorHistoryRecord,
 } from "./types"
 import {
   mockUsers,
@@ -34,6 +38,8 @@ import {
   mockFacilitatorNotes,
   mockQuickNotes,
   mockMessages,
+  mockCourts,
+  mockCaseManagers,
 } from "./mock-data"
 
 const initialMakeupGroup: MakeupGroup = {
@@ -105,6 +111,11 @@ interface StoreState {
   checkIns: CheckIn[]
   completedSessions: CompletedSession[]
   takeaways: Takeaway[]
+  courts: Court[]
+  caseManagers: CaseManager[]
+  scheduleEvents: ScheduleEvent[]
+  facilitatorHistory: FacilitatorHistoryRecord[]
+  facilitatorRequests: FacilitatorProfileUpdate[]
 
   // Current user (for demo)
   currentUser: User | null
@@ -131,12 +142,16 @@ interface StoreState {
   addEnrollment: (enrollment: Omit<Enrollment, "id">) => void
   updateEnrollment: (id: string, updates: Partial<Enrollment>) => void
   removeEnrollment: (id: string) => void
+  updateScheduleEvent: (id: string, updates: Partial<ScheduleEvent>) => Promise<void>
   addJournalEntry: (entry: Omit<JournalEntry, "id">) => void
   addHomeworkSubmission: (submission: Omit<HomeworkSubmission, "id">) => void
   updateHomeworkSubmission: (id: string, updates: Partial<HomeworkSubmission>) => void
   addFacilitatorNote: (note: Omit<FacilitatorNote, "id">) => void
   addQuickNote: (note: Omit<QuickNote, "id">) => void
   addTakeaway: (takeaway: Omit<Takeaway, "id">) => Promise<void>
+  correctAttendance: (attendanceId: string, status: "present" | "absent" | "excused", reason: string) => Promise<void>
+  updateFacilitatorProfile: (data: any) => Promise<void>
+  reviewFacilitatorRequest: (requestId: string, action: "approve" | "reject", adminNote?: string) => Promise<void>
 
   // Setters for hydration/updates
   setUsers: (users: User[]) => void
@@ -148,6 +163,9 @@ interface StoreState {
   setHomeworkSubmissions: (submissions: HomeworkSubmission[]) => void
   setCompletedSessions: (sessions: CompletedSession[]) => void
   setTakeaways: (takeaways: Takeaway[]) => void
+  setCourts: (courts: Court[]) => void
+  setCaseManagers: (caseManagers: CaseManager[]) => void
+  setScheduleEvents: (events: ScheduleEvent[]) => void
 
   // Program management functions
   addProgram: (program: Omit<Program, "id">) => void
@@ -225,6 +243,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [checkIns, setCheckIns] = useState<CheckIn[]>([])
   const [completedSessions, setCompletedSessions] = useState<CompletedSession[]>([])
   const [takeaways, setTakeaways] = useState<Takeaway[]>([])
+  const [facilitatorHistory, setFacilitatorHistory] = useState<FacilitatorHistoryRecord[]>([])
+  const [facilitatorRequests, setFacilitatorRequests] = useState<FacilitatorProfileUpdate[]>([])
+  const [courts, setCourts] = useState<Court[]>(mockCourts)
+  const [caseManagers, setCaseManagers] = useState<CaseManager[]>(mockCaseManagers)
+  const [scheduleEvents, setScheduleEvents] = useState<ScheduleEvent[]>([])
   const [isHydrated, setIsHydrated] = useState(false)
 
   // Hydrate from Server
@@ -246,6 +269,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         if (data.messages?.length) setMessages(data.messages);
         if (data.completedSessions?.length) setCompletedSessions(data.completedSessions);
         if (data.takeaways?.length) setTakeaways(data.takeaways);
+        if (data.scheduleEvents?.length) setScheduleEvents(data.scheduleEvents);
+        if (data.facilitatorHistory) setFacilitatorHistory(data.facilitatorHistory);
+        if (data.facilitatorRequests) setFacilitatorRequests(data.facilitatorRequests);
 
         console.log(`Hydrated: ${data.users?.length} users, ${data.messages?.length} messages, ${data.completedSessions?.length} completed sessions, ${data.takeaways?.length} takeaways, ${data.attendance?.length} attendance records`);
         setIsHydrated(true);
@@ -446,6 +472,28 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  const updateScheduleEvent = useCallback(async (id: string, updates: Partial<ScheduleEvent>) => {
+    // Optimistic update
+    setScheduleEvents((prev) => prev.map((e) => (e.id === id ? { ...e, ...updates } : e)))
+
+    // Persist
+    try {
+      const res = await fetch("/api/admin/schedule", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ eventId: id, ...updates })
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to update schedule");
+      }
+    } catch (e: any) {
+      console.error("Failed to update schedule on server:", e.message);
+      // Rollback could be implemented here, but ignoring for now per "no optimization" rule
+      throw e;
+    }
+  }, [])
+
   const addJournalEntry = useCallback(async (entry: Omit<JournalEntry, "id">) => {
     // Optimistic local update
     const tempId = `je-${Date.now()}`;
@@ -524,7 +572,63 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setTakeaways(prev => prev.filter(t => t.id !== tempId));
       throw e;
     }
-  }, [])
+  }, [setTakeaways])
+
+  const correctAttendance = useCallback(async (attendanceId: string, status: "present" | "absent" | "excused", reason: string) => {
+    try {
+      const res = await fetch("/api/admin/attendance/correct", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ attendanceId, status, reason })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      if (data.newRecord) {
+        setAttendance(prev => [...prev, data.newRecord]);
+      }
+    } catch (e) {
+      console.error("Store: correction failed", e);
+      throw e;
+    }
+  }, [setAttendance])
+
+  const updateFacilitatorProfile = useCallback(async (data: any) => {
+    try {
+      const res = await fetch("/api/admin/facilitators/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Update failed");
+      }
+      const result = await res.json();
+      setUsers(prev => prev.map(u => u.id === data.facilitatorId ? { ...u, ...result.data } : u));
+    } catch (e) {
+      console.error("Store: profile update failed", e);
+      throw e;
+    }
+  }, [setUsers])
+
+  const reviewFacilitatorRequest = useCallback(async (requestId: string, action: "approve" | "reject", adminNote?: string) => {
+    try {
+      const res = await fetch("/api/admin/facilitators/requests/review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ requestId, action, adminNote })
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Review failed");
+      }
+      setFacilitatorRequests(prev => prev.map(r => r.id === requestId ? { ...r, status: action === 'approve' ? 'approved' : 'rejected' } : r));
+    } catch (e) {
+      console.error("Store: review failed", e);
+      throw e;
+    }
+  }, [setFacilitatorRequests])
 
   const markMessageRead = useCallback(async (messageId: string) => {
     // Optimistic update
@@ -751,7 +855,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }
       addMessage(facilitatorMessage)
     },
-    [makeupGroup],
+    [makeupGroup, addMessage],
   )
 
   const assignMakeupWork = useCallback(
@@ -935,6 +1039,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         users,
         programs,
         enrollments,
+        scheduleEvents,
         attendance,
         activityRuns,
         participantResponses,
@@ -947,6 +1052,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         checkIns,
         completedSessions,
         takeaways,
+        facilitatorHistory,
+        facilitatorRequests,
+        courts,
+        caseManagers,
         currentUser,
         setCurrentUser,
         setUsers,
@@ -958,6 +1067,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         setHomeworkSubmissions,
         setCompletedSessions,
         setTakeaways,
+        setCourts,
+        setCaseManagers,
+        setScheduleEvents,
         launchActivity,
         closeActivity,
         submitResponse,
@@ -969,12 +1081,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         addEnrollment,
         updateEnrollment,
         removeEnrollment,
+        updateScheduleEvent,
         addJournalEntry,
         addHomeworkSubmission,
         updateHomeworkSubmission,
         addFacilitatorNote,
         addQuickNote,
         addTakeaway,
+        correctAttendance,
+        updateFacilitatorProfile,
+        reviewFacilitatorRequest,
         addProgram,
         updateProgram,
         deleteProgram,

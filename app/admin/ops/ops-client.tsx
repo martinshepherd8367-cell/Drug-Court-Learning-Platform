@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { useStore } from "@/lib/store";
 import {
     ArrowLeft,
     RefreshCw,
@@ -50,6 +51,7 @@ export function OpsClient({
     const [activeTab, setActiveTab] = useState("move");
     const [searchTerm, setSearchTerm] = useState("");
     const [busy, setBusy] = useState(false);
+    const { correctAttendance } = useStore();
 
     // --- State for Dialogs ---
     const [showMoveModal, setShowMoveModal] = useState(false);
@@ -64,6 +66,13 @@ export function OpsClient({
         facilitatorId: ""
     });
 
+    const [showCorrectModal, setShowCorrectModal] = useState(false);
+    const [correctData, setCorrectData] = useState({
+        attendanceId: "",
+        status: "present" as "present" | "absent" | "excused",
+        reason: ""
+    });
+
     // --- Derived Data ---
     const filteredParticipants = useMemo(() => {
         return participants.filter(p =>
@@ -76,14 +85,27 @@ export function OpsClient({
         return enrollments.filter(e => e.status === "active");
     }, [enrollments]);
 
+    const resolvedAttendance = useMemo(() => {
+        const map = new Map<string, any>();
+        [...attendance].sort((a, b) => {
+            const dateA = a.correctedAt || a.completedAt || "";
+            const dateB = b.correctedAt || b.completedAt || "";
+            return dateA.localeCompare(dateB);
+        }).forEach(a => {
+            const key = `${a.participantId}-${a.sessionId}`;
+            map.set(key, a);
+        });
+        return Array.from(map.values());
+    }, [attendance]);
+
     const participantAbsences = useMemo(() => {
         const absencesByParticipant: Record<string, any[]> = {};
-        attendance.filter(a => a.status === "absent").forEach(a => {
+        resolvedAttendance.filter(a => a.status === "absent").forEach(a => {
             if (!absencesByParticipant[a.participantId]) absencesByParticipant[a.participantId] = [];
             absencesByParticipant[a.participantId].push(a);
         });
         return absencesByParticipant;
-    }, [attendance]);
+    }, [resolvedAttendance]);
 
     // --- Actions ---
 
@@ -153,12 +175,26 @@ export function OpsClient({
 
     const getParticipantSummary = (participantId: string) => {
         const pEnrollments = enrollments.filter(e => e.participantId === participantId);
-        const pAttendance = attendance.filter(a => a.participantId === participantId);
+        const pAttendance = resolvedAttendance.filter(a => a.participantId === participantId);
         const active = pEnrollments.filter(e => e.status === "active");
         const completed = pAttendance.filter(a => a.status === "present").length;
         const absent = pAttendance.filter(a => a.status === "absent").length;
 
         return { active, completed, absent };
+    };
+
+    const handleCorrectAttendance = async () => {
+        if (!correctData.attendanceId || !correctData.reason) return;
+        setBusy(true);
+        try {
+            await correctAttendance(correctData.attendanceId, correctData.status, correctData.reason);
+            setShowCorrectModal(false);
+            router.refresh();
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setBusy(false);
+        }
     };
 
     return (
@@ -333,9 +369,22 @@ export function OpsClient({
                                                 <CardContent>
                                                     <div className="space-y-2">
                                                         {abs.map((a, i) => (
-                                                            <div key={i} className="flex items-center gap-2 text-xs text-orange-700 bg-orange-50 p-2 rounded">
-                                                                <AlertCircle className="h-3 w-3" />
-                                                                <span>{a.date}: {a.programId} (Session {a.sessionNumber})</span>
+                                                            <div key={i} className="flex items-center justify-between gap-2 text-xs text-orange-700 bg-orange-50 p-2 rounded">
+                                                                <div className="flex items-center gap-2">
+                                                                    <AlertCircle className="h-3 w-3" />
+                                                                    <span>{a.date || a.sessionId}: {a.programId} (Session {a.sessionNumber})</span>
+                                                                </div>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    className="h-6 px-2 text-orange-600 hover:text-orange-800"
+                                                                    onClick={() => {
+                                                                        setCorrectData({ attendanceId: a.id, status: a.status, reason: "" });
+                                                                        setShowCorrectModal(true);
+                                                                    }}
+                                                                >
+                                                                    Correct
+                                                                </Button>
                                                             </div>
                                                         ))}
                                                         <Button
@@ -522,6 +571,53 @@ export function OpsClient({
                         <Button variant="outline" onClick={() => setShowMakeupModal(false)} disabled={busy}>Cancel</Button>
                         <Button onClick={handleAssignMakeup} disabled={busy || !makeupData.date || !makeupData.facilitatorId} className="bg-green-600 hover:bg-green-700">
                             {busy ? "Assigning..." : "Confirm Assignment"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+            {/* Correction Modal */}
+            <Dialog open={showCorrectModal} onOpenChange={setShowCorrectModal}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Correct Attendance Record</DialogTitle>
+                        <DialogDescription>
+                            Create a corrective record. The original record will remain for audit purposes.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label>New Status</Label>
+                            <Select
+                                value={correctData.status}
+                                onValueChange={(v: any) => setCorrectData({ ...correctData, status: v })}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="present">Present</SelectItem>
+                                    <SelectItem value="absent">Absent</SelectItem>
+                                    <SelectItem value="excused">Excused</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Correction Reason (Required)</Label>
+                            <Input
+                                placeholder="Explain why this correction is being made..."
+                                value={correctData.reason}
+                                onChange={(e) => setCorrectData({ ...correctData, reason: e.target.value })}
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowCorrectModal(false)} disabled={busy}>Cancel</Button>
+                        <Button
+                            onClick={handleCorrectAttendance}
+                            disabled={busy || !correctData.reason}
+                            className="bg-orange-600 hover:bg-orange-700"
+                        >
+                            {busy ? "Correcting..." : "Confirm Correction"}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

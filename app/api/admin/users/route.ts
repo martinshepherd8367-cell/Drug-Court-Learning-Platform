@@ -19,6 +19,10 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
 
+        if (role === "facilitator") {
+            return NextResponse.json({ error: "Facilitators must be created via the Facilitator Management workspace." }, { status: 400 });
+        }
+
         const db = getDb();
 
         // Check if user already exists

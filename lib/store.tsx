@@ -153,6 +153,7 @@ interface StoreState {
   updateFacilitatorProfile: (data: any) => Promise<void>
   reviewFacilitatorRequest: (requestId: string, action: "approve" | "reject", adminNote?: string) => Promise<void>
   activateFacilitator: (facilitatorId: string, gmailOrUid: string) => Promise<void>
+  createFacilitator: (data: { name: string, email: string }) => Promise<void>
 
   // Setters for hydration/updates
   setUsers: (users: User[]) => void
@@ -650,6 +651,25 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   }, [setUsers])
 
+  const createFacilitator = useCallback(async (data: { name: string, email: string }) => {
+    try {
+      const res = await fetch("/api/admin/facilitators/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Creation failed");
+      }
+      const result = await res.json();
+      setUsers(prev => [...prev, result.data]);
+    } catch (e) {
+      console.error("Store: creation failed", e);
+      throw e;
+    }
+  }, [setUsers])
+
   const markMessageRead = useCallback(async (messageId: string) => {
     // Optimistic update
     setMessages((prev) => prev.map((m) => (m.id === messageId ? { ...m, readAt: new Date().toISOString() } : m)))
@@ -1112,6 +1132,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         updateFacilitatorProfile,
         reviewFacilitatorRequest,
         activateFacilitator,
+        createFacilitator,
         addProgram,
         updateProgram,
         deleteProgram,

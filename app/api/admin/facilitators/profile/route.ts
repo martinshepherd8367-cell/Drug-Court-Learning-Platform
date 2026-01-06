@@ -34,7 +34,8 @@ export async function POST(req: Request) {
             name: name !== undefined ? name : (oldData.name || ""),
             email: email !== undefined ? email : (oldData.email || ""),
             phone: phone !== undefined ? phone : (oldData.phone || ""),
-            updatedAt: new Date().toISOString()
+            updatedAt: new Date().toISOString(),
+            updatedBy: admin.uid
         };
 
         // Identify changes for history

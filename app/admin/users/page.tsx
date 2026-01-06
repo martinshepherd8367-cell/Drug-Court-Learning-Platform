@@ -396,11 +396,24 @@ export default function UserManagement() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="participant">Participant</SelectItem>
-                  <SelectItem value="facilitator">Facilitator</SelectItem>
                   <SelectItem value="admin">Admin</SelectItem>
                   <SelectItem value="case_manager">Case Manager</SelectItem>
                 </SelectContent>
               </Select>
+              <p className="text-[10px] text-gray-500 italic mt-1">
+                To create a Facilitator profile, please use the dedicated{" "}
+                <button
+                  type="button"
+                  className="text-blue-600 hover:underline"
+                  onClick={() => {
+                    setShowAddUser(false)
+                    router.push("/admin/facilitators")
+                  }}
+                >
+                  Facilitator Management
+                </button>{" "}
+                workflow.
+              </p>
             </div>
 
             {newUser.role === "participant" && (

@@ -46,7 +46,8 @@ export default function FacilitatorManagement() {
         facilitatorRequests,
         updateFacilitatorProfile,
         reviewFacilitatorRequest,
-        activateFacilitator
+        activateFacilitator,
+        createFacilitator
     } = useStore()
 
     const [searchTerm, setSearchTerm] = useState("")
@@ -55,6 +56,8 @@ export default function FacilitatorManagement() {
     const [showHistory, setShowHistory] = useState(false)
     const [showReviewRequest, setShowReviewRequest] = useState(false)
     const [showActivateDialog, setShowActivateDialog] = useState(false)
+    const [showAddFacilitator, setShowAddFacilitator] = useState(false)
+    const [addForm, setAddForm] = useState({ name: "", email: "" })
     const [activateInput, setActivateInput] = useState("")
     const [activeRequest, setActiveRequest] = useState<FacilitatorProfileUpdate | null>(null)
     const [busy, setBusy] = useState(false)
@@ -138,6 +141,21 @@ export default function FacilitatorManagement() {
         setShowHistory(true)
     }
 
+    const handleAddFacilitator = async () => {
+        if (!addForm.name || !addForm.email) return
+        setBusy(true)
+        setError(null)
+        try {
+            await createFacilitator(addForm)
+            setShowAddFacilitator(false)
+            setAddForm({ name: "", email: "" })
+        } catch (e: any) {
+            setError(e.message)
+        } finally {
+            setBusy(false)
+        }
+    }
+
     const handleActivateClick = (facilitator: UserType) => {
         setSelectedFacilitator(facilitator)
         setActivateInput(facilitator.email || "")
@@ -181,6 +199,10 @@ export default function FacilitatorManagement() {
                             <h1 className="text-3xl font-bold text-gray-900">Facilitator Management</h1>
                             <p className="text-gray-600 mt-1">Manage authoritative profiles and review update requests</p>
                         </div>
+                        <Button onClick={() => setShowAddFacilitator(true)} className="bg-blue-600 hover:bg-blue-700">
+                            <User className="h-4 w-4 mr-2" />
+                            Add Facilitator
+                        </Button>
                     </div>
                 </div>
 
@@ -468,7 +490,7 @@ export default function FacilitatorManagement() {
                             Cancel
                         </Button>
                         <Button onClick={handleSaveProfile} disabled={busy} className="bg-blue-600 hover:bg-blue-700">
-                            {busy ? "Saving..." : "Save Authoritative Profile"}
+                            {busy ? "Saving..." : "Save Profile"}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -643,6 +665,63 @@ export default function FacilitatorManagement() {
                             className="bg-blue-600 hover:bg-blue-700"
                         >
                             {busy ? "Activating..." : "Bind & Activate Identity"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Add Facilitator Dialog */}
+            <Dialog open={showAddFacilitator} onOpenChange={setShowAddFacilitator}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Add Facilitator Profile</DialogTitle>
+                        <DialogDescription>
+                            Create a new canonical facilitator entry. Authentication is completed separately via Google Sign-In.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {error && (
+                        <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm flex items-center gap-2">
+                            <AlertCircle className="h-4 w-4" />
+                            {error}
+                        </div>
+                    )}
+
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label>Full Name</Label>
+                            <Input
+                                value={addForm.name}
+                                onChange={(e) => setAddForm({ ...addForm, name: e.target.value })}
+                                placeholder="e.g. John Doe"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Email</Label>
+                            <Input
+                                value={addForm.email}
+                                onChange={(e) => setAddForm({ ...addForm, email: e.target.value })}
+                                placeholder="e.g. john@gmail.com"
+                                type="email"
+                            />
+                        </div>
+
+                        <p className="text-[10px] text-gray-500 italic">
+                            Friendly reminder: This creates a profile stub. The facilitator will still need to perform a "Sign In with Google" at least once before you can bind their identity.
+                        </p>
+                    </div>
+
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowAddFacilitator(false)} disabled={busy}>
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleAddFacilitator}
+                            disabled={busy || !addForm.name || !addForm.email}
+                            className="bg-blue-600 hover:bg-blue-700"
+                        >
+                            {busy ? "Creating..." : "Create Facilitator"}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

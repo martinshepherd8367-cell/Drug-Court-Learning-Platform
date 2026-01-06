@@ -488,7 +488,14 @@ export default function AdminSchedulePage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {users.filter(u => u.role === 'facilitator').map(f => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}
+                        {users.filter(u =>
+                          u.role === 'facilitator' &&
+                          u.authorizedPrograms?.includes(editData.programId)
+                        ).map(f => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}
+                        {users.filter(u =>
+                          u.role === 'facilitator' &&
+                          !u.authorizedPrograms?.includes(editData.programId)
+                        ).length === 0 && <div className="p-2 text-xs text-gray-500 italic">No authorized facilitators</div>}
                       </SelectContent>
                     </Select>
                   </div>
@@ -772,7 +779,7 @@ export default function AdminSchedulePage() {
                 </SelectTrigger>
                 <SelectContent>
                   {users
-                    .filter((u) => u.role === "facilitator")
+                    .filter((u) => u.role === "facilitator" && (u.authorizedPrograms?.includes(editData?.programId) || u.authorizedPrograms?.includes("makeup") || u.authorizedPrograms?.includes("Makeup Group")))
                     .map((fac) => (
                       <SelectItem key={fac.id} value={fac.id}>
                         {fac.name}
@@ -835,7 +842,7 @@ export default function AdminSchedulePage() {
                 </SelectTrigger>
                 <SelectContent>
                   {users
-                    .filter((u) => u.role === "facilitator")
+                    .filter((u) => u.role === "facilitator" && (u.authorizedPrograms?.includes(editData?.programId) || u.authorizedPrograms?.includes("makeup") || u.authorizedPrograms?.includes("Makeup Group")))
                     .map((fac) => (
                       <SelectItem key={fac.id} value={fac.id}>
                         {fac.name}

@@ -18,8 +18,21 @@ export async function POST(req: NextRequest) {
 
         // Fetch user role for redirect logic
         const userDoc = await getDb().collection("users").doc(decoded.uid).get();
-        const userData = userDoc.data();
 
+        if (!userDoc.exists) {
+            // User authenticated but no profile binding exists yet
+            const res = NextResponse.json({ uid: decoded.uid, role: "unbound" }, { status: 200 });
+            res.cookies.set("session", sessionCookie, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "lax",
+                path: "/",
+                maxAge: expiresIn / 1000,
+            });
+            return res;
+        }
+
+        const userData = userDoc.data();
         if (userData?.status === "inactive") {
             return NextResponse.json({ error: "Your account is inactive. Please contact your clinical director." }, { status: 403 });
         }

@@ -152,6 +152,7 @@ interface StoreState {
   correctAttendance: (attendanceId: string, status: "present" | "absent" | "excused", reason: string) => Promise<void>
   updateFacilitatorProfile: (data: any) => Promise<void>
   reviewFacilitatorRequest: (requestId: string, action: "approve" | "reject", adminNote?: string) => Promise<void>
+  activateFacilitator: (facilitatorId: string, gmailOrUid: string) => Promise<void>
 
   // Setters for hydration/updates
   setUsers: (users: User[]) => void
@@ -630,6 +631,25 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   }, [setFacilitatorRequests])
 
+  const activateFacilitator = useCallback(async (facilitatorId: string, gmailOrUid: string) => {
+    try {
+      const res = await fetch("/api/admin/facilitators/activate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ facilitatorId, gmailOrUid })
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Activation failed");
+      }
+      const result = await res.json();
+      setUsers(prev => prev.map(u => u.id === facilitatorId ? { ...u, ...result.data } : u));
+    } catch (e) {
+      console.error("Store: activation failed", e);
+      throw e;
+    }
+  }, [setUsers])
+
   const markMessageRead = useCallback(async (messageId: string) => {
     // Optimistic update
     setMessages((prev) => prev.map((m) => (m.id === messageId ? { ...m, readAt: new Date().toISOString() } : m)))
@@ -1091,6 +1111,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         correctAttendance,
         updateFacilitatorProfile,
         reviewFacilitatorRequest,
+        activateFacilitator,
         addProgram,
         updateProgram,
         deleteProgram,

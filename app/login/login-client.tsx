@@ -2,23 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { initializeApp, getApps } from "firebase/app";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
-
-function getFirebaseAuth() {
-  const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
-  const authDomain = process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN;
-  const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
-
-  if (!apiKey || !authDomain || !projectId) {
-    throw new Error("Missing NEXT_PUBLIC_FIREBASE_* env vars");
-  }
-
-  if (!getApps().length) {
-    initializeApp({ apiKey, authDomain, projectId });
-  }
-  return getAuth();
-}
+import { getClientAuth, googleProvider } from "@/lib/firebase-client";
+import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 
 export default function LoginClient() {
   const params = useSearchParams();
@@ -31,12 +16,50 @@ export default function LoginClient() {
 
   const auth = useMemo(() => {
     try {
-      return getFirebaseAuth();
+      return getClientAuth();
     } catch (e: any) {
       setErr(e?.message || "Firebase client init failed");
       return null;
     }
   }, []);
+
+  async function onGoogleLogin() {
+    setErr(null);
+    if (!auth) return;
+    setBusy(true);
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const idToken = await result.user.getIdToken();
+
+      const res = await fetch("/api/auth/session-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Authentication failed");
+      }
+
+      const { role } = await res.json();
+      if (role === "unbound") {
+        throw new Error("Your account is not yet bound to a role. Please contact an administrator.");
+      }
+
+      let destination = from;
+      if (!params.get("from")) {
+        if (role === "admin") destination = "/admin";
+        else if (role === "facilitator") destination = "/facilitator";
+        else if (role === "participant") destination = "/participant";
+      }
+
+      window.location.href = destination;
+    } catch (e: any) {
+      setErr(e?.message || "Google sign in failed");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function onLogin() {
     setErr(null);
@@ -110,9 +133,17 @@ export default function LoginClient() {
       <button
         onClick={onLogin}
         disabled={busy || !email || !password}
-        style={{ width: "100%", padding: 12 }}
+        style={{ width: "100%", padding: 12, marginBottom: 8 }}
       >
         {busy ? "Signing in…" : "Sign in"}
+      </button>
+
+      <button
+        onClick={onGoogleLogin}
+        disabled={busy}
+        style={{ width: "100%", padding: 12, background: "white", border: "1px solid #ccc", color: "#333" }}
+      >
+        {busy ? "Connecting…" : "Sign in with Google"}
       </button>
     </div>
   );

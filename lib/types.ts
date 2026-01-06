@@ -10,6 +10,7 @@ export interface User {
   phone?: string
   status?: "active" | "inactive" | "paused"
   isProfileOnly?: boolean
+  userId?: string // Bound Firebase Auth UID
   dateOfBirth?: string
   address?: string
   emergencyContact?: string

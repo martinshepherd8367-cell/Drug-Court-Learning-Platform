@@ -45,7 +45,8 @@ export default function FacilitatorManagement() {
         facilitatorHistory,
         facilitatorRequests,
         updateFacilitatorProfile,
-        reviewFacilitatorRequest
+        reviewFacilitatorRequest,
+        activateFacilitator
     } = useStore()
 
     const [searchTerm, setSearchTerm] = useState("")
@@ -53,6 +54,8 @@ export default function FacilitatorManagement() {
     const [showEditProfile, setShowEditProfile] = useState(false)
     const [showHistory, setShowHistory] = useState(false)
     const [showReviewRequest, setShowReviewRequest] = useState(false)
+    const [showActivateDialog, setShowActivateDialog] = useState(false)
+    const [activateInput, setActivateInput] = useState("")
     const [activeRequest, setActiveRequest] = useState<FacilitatorProfileUpdate | null>(null)
     const [busy, setBusy] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -135,6 +138,27 @@ export default function FacilitatorManagement() {
         setShowHistory(true)
     }
 
+    const handleActivateClick = (facilitator: UserType) => {
+        setSelectedFacilitator(facilitator)
+        setActivateInput(facilitator.email || "")
+        setShowActivateDialog(true)
+    }
+
+    const handleActivateSubmit = async () => {
+        if (!selectedFacilitator || !activateInput) return
+        setBusy(true)
+        setError(null)
+        try {
+            await activateFacilitator(selectedFacilitator.id, activateInput)
+            setShowActivateDialog(false)
+            setActivateInput("")
+        } catch (e: any) {
+            setError(e.message)
+        } finally {
+            setBusy(false)
+        }
+    }
+
     const getFacilitatorHistory = (facilitatorId: string) => {
         return facilitatorHistory
             .filter(h => h.facilitatorId === facilitatorId)
@@ -204,7 +228,19 @@ export default function FacilitatorManagement() {
                                             {facilitators.map((f) => (
                                                 <TableRow key={f.id}>
                                                     <TableCell>
-                                                        <div className="font-semibold text-gray-900">{f.name}</div>
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="font-semibold text-gray-900">{f.name}</div>
+                                                            {f.userId ? (
+                                                                <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200 text-[9px] px-1 h-4 gap-1">
+                                                                    <ShieldCheck className="h-2.5 w-2.5" />
+                                                                    VERIFIED
+                                                                </Badge>
+                                                            ) : (
+                                                                <Badge variant="outline" className="text-orange-600 border-orange-200 text-[9px] px-1 h-4">
+                                                                    UNBOUND
+                                                                </Badge>
+                                                            )}
+                                                        </div>
                                                         <div className="text-xs text-gray-500">{f.email}</div>
                                                     </TableCell>
                                                     <TableCell>
@@ -213,11 +249,15 @@ export default function FacilitatorManagement() {
                                                     </TableCell>
                                                     <TableCell>
                                                         <div className="flex flex-wrap gap-1">
-                                                            {f.authorizedPrograms?.map(pId => (
-                                                                <Badge key={pId} variant="outline" className="text-[10px] py-0">
-                                                                    {programs.find(p => p.id === pId)?.name || pId}
-                                                                </Badge>
-                                                            )) || <span className="text-xs text-gray-400 italic">None</span>}
+                                                            {f.authorizedPrograms && f.authorizedPrograms.length > 0 ? (
+                                                                f.authorizedPrograms.map(pId => (
+                                                                    <Badge key={pId} variant="outline" className="text-[10px] py-0 border-blue-100 bg-blue-50/30 text-blue-700">
+                                                                        {programs.find(p => p.id === pId)?.name || pId}
+                                                                    </Badge>
+                                                                ))
+                                                            ) : (
+                                                                <span className="text-xs text-gray-400 italic">None</span>
+                                                            )}
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="text-right">
@@ -225,6 +265,12 @@ export default function FacilitatorManagement() {
                                                             <Button variant="ghost" size="sm" onClick={() => handleHistoryClick(f)}>
                                                                 <History className="h-4 w-4" />
                                                             </Button>
+                                                            {!f.userId && (
+                                                                <Button variant="outline" size="sm" className="text-blue-600 border-blue-200 hover:bg-blue-50" onClick={() => handleActivateClick(f)}>
+                                                                    <ShieldCheck className="h-4 w-4 mr-2" />
+                                                                    Activate Identity
+                                                                </Button>
+                                                            )}
                                                             <Button variant="outline" size="sm" onClick={() => handleEditClick(f)}>
                                                                 <Edit className="h-4 w-4 mr-2" />
                                                                 Edit Profile
@@ -387,7 +433,10 @@ export default function FacilitatorManagement() {
                             <div className="space-y-4">
                                 <div className="flex items-center gap-2 text-sm font-semibold text-gray-900 pb-2 border-b">
                                     <ShieldCheck className="h-4 w-4" />
-                                    Authorized Programs
+                                    Authorized Classes
+                                </div>
+                                <div className="text-xs text-gray-500 mb-2">
+                                    Grant authority to facilitate specific curriculum-based classes.
                                 </div>
                                 <div className="grid grid-cols-1 gap-2">
                                     {programs.map(program => (
@@ -544,6 +593,57 @@ export default function FacilitatorManagement() {
 
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setShowHistory(false)}>Close History</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Activate Facilitator Identity Dialog */}
+            <Dialog open={showActivateDialog} onOpenChange={setShowActivateDialog}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Activate Facilitator Identity</DialogTitle>
+                        <DialogDescription>
+                            Bind this profile to a verified Gmail address or existing Auth UID. This enables platform access.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {error && (
+                        <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm flex items-center gap-2">
+                            <AlertCircle className="h-4 w-4" />
+                            {error}
+                        </div>
+                    )}
+
+                    <div className="space-y-4 py-4">
+                        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 mb-2">
+                            <div className="text-xs text-blue-800 font-medium mb-1 uppercase">Binding Profile:</div>
+                            <div className="text-sm font-bold text-blue-900">{selectedFacilitator?.name}</div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Gmail Address or Auth UID</Label>
+                            <Input
+                                value={activateInput}
+                                onChange={(e) => setActivateInput(e.target.value)}
+                                placeholder="e.g. facilitator@gmail.com"
+                            />
+                            <p className="text-[10px] text-gray-500 italic">
+                                Note: The user MUST have successfully signed in with this Gmail account at least once before binding.
+                            </p>
+                        </div>
+                    </div>
+
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowActivateDialog(false)} disabled={busy}>
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleActivateSubmit}
+                            disabled={busy || !activateInput}
+                            className="bg-blue-600 hover:bg-blue-700"
+                        >
+                            {busy ? "Activating..." : "Bind & Activate Identity"}
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

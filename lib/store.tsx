@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect, useCallback, type React
 import type {
   User,
   Program,
+  ProgramInstance,
   Session,
   Enrollment,
   Attendance,
@@ -116,6 +117,9 @@ interface StoreState {
   scheduleEvents: ScheduleEvent[]
   facilitatorHistory: FacilitatorHistoryRecord[]
   facilitatorRequests: FacilitatorProfileUpdate[]
+  programInstances: ProgramInstance[]
+  createProgramInstance: (instance: Omit<ProgramInstance, "id" | "status" | "sessionsCompleted" | "participantCount" | "participantIds" | "createdAt">) => Promise<void>
+  updateProgramInstance: (id: string, updates: Partial<ProgramInstance>) => Promise<void>
 
   // Current user (for demo)
   currentUser: User | null
@@ -152,8 +156,8 @@ interface StoreState {
   correctAttendance: (attendanceId: string, status: "present" | "absent" | "excused", reason: string) => Promise<void>
   updateFacilitatorProfile: (data: any) => Promise<void>
   reviewFacilitatorRequest: (requestId: string, action: "approve" | "reject", adminNote?: string) => Promise<void>
-  activateFacilitator: (facilitatorId: string, gmailOrUid: string) => Promise<void>
-  createFacilitator: (data: { name: string, email: string }) => Promise<void>
+  activateUser: (userId: string) => Promise<void>
+  createFacilitator: (data: { name: string, email: string, authorizedPrograms: string[] }) => Promise<void>
 
   // Setters for hydration/updates
   setUsers: (users: User[]) => void
@@ -168,6 +172,7 @@ interface StoreState {
   setCourts: (courts: Court[]) => void
   setCaseManagers: (caseManagers: CaseManager[]) => void
   setScheduleEvents: (events: ScheduleEvent[]) => void
+  setProgramInstances: (instances: ProgramInstance[]) => void
 
   // Program management functions
   addProgram: (program: Omit<Program, "id">) => void
@@ -249,6 +254,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [facilitatorRequests, setFacilitatorRequests] = useState<FacilitatorProfileUpdate[]>([])
   const [courts, setCourts] = useState<Court[]>(mockCourts)
   const [caseManagers, setCaseManagers] = useState<CaseManager[]>(mockCaseManagers)
+  const [programInstances, setProgramInstances] = useState<ProgramInstance[]>([])
   const [scheduleEvents, setScheduleEvents] = useState<ScheduleEvent[]>([])
   const [isHydrated, setIsHydrated] = useState(false)
 
@@ -274,6 +280,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         if (data.scheduleEvents?.length) setScheduleEvents(data.scheduleEvents);
         if (data.facilitatorHistory) setFacilitatorHistory(data.facilitatorHistory);
         if (data.facilitatorRequests) setFacilitatorRequests(data.facilitatorRequests);
+        if (data.programInstances?.length) setProgramInstances(data.programInstances);
+
+        if (data.currentUserProfileId && data.users?.length) {
+          const matchedUser = data.users.find((u: any) => u.id === data.currentUserProfileId);
+          if (matchedUser) setCurrentUser(matchedUser);
+        }
 
         console.log(`Hydrated: ${data.users?.length} users, ${data.messages?.length} messages, ${data.completedSessions?.length} completed sessions, ${data.takeaways?.length} takeaways, ${data.attendance?.length} attendance records`);
         setIsHydrated(true);
@@ -632,26 +644,26 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   }, [setFacilitatorRequests])
 
-  const activateFacilitator = useCallback(async (facilitatorId: string, gmailOrUid: string) => {
+  const activateUser = useCallback(async (userId: string) => {
     try {
-      const res = await fetch("/api/admin/facilitators/activate", {
+      const res = await fetch("/api/admin/users/activate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ facilitatorId, gmailOrUid })
+        body: JSON.stringify({ userId })
       });
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.error || "Activation failed");
       }
       const result = await res.json();
-      setUsers(prev => prev.map(u => u.id === facilitatorId ? { ...u, ...result.data } : u));
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, ...result.data } : u));
     } catch (e) {
       console.error("Store: activation failed", e);
       throw e;
     }
   }, [setUsers])
 
-  const createFacilitator = useCallback(async (data: { name: string, email: string }) => {
+  const createFacilitator = useCallback(async (data: { name: string, email: string, authorizedPrograms: string[] }) => {
     try {
       const res = await fetch("/api/admin/facilitators/create", {
         method: "POST",
@@ -946,6 +958,34 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return makeupAssignments.filter((a) => a.status === "pending")
   }, [makeupAssignments])
 
+  const createProgramInstance = useCallback(async (instance: Omit<ProgramInstance, "id" | "status" | "sessionsCompleted" | "participantCount" | "participantIds" | "createdAt">) => {
+    try {
+      const res = await fetch("/api/admin/programs/instances", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(instance)
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Failed to create program instance");
+      }
+      const result = await res.json();
+      const newInstance: ProgramInstance = {
+        ...result.data,
+        id: result.id
+      };
+
+      setProgramInstances(prev => [...prev, newInstance]);
+    } catch (e) {
+      console.error("Store: failed to create program instance", e);
+      throw e;
+    }
+  }, [])
+
+  const updateProgramInstance = useCallback(async (id: string, updates: Partial<ProgramInstance>) => {
+    setProgramInstances(prev => prev.map(inst => inst.id === id ? { ...inst, ...updates } : inst))
+  }, [])
+
   const addProgram = useCallback((program: Omit<Program, "id">) => {
     const newProgram: Program = {
       ...program,
@@ -1110,6 +1150,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         setCourts,
         setCaseManagers,
         setScheduleEvents,
+        programInstances,
+        createProgramInstance,
+        updateProgramInstance,
+        setProgramInstances,
         launchActivity,
         closeActivity,
         submitResponse,
@@ -1131,7 +1175,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         correctAttendance,
         updateFacilitatorProfile,
         reviewFacilitatorRequest,
-        activateFacilitator,
+        activateUser,
         createFacilitator,
         addProgram,
         updateProgram,

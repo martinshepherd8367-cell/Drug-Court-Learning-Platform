@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/firebase-admin";
 import { getAuthenticatedUser } from "@/lib/auth-server";
+import { CANONICAL_CLASSES } from "@/lib/constants";
 
 export async function PATCH(req: Request) {
     try {
@@ -68,9 +69,17 @@ export async function PATCH(req: Request) {
             }
 
             // Authorization check
-            // We expect facData.authorizedPrograms to be an array of program IDs
-            if (facData.authorizedPrograms && !facData.authorizedPrograms.includes(programId || eventData.programId)) {
-                return NextResponse.json({ error: "Facilitator is not authorized for this program" }, { status: 403 });
+            // Enforce canonical classes.
+            const targetProgramId = programId || eventData.programId;
+            const isAuthorized = facData.authorizedPrograms?.includes(targetProgramId);
+            const isCanonical = (CANONICAL_CLASSES as unknown as string[]).includes(targetProgramId);
+
+            if (!isCanonical) {
+                return NextResponse.json({ error: "Program is not a canonical class. Authorization denied." }, { status: 403 });
+            }
+
+            if (!isAuthorized) {
+                return NextResponse.json({ error: "Facilitator is not authorized for this canonical class" }, { status: 403 });
             }
         }
 

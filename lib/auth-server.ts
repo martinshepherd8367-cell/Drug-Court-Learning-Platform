@@ -2,7 +2,8 @@ import { cookies } from "next/headers";
 import { getAuth, getDb } from "@/lib/firebase-admin";
 
 export type AuthedUser = {
-  uid: string;
+  uid: string; // Profile ID
+  authUid: string; // Firebase Auth UID
   email?: string | null;
   role: "admin" | "facilitator" | "participant" | "case_manager";
   name: string;
@@ -16,17 +17,30 @@ export async function getAuthenticatedUser(): Promise<AuthedUser | null> {
   try {
     const decoded = await getAuth().verifySessionCookie(session, true);
 
-    const userDoc = await getDb().collection("users").doc(decoded.uid).get();
-    const userData = userDoc.data();
-    const role = userDoc.exists ? (userData?.role as AuthedUser["role"] | undefined) : undefined;
+    // Fetch user profile - check both by doc ID (admin) and userId field (bound users)
+    let userDoc = await getDb().collection("users").doc(decoded.uid).get();
+    let userData = userDoc.exists ? userDoc.data() : null;
+    let profileId = decoded.uid;
+
+    if (!userData) {
+      const boundUsers = await getDb().collection("users").where("userId", "==", decoded.uid).limit(1).get();
+      if (!boundUsers.empty) {
+        userDoc = boundUsers.docs[0];
+        userData = userDoc.data();
+        profileId = userDoc.id;
+      }
+    }
+
+    const role = userData?.role as AuthedUser["role"] | undefined;
 
     if (!role || userData?.status === "inactive") return null;
 
     return {
-      uid: decoded.uid,
+      uid: profileId,
+      authUid: decoded.uid,
       email: decoded.email ?? null,
       role,
-      name: userDoc.data()?.name || "Unknown User"
+      name: userData?.name || "Unknown User"
     };
   } catch {
     return null;

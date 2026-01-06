@@ -16,10 +16,21 @@ export async function POST(req: NextRequest) {
         const expiresIn = 5 * 24 * 60 * 60 * 1000; // 5 days
         const sessionCookie = await getAuth().createSessionCookie(idToken, { expiresIn });
 
-        // Fetch user role for redirect logic
-        const userDoc = await getDb().collection("users").doc(decoded.uid).get();
+        // Fetch user role for redirect logic - check both by doc ID (admin) and userId field (bound users)
+        let userDoc = await getDb().collection("users").doc(decoded.uid).get();
+        let userData = userDoc.exists ? userDoc.data() : null;
+        let profileId = decoded.uid;
 
-        if (!userDoc.exists) {
+        if (!userData) {
+            const boundUsers = await getDb().collection("users").where("userId", "==", decoded.uid).limit(1).get();
+            if (!boundUsers.empty) {
+                userDoc = boundUsers.docs[0];
+                userData = userDoc.data();
+                profileId = userDoc.id;
+            }
+        }
+
+        if (!userData) {
             // User authenticated but no profile binding exists yet
             const res = NextResponse.json({ uid: decoded.uid, role: "unbound" }, { status: 200 });
             res.cookies.set("session", sessionCookie, {
@@ -32,14 +43,13 @@ export async function POST(req: NextRequest) {
             return res;
         }
 
-        const userData = userDoc.data();
         if (userData?.status === "inactive") {
             return NextResponse.json({ error: "Your account is inactive. Please contact your clinical director." }, { status: 403 });
         }
 
         const role = userData?.role || "participant";
 
-        const res = NextResponse.json({ uid: decoded.uid, role }, { status: 200 });
+        const res = NextResponse.json({ uid: profileId, role }, { status: 200 });
         res.cookies.set("session", sessionCookie, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",

@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/firebase-admin";
 import { getAuthenticatedUser } from "@/lib/auth-server";
+import { CANONICAL_CLASSES } from "@/lib/constants";
 
 export async function POST(req: Request) {
     try {
@@ -12,6 +13,13 @@ export async function POST(req: Request) {
 
         const body = await req.json();
         const { facilitatorId, agency, credentials, certifications, authorizedPrograms, phone, email, name } = body;
+
+        if (authorizedPrograms !== undefined) {
+            const isValid = authorizedPrograms.every((p: string) => (CANONICAL_CLASSES as unknown as string[]).includes(p));
+            if (!isValid) {
+                return NextResponse.json({ error: "One or more authorized classes are not in the canonical list" }, { status: 400 });
+            }
+        }
 
         if (!facilitatorId) {
             return NextResponse.json({ error: "Facilitator ID is required" }, { status: 400 });

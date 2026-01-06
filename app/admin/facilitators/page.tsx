@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useStore } from "@/lib/store"
+import { CANONICAL_CLASSES } from "@/lib/constants"
 import { RoleNav } from "@/components/role-nav"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -46,9 +47,11 @@ export default function FacilitatorManagement() {
         facilitatorRequests,
         updateFacilitatorProfile,
         reviewFacilitatorRequest,
-        activateFacilitator,
+        activateUser,
         createFacilitator
     } = useStore()
+
+    const [authStatus, setAuthStatus] = useState<{ exists: boolean, checked: boolean }>({ exists: false, checked: false })
 
     const [searchTerm, setSearchTerm] = useState("")
     const [selectedFacilitator, setSelectedFacilitator] = useState<UserType | null>(null)
@@ -57,7 +60,7 @@ export default function FacilitatorManagement() {
     const [showReviewRequest, setShowReviewRequest] = useState(false)
     const [showActivateDialog, setShowActivateDialog] = useState(false)
     const [showAddFacilitator, setShowAddFacilitator] = useState(false)
-    const [addForm, setAddForm] = useState({ name: "", email: "" })
+    const [addForm, setAddForm] = useState({ name: "", email: "", authorizedPrograms: [] as string[] })
     const [activateInput, setActivateInput] = useState("")
     const [activeRequest, setActiveRequest] = useState<FacilitatorProfileUpdate | null>(null)
     const [busy, setBusy] = useState(false)
@@ -142,13 +145,13 @@ export default function FacilitatorManagement() {
     }
 
     const handleAddFacilitator = async () => {
-        if (!addForm.name || !addForm.email) return
+        if (!addForm.name || !addForm.email || addForm.authorizedPrograms.length === 0) return
         setBusy(true)
         setError(null)
         try {
             await createFacilitator(addForm)
             setShowAddFacilitator(false)
-            setAddForm({ name: "", email: "" })
+            setAddForm({ name: "", email: "", authorizedPrograms: [] })
         } catch (e: any) {
             setError(e.message)
         } finally {
@@ -156,20 +159,32 @@ export default function FacilitatorManagement() {
         }
     }
 
-    const handleActivateClick = (facilitator: UserType) => {
+    const handleActivateClick = async (facilitator: UserType) => {
         setSelectedFacilitator(facilitator)
-        setActivateInput(facilitator.email || "")
         setShowActivateDialog(true)
-    }
-
-    const handleActivateSubmit = async () => {
-        if (!selectedFacilitator || !activateInput) return
+        setAuthStatus({ exists: false, checked: false })
         setBusy(true)
         setError(null)
         try {
-            await activateFacilitator(selectedFacilitator.id, activateInput)
+            const res = await fetch(`/ api / admin / users / auth - status ? email = ${encodeURIComponent(facilitator.email || "")} `)
+            if (res.ok) {
+                const data = await res.json()
+                setAuthStatus({ exists: data.exists, checked: true })
+            }
+        } catch (e) {
+            console.error("Failed to check auth status", e)
+        } finally {
+            setBusy(false)
+        }
+    }
+
+    const handleActivateSubmit = async () => {
+        if (!selectedFacilitator || !authStatus.exists) return
+        setBusy(true)
+        setError(null)
+        try {
+            await activateUser(selectedFacilitator.id)
             setShowActivateDialog(false)
-            setActivateInput("")
         } catch (e: any) {
             setError(e.message)
         } finally {
@@ -255,7 +270,7 @@ export default function FacilitatorManagement() {
                                                             {f.userId ? (
                                                                 <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200 text-[9px] px-1 h-4 gap-1">
                                                                     <ShieldCheck className="h-2.5 w-2.5" />
-                                                                    VERIFIED
+                                                                    BOUND
                                                                 </Badge>
                                                             ) : (
                                                                 <Badge variant="outline" className="text-orange-600 border-orange-200 text-[9px] px-1 h-4">
@@ -274,7 +289,7 @@ export default function FacilitatorManagement() {
                                                             {f.authorizedPrograms && f.authorizedPrograms.length > 0 ? (
                                                                 f.authorizedPrograms.map(pId => (
                                                                     <Badge key={pId} variant="outline" className="text-[10px] py-0 border-blue-100 bg-blue-50/30 text-blue-700">
-                                                                        {programs.find(p => p.id === pId)?.name || pId}
+                                                                        {pId}
                                                                     </Badge>
                                                                 ))
                                                             ) : (
@@ -290,7 +305,7 @@ export default function FacilitatorManagement() {
                                                             {!f.userId && (
                                                                 <Button variant="outline" size="sm" className="text-blue-600 border-blue-200 hover:bg-blue-50" onClick={() => handleActivateClick(f)}>
                                                                     <ShieldCheck className="h-4 w-4 mr-2" />
-                                                                    Activate Identity
+                                                                    Authorize / Activate
                                                                 </Button>
                                                             )}
                                                             <Button variant="outline" size="sm" onClick={() => handleEditClick(f)}>
@@ -460,23 +475,22 @@ export default function FacilitatorManagement() {
                                 <div className="text-xs text-gray-500 mb-2">
                                     Grant authority to facilitate specific curriculum-based classes.
                                 </div>
-                                <div className="grid grid-cols-1 gap-2">
-                                    {programs.map(program => (
-                                        <div key={program.id} className="flex items-center gap-3 p-3 rounded-lg border bg-white hover:bg-gray-50">
+                                <div className="grid grid-cols-2 gap-2">
+                                    {CANONICAL_CLASSES.map(className => (
+                                        <div key={className} className="flex items-center gap-3 p-2 rounded-lg border bg-white hover:bg-gray-50">
                                             <Checkbox
-                                                id={`auth-${program.id}`}
-                                                checked={editForm.authorizedPrograms.includes(program.id)}
+                                                id={`auth - ${className} `}
+                                                checked={editForm.authorizedPrograms.includes(className)}
                                                 onCheckedChange={(checked) => {
                                                     if (checked) {
-                                                        setEditForm({ ...editForm, authorizedPrograms: [...editForm.authorizedPrograms, program.id] })
+                                                        setEditForm({ ...editForm, authorizedPrograms: [...editForm.authorizedPrograms, className] })
                                                     } else {
-                                                        setEditForm({ ...editForm, authorizedPrograms: editForm.authorizedPrograms.filter(id => id !== program.id) })
+                                                        setEditForm({ ...editForm, authorizedPrograms: editForm.authorizedPrograms.filter(id => id !== className) })
                                                     }
                                                 }}
                                             />
-                                            <Label htmlFor={`auth-${program.id}`} className="flex-1 cursor-pointer">
-                                                <div className="font-medium text-sm">{program.name}</div>
-                                                <div className="text-[10px] text-gray-500">{program.totalSessions} sessions | {program.type}</div>
+                                            <Label htmlFor={`auth - ${className} `} className="flex-1 cursor-pointer text-xs font-medium">
+                                                {className}
                                             </Label>
                                         </div>
                                     ))}
@@ -635,24 +649,32 @@ export default function FacilitatorManagement() {
                             {error}
                         </div>
                     )}
-
                     <div className="space-y-4 py-4">
-                        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 mb-2">
-                            <div className="text-xs text-blue-800 font-medium mb-1 uppercase">Binding Profile:</div>
-                            <div className="text-sm font-bold text-blue-900">{selectedFacilitator?.name}</div>
+                        <div className="p-4 bg-blue-50 border border-blue-100 rounded-lg space-y-2">
+                            <div className="text-xs text-blue-800 font-medium">Verify Identity for {selectedFacilitator?.name}</div>
+                            <div className="text-[11px] text-blue-700">
+                                This action will bind the following email to this facilitator profile:
+                                <div className="mt-1 font-mono font-bold">{selectedFacilitator?.email}</div>
+                            </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <Label>Gmail Address or Auth UID</Label>
-                            <Input
-                                value={activateInput}
-                                onChange={(e) => setActivateInput(e.target.value)}
-                                placeholder="e.g. facilitator@gmail.com"
-                            />
-                            <p className="text-[10px] text-gray-500 italic">
-                                Note: The user MUST have successfully signed in with this Gmail account at least once before binding.
-                            </p>
-                        </div>
+                        {authStatus.checked && !authStatus.exists && (
+                            <div className="p-3 bg-red-50 text-red-600 rounded-lg text-xs flex items-center gap-2">
+                                <AlertCircle className="h-4 w-4" />
+                                <span>This user must sign in once using Google or Email before an administrator can activate their account.</span>
+                            </div>
+                        )}
+
+                        {authStatus.checked && authStatus.exists && (
+                            <div className="p-3 bg-green-50 text-green-700 rounded-lg text-xs flex items-center gap-2">
+                                <CheckCircle className="h-4 w-4" />
+                                <span>Authenticated account found. Ready to bind.</span>
+                            </div>
+                        )}
+
+                        {!authStatus.checked && busy && (
+                            <div className="text-xs text-gray-400 italic">Checking authentication status...</div>
+                        )}
                     </div>
 
                     <DialogFooter>
@@ -661,10 +683,10 @@ export default function FacilitatorManagement() {
                         </Button>
                         <Button
                             onClick={handleActivateSubmit}
-                            disabled={busy || !activateInput}
+                            disabled={busy || !authStatus.exists}
                             className="bg-blue-600 hover:bg-blue-700"
                         >
-                            {busy ? "Activating..." : "Bind & Activate Identity"}
+                            {busy ? "Activating..." : "Authorize / Activate"}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -707,6 +729,46 @@ export default function FacilitatorManagement() {
                             />
                         </div>
 
+                        <div className="space-y-2">
+                            <Label className="flex justify-between items-center">
+                                <span>Authorized Classes (REQUIRED)</span>
+                                <span className="text-[10px] text-blue-600 font-bold">
+                                    {addForm.authorizedPrograms.length} selected
+                                </span>
+                            </Label>
+                            <div className="text-[10px] text-gray-500 mb-2">
+                                Grant authority to facilitate specific curriculum-based classes.
+                            </div>
+                            <ScrollArea className="h-48 border rounded-lg p-3 bg-gray-50/50">
+                                <div className="grid grid-cols-1 gap-2">
+                                    {CANONICAL_CLASSES.map(className => (
+                                        <div key={className} className="flex items-center gap-3 p-2 rounded-lg border bg-white hover:bg-gray-50">
+                                            <Checkbox
+                                                id={`add - auth - ${className} `}
+                                                checked={addForm.authorizedPrograms.includes(className)}
+                                                onCheckedChange={(checked) => {
+                                                    if (checked) {
+                                                        setAddForm({ ...addForm, authorizedPrograms: [...addForm.authorizedPrograms, className] })
+                                                    } else {
+                                                        setAddForm({ ...addForm, authorizedPrograms: addForm.authorizedPrograms.filter(id => id !== className) })
+                                                    }
+                                                }}
+                                            />
+                                            <Label htmlFor={`add - auth - ${className} `} className="flex-1 cursor-pointer text-xs font-medium">
+                                                {className}
+                                            </Label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </ScrollArea>
+                            {addForm.authorizedPrograms.length === 0 && (
+                                <p className="text-[10px] text-red-500 font-bold mt-1 inline-flex items-center gap-1">
+                                    <AlertCircle className="h-3 w-3" />
+                                    At least one class must be selected
+                                </p>
+                            )}
+                        </div>
+
                         <p className="text-[10px] text-gray-500 italic">
                             Friendly reminder: This creates a profile stub. The facilitator will still need to perform a "Sign In with Google" at least once before you can bind their identity.
                         </p>
@@ -718,7 +780,7 @@ export default function FacilitatorManagement() {
                         </Button>
                         <Button
                             onClick={handleAddFacilitator}
-                            disabled={busy || !addForm.name || !addForm.email}
+                            disabled={busy || !addForm.name || !addForm.email || addForm.authorizedPrograms.length === 0}
                             className="bg-blue-600 hover:bg-blue-700"
                         >
                             {busy ? "Creating..." : "Create Facilitator"}

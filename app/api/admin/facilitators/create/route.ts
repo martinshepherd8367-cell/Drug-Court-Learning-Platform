@@ -11,10 +11,14 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { name, email } = body;
+        const { name, email, authorizedPrograms } = body;
 
         if (!name || !email) {
             return NextResponse.json({ error: "Missing name or email" }, { status: 400 });
+        }
+
+        if (!authorizedPrograms || !Array.from(authorizedPrograms).length) {
+            return NextResponse.json({ error: "At least one authorized class must be selected" }, { status: 400 });
         }
 
         const db = getDb();
@@ -31,6 +35,7 @@ export async function POST(req: NextRequest) {
             role: "facilitator",
             name,
             email,
+            authorizedPrograms: Array.from(authorizedPrograms),
             status: "UNBOUND",
             isProfileOnly: true,
             createdBy: admin.uid,

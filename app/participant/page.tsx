@@ -50,6 +50,7 @@ export default function ParticipantDashboard() {
     completedSessions,
     users,
     scheduleEvents,
+    programInstances,
   } = useStore()
 
   const [selectedMessage, setSelectedMessage] = useState<MessageDisplay | null>(null)
@@ -180,6 +181,31 @@ export default function ParticipantDashboard() {
         room: "Room " + (101 + index),
         session: enrollment.currentSessionNumber,
         programSlug: program.slug,
+        isCompleted
+      }
+    }
+  })
+
+  // Add instances from Program Management Hub where participant is enrolled
+  programInstances.forEach(instance => {
+    if (instance.status === "ACTIVE" && instance.participantIds.includes(participantId)) {
+      const day = instance.scheduleDay.substring(0, 3)
+      const time = `${instance.scheduleTime} ${instance.scheduleMeridiem}`
+
+      if (!participantSchedule[day]) participantSchedule[day] = {}
+
+      const isCompleted = completedSessions.some(cs =>
+        cs.classId === instance.id &&
+        cs.programId === instance.classId &&
+        cs.sessionNumber === (instance.sessionsCompleted + 1)
+      )
+
+      participantSchedule[day][time] = {
+        program: instance.className,
+        facilitator: instance.facilitatorName,
+        room: "Main Hall",
+        session: instance.sessionsCompleted + 1,
+        programSlug: instance.classId.toLowerCase().replace(/\s+/g, '-'),
         isCompleted
       }
     }

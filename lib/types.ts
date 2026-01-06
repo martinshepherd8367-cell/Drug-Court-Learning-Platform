@@ -32,6 +32,8 @@ export interface User {
   certifications?: string[]
   authorizedPrograms?: string[] // program IDs
   availabilityNotes?: string
+  boundAt?: string
+  boundBy?: string
 }
 
 export interface FacilitatorProfileUpdate {
@@ -87,6 +89,22 @@ export interface Program {
   type: string
   isLocked: boolean
   sessions: Session[]
+}
+
+export interface ProgramInstance {
+  id: string
+  classId: string // Canonical class name
+  className: string
+  facilitatorId: string
+  facilitatorName: string
+  scheduleDay: string
+  scheduleTime: string
+  scheduleMeridiem: "AM" | "PM"
+  status: "ACTIVE" | "COMPLETED" | "PAUSED"
+  sessionsCompleted: number
+  participantCount: number
+  participantIds: string[]
+  createdAt: string
 }
 
 export interface Session {

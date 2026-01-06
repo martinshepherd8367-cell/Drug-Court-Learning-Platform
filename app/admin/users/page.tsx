@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useStore } from "@/lib/store"
+import { CANONICAL_CLASSES } from "@/lib/constants"
 import { RoleNav } from "@/components/role-nav"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -22,11 +23,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ArrowLeft, Plus, User, Shield, Users, Edit, Search, AlertCircle, Pause, Play, CheckCircle as CheckCircleIcon } from "lucide-react"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Checkbox } from "@/components/ui/checkbox"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import type { UserRole, User as UserType } from "@/lib/types"
 
 export default function UserManagement() {
   const router = useRouter()
-  const { users, setUsers, courts, programs } = useStore()
+  const { users, setUsers, courts, programs, createFacilitator, activateUser } = useStore()
+  const [showActivateDialog, setShowActivateDialog] = useState(false)
+  const [authStatus, setAuthStatus] = useState<{ exists: boolean, checked: boolean }>({ exists: false, checked: false })
 
   const [searchTerm, setSearchTerm] = useState("")
   const [showAddUser, setShowAddUser] = useState(false)
@@ -45,6 +49,13 @@ export default function UserManagement() {
   const [selectedUser, setSelectedUser] = useState<UserType | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showCreationChooser, setShowCreationChooser] = useState(false)
+  const [showAddFacilitator, setShowAddFacilitator] = useState(false)
+  const [newFacilitator, setNewFacilitator] = useState({
+    name: "",
+    email: "",
+    authorizedPrograms: [] as string[]
+  })
 
   const [newUser, setNewUser] = useState({
     name: "",
@@ -116,6 +127,21 @@ export default function UserManagement() {
       setUsers([...users, savedUser])
       setShowAddUser(false)
       setNewUser({ name: "", email: "", role: "participant", status: "active", courtId: "", county: "" })
+    } catch (e: any) {
+      setError(e.message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const handleAddFacilitator = async () => {
+    if (!newFacilitator.name || !newFacilitator.email || newFacilitator.authorizedPrograms.length === 0) return
+    setBusy(true)
+    setError(null)
+    try {
+      await createFacilitator(newFacilitator)
+      setShowAddFacilitator(false)
+      setNewFacilitator({ name: "", email: "", authorizedPrograms: [] })
     } catch (e: any) {
       setError(e.message)
     } finally {
@@ -246,6 +272,39 @@ export default function UserManagement() {
     }
   }
 
+  const handleActivateClick = async (user: UserType) => {
+    setSelectedUser(user)
+    setShowActivateDialog(true)
+    setAuthStatus({ exists: false, checked: false })
+    setBusy(true)
+    setError(null)
+    try {
+      const res = await fetch(`/api/admin/users/auth-status?email=${encodeURIComponent(user.email || "")}`)
+      if (res.ok) {
+        const data = await res.json()
+        setAuthStatus({ exists: data.exists, checked: true })
+      }
+    } catch (e) {
+      console.error("Failed to check auth status", e)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const handleActivateSubmit = async () => {
+    if (!selectedUser || !authStatus.exists) return
+    setBusy(true)
+    setError(null)
+    try {
+      await activateUser(selectedUser.id)
+      setShowActivateDialog(false)
+    } catch (e: any) {
+      setError(e.message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       <RoleNav />
@@ -262,7 +321,7 @@ export default function UserManagement() {
               <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
               <p className="text-gray-600 mt-1">Manage platform access and roles</p>
             </div>
-            <Button onClick={() => setShowAddUser(true)} className="bg-green-600 hover:bg-green-700">
+            <Button onClick={() => setShowCreationChooser(true)} className="bg-green-600 hover:bg-green-700">
               <Plus className="h-4 w-4 mr-2" />
               Add User profile
             </Button>
@@ -302,10 +361,19 @@ export default function UserManagement() {
                 {filteredUsers.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell>
-                      <div className="font-medium text-gray-900">{user.name}</div>
-                      {user.isProfileOnly && (
-                        <div className="text-[10px] text-orange-600 font-semibold uppercase">Profile Created (No Auth)</div>
-                      )}
+                      <div className="flex items-center gap-2">
+                        <div className="font-medium text-gray-900">{user.name}</div>
+                        {user.userId ? (
+                          <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200 text-[9px] px-1 h-4 gap-1">
+                            <Shield className="h-2.5 w-2.5" />
+                            BOUND
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-orange-600 border-orange-200 text-[9px] px-1 h-4">
+                            UNBOUND
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>{getRoleBadge(user.role)}</TableCell>
@@ -328,6 +396,12 @@ export default function UserManagement() {
                     </TableCell>
                     <TableCell>{getStatusBadge(user)}</TableCell>
                     <TableCell className="text-right flex justify-end gap-2">
+                      {!user.userId && (user.role === "participant" || user.role === "facilitator") && (
+                        <Button variant="outline" size="sm" className="text-blue-600 border-blue-200 hover:bg-blue-50" onClick={() => handleActivateClick(user)}>
+                          <Shield className="h-4 w-4 mr-2" />
+                          Authorize / Activate
+                        </Button>
+                      )}
                       {user.role === "participant" && user.status === "active" && (
                         <Button variant="outline" size="sm" className="text-amber-600 hover:text-amber-700 hover:bg-amber-50" onClick={() => handlePauseClick(user)}>
                           <Pause className="h-4 w-4 mr-2" />
@@ -472,6 +546,135 @@ export default function UserManagement() {
         </DialogContent>
       </Dialog>
 
+      {/* Creation Chooser Modal */}
+      <Dialog open={showCreationChooser} onOpenChange={setShowCreationChooser}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add New Profile</DialogTitle>
+            <DialogDescription>Which type of profile would you like to create?</DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-4 py-4">
+            <Button
+              variant="outline"
+              className="h-32 flex flex-col items-center justify-center gap-2 hover:border-green-500 hover:bg-green-50"
+              onClick={() => {
+                setShowCreationChooser(false)
+                setShowAddUser(true)
+              }}
+            >
+              <Users className="h-8 w-8 text-green-600" />
+              <div className="font-bold">Participant</div>
+              <div className="text-[10px] text-gray-500 text-center">Treatment path & enrollment</div>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-32 flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:bg-blue-50"
+              onClick={() => {
+                setShowCreationChooser(false)
+                setShowAddFacilitator(true)
+              }}
+            >
+              <User className="h-8 w-8 text-blue-600" />
+              <div className="font-bold">Facilitator</div>
+              <div className="text-[10px] text-gray-500 text-center">Authored classes & schedules</div>
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Facilitator Dialog */}
+      <Dialog open={showAddFacilitator} onOpenChange={setShowAddFacilitator}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create Facilitator Profile</DialogTitle>
+            <DialogDescription>
+              Create a new canonical facilitator entry. Authentication is completed separately via Google Sign-In.
+            </DialogDescription>
+          </DialogHeader>
+
+          {error && (
+            <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm flex items-center gap-2">
+              <AlertCircle className="h-4 w-4" />
+              {error}
+            </div>
+          )}
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Full Name</Label>
+              <Input
+                value={newFacilitator.name}
+                onChange={(e) => setNewFacilitator({ ...newFacilitator, name: e.target.value })}
+                placeholder="e.g. John Doe"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <Input
+                value={newFacilitator.email}
+                onChange={(e) => setNewFacilitator({ ...newFacilitator, email: e.target.value })}
+                placeholder="e.g. john@gmail.com"
+                type="email"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="flex justify-between items-center">
+                <span>Authorized Classes (REQUIRED)</span>
+                <span className="text-[10px] text-blue-600 font-bold">
+                  {newFacilitator.authorizedPrograms.length} selected
+                </span>
+              </Label>
+              <div className="text-[10px] text-gray-500 mb-2">
+                Grant authority to facilitate specific curriculum-based classes.
+              </div>
+              <ScrollArea className="h-48 border rounded-lg p-3 bg-gray-50/50">
+                <div className="grid grid-cols-1 gap-2">
+                  {CANONICAL_CLASSES.map(className => (
+                    <div key={className} className="flex items-center gap-3 p-2 rounded-lg border bg-white hover:bg-gray-50">
+                      <Checkbox
+                        id={`add-auth-${className}`}
+                        checked={newFacilitator.authorizedPrograms.includes(className)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setNewFacilitator({ ...newFacilitator, authorizedPrograms: [...newFacilitator.authorizedPrograms, className] })
+                          } else {
+                            setNewFacilitator({ ...newFacilitator, authorizedPrograms: newFacilitator.authorizedPrograms.filter(id => id !== className) })
+                          }
+                        }}
+                      />
+                      <Label htmlFor={`add-auth-${className}`} className="flex-1 cursor-pointer text-xs font-medium">
+                        {className}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+              {newFacilitator.authorizedPrograms.length === 0 && (
+                <p className="text-[10px] text-red-500 font-bold mt-1 inline-flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  At least one class must be selected
+                </p>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddFacilitator(false)} disabled={busy}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAddFacilitator}
+              disabled={busy || !newFacilitator.name || !newFacilitator.email || newFacilitator.authorizedPrograms.length === 0}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {busy ? "Creating..." : "Create Facilitator"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Edit User Dialog */}
       <Dialog open={showEditUser} onOpenChange={setShowEditUser}>
         <DialogContent className="max-w-md">
@@ -502,9 +705,15 @@ export default function UserManagement() {
                 <Input
                   type="email"
                   value={selectedUser.email}
-                  disabled
-                  className="bg-gray-50"
+                  disabled={selectedUser.role !== "participant" || !!selectedUser.userId}
+                  className={selectedUser.role !== "participant" || !!selectedUser.userId ? "bg-gray-50" : ""}
+                  onChange={(e) => setSelectedUser({ ...selectedUser, email: e.target.value })}
                 />
+                {selectedUser.role === "participant" && !selectedUser.userId && (
+                  <p className="text-[10px] text-blue-600 italic">
+                    Note: Email can be corrected while profile is UNBOUND.
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -747,6 +956,65 @@ export default function UserManagement() {
               className="bg-green-600 hover:bg-green-700 text-white"
             >
               {busy ? "Reactivating..." : "Confirm Reactivation"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Activation Dialog */}
+      <Dialog open={showActivateDialog} onOpenChange={setShowActivateDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Activate User Identity</DialogTitle>
+            <DialogDescription>
+              Bind this local profile to an authenticated Google account.
+            </DialogDescription>
+          </DialogHeader>
+
+          {error && (
+            <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm flex items-center gap-2">
+              <AlertCircle className="h-4 w-4" />
+              {error}
+            </div>
+          )}
+
+          <div className="space-y-4 py-4">
+            <div className="p-4 bg-blue-50 border border-blue-100 rounded-lg space-y-2">
+              <div className="text-xs text-blue-800 font-medium">Verify Identity for {selectedUser?.name}</div>
+              <div className="text-[11px] text-blue-700">
+                This action will bind the following email to this profile:
+                <div className="mt-1 font-mono font-bold">{selectedUser?.email}</div>
+              </div>
+            </div>
+
+            {authStatus.checked && !authStatus.exists && (
+              <div className="p-3 bg-red-50 text-red-600 rounded-lg text-xs flex items-center gap-2">
+                <AlertCircle className="h-4 w-4" />
+                <span>This user must sign in once using Google or Email before an administrator can activate their account.</span>
+              </div>
+            )}
+
+            {authStatus.checked && authStatus.exists && (
+              <div className="p-3 bg-green-50 text-green-700 rounded-lg text-xs flex items-center gap-2">
+                <CheckCircleIcon className="h-4 w-4" />
+                <span>Authenticated account found. Ready to bind.</span>
+              </div>
+            )}
+
+            {!authStatus.checked && busy && (
+              <div className="text-xs text-gray-400 italic">Checking authentication status...</div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowActivateDialog(false)} disabled={busy}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleActivateSubmit}
+              disabled={busy || !authStatus.exists}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {busy ? "Activating..." : "Authorize / Activate"}
             </Button>
           </DialogFooter>
         </DialogContent>

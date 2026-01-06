@@ -59,6 +59,7 @@ export default function FacilitatorDashboard() {
     generateClassQRCode,
     completedSessions,
     scheduleEvents,
+    programInstances,
   } = useStore()
 
   // Modal states
@@ -110,9 +111,17 @@ export default function FacilitatorDashboard() {
 
   // Derived schedule classes - Authoritative source is scheduleEvents
   const scheduleClasses = useMemo(() => {
-    const eventsForMe = scheduleEvents.filter(se => se.facilitatorId === currentUser?.id);
+    const myId = currentUser?.id;
+    const myAuthId = currentUser?.userId;
 
-    return eventsForMe.map(se => {
+    const isForMe = (facilitatorId: string) => {
+      if (!facilitatorId) return false;
+      return facilitatorId === myId || (myAuthId && facilitatorId === myAuthId);
+    };
+
+    const eventsForMe = scheduleEvents.filter(se => isForMe(se.facilitatorId));
+
+    const baseClasses = eventsForMe.map(se => {
       const prog = programs.find(p => p.id === se.programId);
       const fac = users.find(u => u.id === se.facilitatorId);
 
@@ -143,7 +152,35 @@ export default function FacilitatorDashboard() {
         )
       };
     });
-  }, [scheduleEvents, enrollments, programs, users, currentUser, completedSessions]);
+
+    const instancesForMe = programInstances.filter(inst => inst.facilitatorId === myId);
+    const instanceClasses = instancesForMe.map(inst => {
+      return {
+        id: inst.id,
+        name: inst.className,
+        day: inst.scheduleDay,
+        time: `${inst.scheduleTime} ${inst.scheduleMeridiem}`,
+        program: inst.className,
+        session: inst.sessionsCompleted + 1,
+        location: "Main Hall",
+        facilitator: inst.facilitatorName,
+        programId: inst.classId,
+        enrolled: inst.participantIds.length,
+        participants: inst.participantIds.map(pId => {
+          const user = users.find(u => u.id === pId);
+          const enrollment = enrollments.find(e => e.participantId === pId && e.programId === inst.classId);
+          return { ...enrollment, user, participantId: pId };
+        }),
+        isCompleted: completedSessions.some(cs =>
+          cs.classId === inst.id &&
+          cs.programId === inst.classId &&
+          cs.sessionNumber === (inst.sessionsCompleted + 1)
+        )
+      };
+    });
+
+    return [...baseClasses, ...instanceClasses];
+  }, [scheduleEvents, enrollments, programs, users, currentUser, completedSessions, programInstances]);
 
   const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
   const timeSlots = [
@@ -161,7 +198,14 @@ export default function FacilitatorDashboard() {
 
   // Authoritative list of participants for this facilitator
   const myParticipantIds = useMemo(() => {
-    const myEventIds = new Set(scheduleEvents.filter(se => se.facilitatorId === currentUser?.id).map(se => se.id));
+    const myId = currentUser?.id;
+    const myAuthId = currentUser?.userId;
+    const isForMe = (facilitatorId: string) => {
+      if (!facilitatorId) return false;
+      return facilitatorId === myId || (myAuthId && facilitatorId === myAuthId);
+    };
+
+    const myEventIds = new Set(scheduleEvents.filter(se => isForMe(se.facilitatorId)).map(se => se.id));
     return enrollments
       .filter(e => e.status === 'active' && myEventIds.has(getSlotKey(e)))
       .filter(e => users.find(u => u.id === e.participantId)?.status === 'active')
@@ -170,8 +214,14 @@ export default function FacilitatorDashboard() {
 
   const facilitatorMessages = useMemo(() => {
     if (!currentUser) return [];
+    const myId = currentUser.id;
+    const myAuthId = currentUser.userId;
+
     return messages
-      .filter(m => m.recipientId === currentUser.id || m.senderId === currentUser.id)
+      .filter(m =>
+        m.recipientId === myId || (myAuthId && m.recipientId === myAuthId) ||
+        m.senderId === myId || (myAuthId && m.senderId === myAuthId)
+      )
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, [messages, currentUser]);
 
@@ -247,9 +297,20 @@ export default function FacilitatorDashboard() {
   // Get participants enrolled in a program
   const getParticipantsInProgram = (programId: string) => {
     const programEnrollments = enrollments.filter((e: Enrollment) => {
-      if (e.programId !== programId || e.status !== "active" || e.schedule?.facilitatorId !== currentUser?.id) return false;
-      const user = users.find((u: UserType) => u.id === e.participantId);
-      return user && user.status === "active";
+      // Relaxed checks: just need to match program and be active
+      if (e.programId !== programId || e.status !== "active") return false;
+
+      // If linked via traditional schedule event
+      const matchesSchedule = e.schedule?.facilitatorId === currentUser?.id;
+
+      // OR if linked via a program instance for this facilitator
+      const matchesInstance = programInstances.some(inst =>
+        inst.classId === programId &&
+        inst.facilitatorId === currentUser?.id &&
+        inst.participantIds.includes(e.participantId)
+      );
+
+      return matchesSchedule || matchesInstance;
     })
     return programEnrollments.map((e: Enrollment) => {
       const user = users.find((u: UserType) => u.id === e.participantId)
@@ -647,7 +708,10 @@ export default function FacilitatorDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {programs.filter(p => getParticipantsInProgram(p.id).length > 0).map((program) => {
+              {programs.filter(p =>
+                getParticipantsInProgram(p.id).length > 0 ||
+                programInstances.some(inst => inst.classId === p.id && inst.facilitatorId === currentUser?.id)
+              ).map((program) => {
                 const participants = getParticipantsInProgram(program.id)
                 return (
                   <Card
@@ -726,7 +790,7 @@ export default function FacilitatorDashboard() {
             // Show list of classes first
             <div className="space-y-2">
               {programs
-                .filter((p) => !p.isLocked && getParticipantsInProgram(p.id).length > 0)
+                .filter((p) => !p.isLocked && (getParticipantsInProgram(p.id).length > 0 || programInstances.some(inst => inst.classId === p.id && inst.facilitatorId === currentUser?.id)))
                 .map((program) => {
                   const participants = getParticipantsInProgram(program.id)
                   return (

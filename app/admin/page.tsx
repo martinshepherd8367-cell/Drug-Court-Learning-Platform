@@ -9,10 +9,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Users, BookOpen, UserCheck, FileBarChart, ChevronRight, QrCode, Calendar, Activity, Mail, Send, Search, UserPlus, Scale } from "lucide-react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import type { User, Enrollment, UserRole, Message } from "@/lib/types"
 
 export default function AdminDashboard() {
@@ -27,6 +28,7 @@ export default function AdminDashboard() {
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null)
   const [messageError, setMessageError] = useState<string | null>(null)
   const [isSending, setIsSending] = useState(false)
+  const [showUserRoleModal, setShowUserRoleModal] = useState(false)
 
   const stats = {
     totalParticipants: users.filter((u: User) => u.role === "participant").length,
@@ -59,7 +61,8 @@ export default function AdminDashboard() {
       title: "Users",
       description: "Manage users and roles",
       icon: Users,
-      href: "/admin/users",
+      href: "#",
+      onClick: () => setShowUserRoleModal(true),
       count: users.length,
     },
     {
@@ -447,6 +450,40 @@ export default function AdminDashboard() {
                 </div>
               </>
             )}
+          </DialogContent>
+        </Dialog>
+        {/* User Role Management Modal */}
+        <Dialog open={showUserRoleModal} onOpenChange={setShowUserRoleModal}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Manage Users</DialogTitle>
+              <DialogDescription>Choose a role to manage existing profiles.</DialogDescription>
+            </DialogHeader>
+
+            <div className="grid grid-cols-2 gap-4 py-6">
+              <Button
+                variant="outline"
+                className="h-32 flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:bg-blue-50"
+                onClick={() => {
+                  router.push("/admin/facilitators")
+                  setShowUserRoleModal(false)
+                }}
+              >
+                <UserCheck className="h-8 w-8 text-blue-600" />
+                <div className="font-bold">Manage Facilitators</div>
+              </Button>
+              <Button
+                variant="outline"
+                className="h-32 flex flex-col items-center justify-center gap-2 hover:border-green-500 hover:bg-green-50"
+                onClick={() => {
+                  router.push("/admin/users")
+                  setShowUserRoleModal(false)
+                }}
+              >
+                <Users className="h-8 w-8 text-green-600" />
+                <div className="font-bold">Manage Participants</div>
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
       </main>

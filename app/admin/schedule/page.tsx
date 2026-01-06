@@ -11,10 +11,12 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowLeft, Users, Calendar, Clock, MapPin, Plus, Settings, QrCode, CheckCircle, Edit, AlertCircle } from "lucide-react"
 import { useStore } from "@/lib/store"
+import { CANONICAL_CLASSES } from "@/lib/constants"
+import { RoleNav } from "@/components/role-nav"
 
 export default function AdminSchedulePage() {
   const router = useRouter()
-  const { users, programs, enrollments, makeupGroup, makeupAssignments, updateMakeupGroup, completedSessions, scheduleEvents, updateScheduleEvent } = useStore()
+  const { users, programs, enrollments, makeupGroup, makeupAssignments, updateMakeupGroup, completedSessions, scheduleEvents, updateScheduleEvent, programInstances } = useStore()
 
   const [showClassDetail, setShowClassDetail] = useState(false)
   const [showParticipantList, setShowParticipantList] = useState(false)
@@ -86,6 +88,37 @@ export default function AdminSchedulePage() {
         enrolled: 0,
         session: 1,
         totalSessions: program?.totalSessions || 0,
+        isCompleted: false
+      });
+    });
+
+    // Attach instances from Program Management Hub
+    programInstances.forEach(instance => {
+      if (instance.status !== "ACTIVE") return;
+      const day = instance.scheduleDay;
+      const time = `${instance.scheduleTime} ${instance.scheduleMeridiem}`;
+
+      if (!acc[day]) acc[day] = {};
+      if (!acc[day][time]) acc[day][time] = [];
+
+      // Avoid duplicates if scheduleEvents already has this (by matching id or name/time)
+      const isDuplicate = acc[day][time].some(e => e.programId === instance.classId && e.facilitatorId === instance.facilitatorId);
+      if (isDuplicate) return;
+
+      acc[day][time].push({
+        eventId: instance.id,
+        programId: instance.classId,
+        program: instance.className,
+        facilitator: instance.facilitatorName,
+        facilitatorId: instance.facilitatorId,
+        room: "Main Hall", // Default
+        day,
+        time,
+        date: new Date().toISOString().split('T')[0],
+        participants: instance.participantIds,
+        enrolled: instance.participantIds.length,
+        session: instance.sessionsCompleted + 1,
+        totalSessions: 12,
         isCompleted: false
       });
     });
@@ -490,6 +523,7 @@ export default function AdminSchedulePage() {
                       <SelectContent>
                         {users.filter(u =>
                           u.role === 'facilitator' &&
+                          (CANONICAL_CLASSES as unknown as string[]).includes(editData.programId) &&
                           u.authorizedPrograms?.includes(editData.programId)
                         ).map(f => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}
                         {users.filter(u =>
@@ -779,7 +813,11 @@ export default function AdminSchedulePage() {
                 </SelectTrigger>
                 <SelectContent>
                   {users
-                    .filter((u) => u.role === "facilitator" && (u.authorizedPrograms?.includes(editData?.programId) || u.authorizedPrograms?.includes("makeup") || u.authorizedPrograms?.includes("Makeup Group")))
+                    .filter((u) => u.role === "facilitator" && (
+                      (u.authorizedPrograms?.includes(editData?.programId) && (CANONICAL_CLASSES as unknown as string[]).includes(editData?.programId)) ||
+                      u.authorizedPrograms?.includes("makeup") ||
+                      u.authorizedPrograms?.includes("Makeup Group")
+                    ))
                     .map((fac) => (
                       <SelectItem key={fac.id} value={fac.id}>
                         {fac.name}
@@ -842,7 +880,11 @@ export default function AdminSchedulePage() {
                 </SelectTrigger>
                 <SelectContent>
                   {users
-                    .filter((u) => u.role === "facilitator" && (u.authorizedPrograms?.includes(editData?.programId) || u.authorizedPrograms?.includes("makeup") || u.authorizedPrograms?.includes("Makeup Group")))
+                    .filter((u) => u.role === "facilitator" && (
+                      (u.authorizedPrograms?.includes(editData?.programId) && (CANONICAL_CLASSES as unknown as string[]).includes(editData?.programId)) ||
+                      u.authorizedPrograms?.includes("makeup") ||
+                      u.authorizedPrograms?.includes("Makeup Group")
+                    ))
                     .map((fac) => (
                       <SelectItem key={fac.id} value={fac.id}>
                         {fac.name}

@@ -123,7 +123,9 @@ export default function FacilitatorSessionView() {
     // Authorization check via ScheduleEvent
     if (classId && currentUser?.role === "facilitator") {
       const event = scheduleEvents.find(se => se.id === classId);
-      if (event && event.facilitatorId !== currentUser.id) return [];
+      const myId = currentUser.id;
+      const myAuthId = currentUser.userId;
+      if (event && event.facilitatorId !== myId && (!myAuthId || event.facilitatorId !== myAuthId)) return [];
     }
 
     const allEnrollments = getEnrollmentsByProgram(program.id)

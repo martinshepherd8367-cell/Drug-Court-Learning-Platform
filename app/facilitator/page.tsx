@@ -185,15 +185,25 @@ export default function FacilitatorDashboard() {
   const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
   const timeSlots = [
     "9:00 AM",
+    "9:30 AM",
     "10:00 AM",
+    "10:30 AM",
     "11:00 AM",
+    "11:30 AM",
     "12:00 PM",
+    "12:30 PM",
     "1:00 PM",
+    "1:30 PM",
     "2:00 PM",
+    "2:30 PM",
     "3:00 PM",
+    "3:30 PM",
     "4:00 PM",
+    "4:30 PM",
     "5:00 PM",
+    "5:30 PM",
     "6:00 PM",
+    "6:30 PM",
   ]
 
   // Authoritative list of participants for this facilitator
@@ -716,10 +726,9 @@ export default function FacilitatorDashboard() {
                 return (
                   <Card
                     key={program.id}
-                    className={`cursor-pointer transition-all hover:border-green-500 hover:shadow-md ${program.isLocked ? "opacity-60" : ""
-                      } card-transparent`}
+                    className="cursor-pointer transition-all hover:border-green-500 hover:shadow-md card-transparent"
                     onClick={() => {
-                      if (!program.isLocked || program.sessions.length > 0) {
+                      if (program.sessions.length > 0) {
                         router.push(`/facilitator/programs/${program.slug}`)
                       }
                     }}
@@ -729,13 +738,7 @@ export default function FacilitatorDashboard() {
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-1">
                             <h3 className="font-semibold">{program.name}</h3>
-                            {program.isLocked && (
-                              <Badge variant="secondary" className="gap-1 text-xs">
-                                <Lock className="h-3 w-3" />
-                                Locked
-                              </Badge>
-                            )}
-                            {!program.isLocked && program.sessions.length > 0 && (
+                            {program.sessions.length > 0 && (
                               <Badge className="bg-green-600 text-xs">Active</Badge>
                             )}
                           </div>
@@ -790,7 +793,7 @@ export default function FacilitatorDashboard() {
             // Show list of classes first
             <div className="space-y-2">
               {programs
-                .filter((p) => !p.isLocked && (getParticipantsInProgram(p.id).length > 0 || programInstances.some(inst => inst.classId === p.id && inst.facilitatorId === currentUser?.id)))
+                .filter((p) => getParticipantsInProgram(p.id).length > 0 || programInstances.some(inst => inst.classId === p.id && inst.facilitatorId === currentUser?.id))
                 .map((program) => {
                   const participants = getParticipantsInProgram(program.id)
                   return (

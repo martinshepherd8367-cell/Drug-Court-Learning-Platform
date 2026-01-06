@@ -87,12 +87,7 @@ export default function ProgramOverview() {
               <h1 className="text-3xl font-bold text-gray-900">{program.name}</h1>
               <p className="text-gray-600 mt-1">{program.description}</p>
             </div>
-            {program.isLocked && (
-              <Badge variant="secondary" className="gap-1">
-                <Lock className="h-3 w-3" />
-                Program Locked
-              </Badge>
-            )}
+            {/* Removed Program Locked badge for facilitator view */}
           </div>
         </div>
 
@@ -158,7 +153,7 @@ export default function ProgramOverview() {
                 {sortedSessions.map((session) => {
                   const isCompleted = session.sessionNumber < cohortCurrentSession
                   const isCurrent = session.sessionNumber === cohortCurrentSession
-                  const isLocked = program.isLocked && session.sessionNumber > cohortCurrentSession
+                  const isLocked = false // Faciliator view ignores catalog lock and sequence lock for accessibility assistant role
 
                   return (
                     <Card

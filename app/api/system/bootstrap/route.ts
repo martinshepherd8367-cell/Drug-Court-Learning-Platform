@@ -66,16 +66,25 @@ export async function GET() {
         if (user.role === "admin") {
             // Admin sees everything
         } else if (user.role === "facilitator") {
-            // Restriction 5.2: Only classes taught by this facilitator
+            // Restriction 5.2: Only classes taught by this facilitator (Events OR Instances)
             // Restriction 5.3: Only participants in those classes
 
+            const myInstances = programInstances.filter((inst: any) => inst.facilitatorId === user.uid || inst.facilitatorId === user.authUid);
             const myScheduleEvents = scheduleEvents.filter((e: any) => e.facilitatorId === user.uid);
-            const myEnrollments = enrollments.filter((e: any) => e.schedule?.facilitatorId === user.uid);
 
-            const myParticipantIds = new Set(myEnrollments.map((e: any) => e.participantId));
             const myProgramIds = new Set([
                 ...myScheduleEvents.map((e: any) => e.programId),
-                ...myEnrollments.map((e: any) => e.programId)
+                ...myInstances.map((inst: any) => inst.classId)
+            ]);
+
+            const myEnrollments = enrollments.filter((e: any) =>
+                (e.schedule?.facilitatorId === user.uid) || // Legacy schedule link
+                (myProgramIds.has(e.programId) && myInstances.some((inst: any) => inst.participantIds?.includes(e.participantId))) // Instance link
+            );
+
+            const myParticipantIds = new Set([
+                ...myEnrollments.map((e: any) => e.participantId),
+                ...myInstances.flatMap((inst: any) => inst.participantIds || [])
             ]);
 
             // Filter everything based on these sets
@@ -83,22 +92,17 @@ export async function GET() {
             enrollments = myEnrollments;
 
             // Only include relevant participants + staff
-            // Strip sensitive fields for other staff members
             users = users.filter((u: any) => u.role !== "participant" || myParticipantIds.has(u.id))
                 .map((u: any) => {
                     if (u.id === user.uid || myParticipantIds.has(u.id)) return u;
-                    // For other staff, only return public metadata
                     return { id: u.id, name: u.name, role: u.role };
                 });
 
-            // Only include programs they teach
             programs = programs.filter((p: any) => myProgramIds.has(p.id));
 
-            // Scoped artifacts
             journalEntries = journalEntries.filter((j: any) => myParticipantIds.has(j.participantId));
             homeworkSubmissions = homeworkSubmissions.filter((h: any) => myParticipantIds.has(h.participantId));
             attendance = attendance.filter((a: any) => myParticipantIds.has(a.participantId));
-            // Facilitator sees messages TO them OR FROM them
             messages = messages.filter((m: any) => m.recipientId === user.uid || m.senderId === user.uid);
             completedSessions = completedSessions.filter((cs: any) => cs.facilitatorId === user.uid || myProgramIds.has(cs.programId));
             takeaways = takeaways.filter((t: any) => myParticipantIds.has(t.participantId));
@@ -108,10 +112,14 @@ export async function GET() {
 
         } else if (user.role === "participant") {
             // Participant only sees themselves and their own enrollments/artifacts
+            const myInstances = programInstances.filter((inst: any) => inst.participantIds?.includes(user.uid) || inst.participantIds?.includes(user.authUid));
             enrollments = enrollments.filter((e: any) => e.participantId === user.uid);
-            const myProgramIds = new Set(enrollments.map((e: any) => e.programId));
 
-            // Participant should only see themselves and staff metadata (for messaging)
+            const myProgramIds = new Set([
+                ...enrollments.map((e: any) => e.programId),
+                ...myInstances.map((inst: any) => inst.classId)
+            ]);
+
             users = users.filter((u: any) => u.id === user.uid || u.role !== "participant")
                 .map((u: any) => {
                     if (u.id === user.uid) return u;
@@ -124,7 +132,6 @@ export async function GET() {
             journalEntries = journalEntries.filter((j: any) => j.participantId === user.uid);
             homeworkSubmissions = homeworkSubmissions.filter((h: any) => h.participantId === user.uid);
             attendance = attendance.filter((a: any) => a.participantId === user.uid);
-            // Participant sees messages TO them OR FROM them
             messages = messages.filter((m: any) => m.recipientId === user.uid || m.senderId === user.uid);
             completedSessions = completedSessions.filter((cs: any) => myProgramIds.has(cs.programId));
             takeaways = takeaways.filter((t: any) => t.participantId === user.uid);

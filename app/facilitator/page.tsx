@@ -728,9 +728,7 @@ export default function FacilitatorDashboard() {
                     key={program.id}
                     className="cursor-pointer transition-all hover:border-green-500 hover:shadow-md card-transparent"
                     onClick={() => {
-                      if (program.sessions.length > 0) {
-                        router.push(`/facilitator/programs/${program.slug}`)
-                      }
+                      router.push(`/facilitator/programs/${program.slug}`)
                     }}
                   >
                     <CardContent className="p-4">
